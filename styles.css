@@ -1,0 +1,32 @@
+html,body{margin:0;padding:0}
+body{font: 80% arial,sans-serif;text-align:center;background:#FFFFFF}
+p{margin:10px 10px 10px}
+/*a{padding:0px; text-decoration:underline; color:#000000;}*/
+table{font: 100% arial,sans-serif;text-align:left;}
+div#header{background-color:#F3F2ED;}
+div#header a{color:#FFFFFF}
+div#header{color:#FFFFFF}
+div#header h1{height:80px;line-height:80px;margin:0;padding-left:10px;}
+div#navigation{background:#50aa19;color:#000000}
+div#navigation ul{margin:15px 0; padding:0; list-style-type:none;}
+div#navigation li{margin-bottom:3px;}
+div#navigation{float:left;width:200px;height:AUTO}
+div#container{text-align:left}
+div#container{width:1200px; margin:0 auto;background:#50aa19}
+div#content{float:right; width: 996px; height: auto; background:#FFFFFF; color:#000000}
+div#content p{line-height:1.4}
+div#content h2{text-align:center}
+div#content table{font: 100% arial,sans-serif;text-align:left;padding:5px}
+div#extra {font-size: 130%;float:right;width:978px}
+div#extra a{color:#FFFFFF}
+div#extra{background:#3264af;color:#FFFFFF;border-color:#50aa19;border-width:4px;border-style:solid;padding:7px}
+div#footer{clear:both;width:100%;text-align:right;background:#FFFFFF;color:#000000;height:35px;padding-top:7px}
+div#footer p{margin:0;padding:5px 5px}
+div#footer a{color:#000000} 
+
+/*  Style Baudenkmale 2017*/
+
+.bld { font-family:arial;width:200px;text-align:center; background-color:#3264af;color:white;}
+.select_ort { width:200px;}
+.table_legende {width:100%;border-style:dotted; border-spacing:10px; valign:bottom;right:5px;left:5px;}
+.table_legende_ebenen {width:100%;border-style:dotted; border-spacing:0px; valign:bottom;}

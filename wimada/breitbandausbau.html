@@ -1,0 +1,380 @@
+<html>
+	<head>
+		<title>Wie macht man das?</title>
+			<link href="css/wimadastyle.css" rel="stylesheet">
+			<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+	</head>
+	<body>
+		<header>
+			<table class="kopf" border=0>
+				<td class="kopf1">WIMADA&nbsp;<img class="wimadamann" src="wimadamann.png" alt="WIMADAMann"><br><h1>Wie macht man das?</h1></td>
+				<td class="kopf4"></td>
+				<td class="kopf4"></td>
+				<td class="kopf3"><a class="kopf2" href="http://geoport-lk-mse.de/training/norman_budnick/wimada/" target="blank">Startseite</a><a class="kopf2" href="https://geoport-lk-mse.de/kvwmap/index.php" target="blanks">kvwmap</a><a class="kopf2" href="mailto:norman.budnick@lk-seenplatte.de,%20timo.schewe@lk-seenplatte.de?Subject=Feedback%20WIMADA & body=Hallo liebes Wimada-Team.%0D%0A%0D%0AEure Hilfeseite ist wirklich der Hammer!%0D%0AIch kann mir garnicht mehr vorstellen wie das Leben ohne Sie wäre.%0D%0A%0D%0AFür folgendes Thema würde ich mir eine Beschreibung wünschen: [Wunschthema] %0D%0A%0D%0ASpezieller Wunsch/Kommentar: [Kommentar]" target="_top">Themenwunsch</a></td>
+			</table>
+		</header>
+		
+				<table style="width:100%" border=0>
+<!------------------------------------Tabellenüberschrift----------------------------------------------------------------------->			
+				  <tr>
+						<th class="links" rowspan="6"></th>
+						<th class="streifen" rowspan="6"></th>
+						<th class="beschreibungabstand">Beschreibung</th> 
+						<th class="darstellungabstand">Darstellung</th>
+						<th class="streifen" rowspan="6"></th>
+						<th class="rechts"  rowspan="6"></th>
+				  </tr>
+<!---------------------------------------Breitbandausbau Thema Auswählen-------------------------------------------------------------->					
+				  <tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>1. Breitbandausbau Thema Auswählen</h3>
+																						<p>
+																									1.1<br> Um das Thema Breitbandausbau zu aktivieren öffnen Sie in der Themenleiste (rechter Bilschirmrand) die Rubrik <b>"Breitbandausbau"</b> durch einen Klick mit der linken Maustaste auf das <b>+</b> Symbol.
+																									Es öffnen sich die Unterrubriken <b>"Ausschreibung"</b>, <b>"Phase1"</b>, <b>"Phase2"</b>, <b>"Phase3"</b>, die Sie wiedrum mit einem Klick der linken Maustaste auf das <b>+</b> Symbol öffnen können. <br> <br>
+																									
+																									Setzen Sie nun im gewünschten Thema ein Aktivierungshäkchen um das Thema anzuzeigen und es gleichzeitig abfragebereit zumachen. <br> <br>
+																									
+																						</p> 
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="breitband_thema fade"><!---ANPASSEN---->
+								  <div class="numbertext">1 / 3</div>
+									<div class="screen">
+									<img src="bilder/breitband1.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+																
+								
+			
+								<a class="prev" onclick="plusSlides3(-1)">&#10094;</a><!---ANPASSEN---->
+								<a class="next" onclick="plusSlides3(1)">&#10095;</a><!---ANPASSEN---->
+
+								</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot3" onclick="currentSlide3(1)"></span> 
+								  
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern ---->
+							<!---ANPASSEN---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides3(slideIndex);<!---ANPASSEN---->
+
+								function plusSlides3(n) {<!---ANPASSEN---->
+								  showSlides3(slideIndex += n);<!---ANPASSEN---->
+								}
+
+								function currentSlide3(n) {<!---ANPASSEN---->
+								  showSlides3(slideIndex = n);<!---ANPASSEN---->
+								}
+
+								function showSlides3(n) {<!---ANPASSEN---->
+								  var i;
+								  var slides = document.getElementsByClassName("breitband_thema");<!---ANPASSEN---->
+								  var dots = document.getElementsByClassName("dot3");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+					
+				  </tr>
+				  <!---------------------------------------Breitbandausbau Ausbaugebiet Suchen-------------------------------------------------------------->	
+				  <tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>2. Breitbandausbau Ausbaugebiet Suchen</h3>
+																						<p>
+																									2.1<br> Um sich ein Ausbaugebiet anzeigen zulassen, wählen sie im linken Menübereich den Reiter <b>"Themensuche"</b> und dort den Unterpunkt <b>"Ausbaugebiete_bfp"</b>. Es öffnet sich die Layersuche in der Sie  Sucheinstellungen vornehmen können.<br> <br>
+																									
+																									2.2<br>
+																									Wählen Sie nun einen <b>"Operator" und einen "Wert"</b> nachdem Sie suchen wollen<br><br>
+																									
+																									2.3<br>
+																									Klicken sie anschließend auf "Suchen"<br>
+																									Zur nicht exakten Suche verwenden sie den Operator <b>"ähnlich"</b> und den Platzhalter <b>%</b>.<br>
+																									Für Datumsangaben verwenden sie bitte das Format TT.MM.JJJJ.<br><br>
+																									
+																									2.4<br>
+																									Stellen Sie sicher das die <b>"Spaltenweise Darstellung"</b> aktiviert ist (wie im Bsp. dargestellt)
+																									Ihr Suchergebnis wird in Tabellenform angezeigt.<br>
+																									Sie können Sich Ihr suchergebnis nun auch in der Karte anzeigen lassen. Wählen Sie hierfür das gewünschte Gebiet aus indem Sie es mit einen Häkchen aktivieren und anschießend auf den Button<br> <b>"in der Karte anzeigen lassen"</b> klicken <img src="bilder/inderkarteanzeigen.png " style="width:10%"> 
+																									
+																						</p> 
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="breitband_ausbaugebiet_suchen fade">
+								  <div class="numbertext">1 / 4</div>
+									<div class="screen">
+									<img src="bilder/breitband2.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+								
+								<div class="breitband_ausbaugebiet_suchen fade">
+								  <div class="numbertext">2 / 4</div>
+									<div class="screen">
+									<img src="bilder/breitband3.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+								
+								<div class="breitband_ausbaugebiet_suchen fade">
+								  <div class="numbertext">3 / 4</div>
+									<div class="screen">
+									<img src="bilder/breitband4.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+																
+								<div class="breitband_ausbaugebiet_suchen fade">
+								  <div class="numbertext">3 / 4</div>
+									<div class="screen">
+									<img src="bilder/breitband5.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+			
+								<a class="prev" onclick="plusSlides4(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides4(1)">&#10095;</a>
+
+								</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot2" onclick="currentSlide4(1)"></span> 
+								  <span class="dot2" onclick="currentSlide4(2)"></span>
+								  <span class="dot2" onclick="currentSlide4(3)"></span>
+								  <span class="dot2" onclick="currentSlide4(4)"></span>
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides4(slideIndex);
+
+								function plusSlides4(n) {
+								  showSlides4(slideIndex += n);
+								}
+
+								function currentSlide4(n) {
+								  showSlides4(slideIndex = n);
+								}
+
+								function showSlides4(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("breitband_ausbaugebiet_suchen");
+								  var dots = document.getElementsByClassName("dot2");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+					
+				  </tr>
+				  				  <!---------------------------------------Breitbandausbau Statistik-------------------------------------------------------------->	
+				  <tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>3. Breitbandausbau Statistik</h3>
+																						<p>
+																									3.1<br> Um sich die Statistik eines Ausbaugebietes anzeigen zu lassen wählen Sie im linken Menübereich den Reiter <b>"Themensuche"</b> und dort den Unterpunkt <b>"Ausbaugebiete_bfp"</b>. Es öffnet sich die Layersuche. <br> <br>
+																									
+																									3.2<br>
+																									Um sich die Statistk eines bestimmten Amtes anzeigen zulassen, klicken Sie nun auf <b>"Suche Räumlich Eingrenzen..."</b><br><br>
+																									
+																									3.3<br>
+																									Es öffnet sich ein Kartenfenster in dem Sie nun das entsprechende Gebiet eingrenzen können. Dafür stellen Sie bei "Geometrie übernehmen von" den Layer <b>"Amtsbereiche MV"</b> ein. Danach klicken Sie in der Werkzeugleiste auf den Button <b>"vorhandende Geometrie hinzufügen"</b>. 
+																									Wählen Sie nun, mit einem Klick in der Karte, den gewünschten Amtsbereich aus.<br><br>
+																									
+																									
+																									3.4<br>
+																									Durch das Scrollen nach Unten erreichen Sie den "Suchen" Button.
+																									Bevor Sie auf <b>"Suchen"</b> klicken, tragen Sie im darüber liegendem Feld <b>"Anzahl Treffer anzeigen:"</b> eine 9999 ein. (Die Suche kann einen Moment in Anspruch nehemn)<br><br> 
+																									
+																									3.5<br>
+																									Stellen Sie sicher das die <b>"Spaltenweise Darstellung"</b> aktiviert ist (wie im Bsp. dargestellt)<br>
+																									Scrollen Sie bis ans ende der Tabelle und klicken SIe auf das Summenzeichen <img src="bilder/summe.png" style="width:8%"><br><br>
+																									
+																									3.6<br>
+																									Nun werden Ihnen die Summen, Durchschnittswerte, Mindest- und die 
+																									Höchstwerte der jeweiligen Spalte berechnet.
+																									
+																									
+																									
+																									
+																									
+																								
+																									
+																						</p> 
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="breitband_statistik fade">
+								  <div class="numbertext">1 / 5</div>
+									<div class="screen">
+									<img src="bilder/breitband10.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+								
+								<div class="breitband_statistik fade">
+								  <div class="numbertext">2 / 5</div>
+									<div class="screen">
+									<img src="bilder/breitband6.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+								
+								<div class="breitband_statistik fade">
+								  <div class="numbertext">3 / 5</div>
+									<div class="screen">
+									<img src="bilder/breitband7.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+																
+								<div class="breitband_statistik fade">
+								  <div class="numbertext">4 / 5</div>
+									<div class="screen">
+									<img src="bilder/breitband8.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+								
+								<div class="breitband_statistik fade">
+								  <div class="numbertext">5 / 5</div>
+									<div class="screen">
+									<img src="bilder/breitband9.png" style="width:100%">
+									</div>
+								  <div class="text">Caption Text</div>
+								</div>
+			
+								<a class="prev" onclick="plusSlides5(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides5(1)">&#10095;</a>
+
+								</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot4" onclick="currentSlide5(1)"></span> 
+								  <span class="dot4" onclick="currentSlide5(2)"></span>
+								  <span class="dot4" onclick="currentSlide5(3)"></span>
+								  <span class="dot4" onclick="currentSlide5(4)"></span>
+								  <span class="dot4" onclick="currentSlide5(4)"></span>
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides5(slideIndex);
+
+								function plusSlides5(n) {
+								  showSlides5(slideIndex += n);
+								}
+
+								function currentSlide5(n) {
+								  showSlides5(slideIndex = n);
+								}
+
+								function showSlides5(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("breitband_statistik");
+								  var dots = document.getElementsByClassName("dot4");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+					
+				  </tr>
+				</table>
+	</body>
+		<footer>
+			<table class="tabellen_footer" border=0>
+<!--LK Logo-->
+							<td class="unten">
+								<a href="https://www.lk-mecklenburgische-seenplatte.de/" target="blank"><img class="natuerlich" src="landkreis_logoneu.png" alt="LK MSE Logo"></a>
+							</td>
+<!--Adresse-->
+							<td class="kontakt">
+								<h2>Adresse</h2>
+									<p class="p_timo">
+									Regionalstandort Neubrandenburg<br>
+									Kataster- und Vermessungsamt<br>
+									Platanenstraße 43<br>
+									17033 Neubrandenburg<br>
+									</p>
+							</td>
+<!--Button zu kvwmap-->
+							<td class="footer_button">
+								<a href="https://geoport-lk-mse.de/kvwmap/index.php" target="blanks"><div class="kvwmap">Ausprobieren auf kvwmap</div></a>
+							</td>
+<!--Impressum-->
+							<td class="impressum">
+								<h2>Impressum</h2>
+									<p class="p_timo">
+									©2018 Norman Budnick<br>
+									©2018 Timo Schewe<br>
+									Geomatiker 2.Lehrjahr<br>
+									KVA MSE<br>
+									</p>
+							</td>
+			</table>
+		</footer>
+</html>	

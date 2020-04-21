@@ -1,0 +1,1380 @@
+SYMBOLSET
+
+SYMBOL        #1
+  NAME "Wohngebaeude"
+  TYPE PIXMAP
+  IMAGE "wohngebaeude_allgemein.png"
+  TRANSPARENT 0
+END
+
+SYMBOL        #2
+  NAME "Wirtschaftsgebaeude"
+  TYPE PIXMAP
+  IMAGE "wirtschaftsgebaeude.png"
+  TRANSPARENT 0
+END
+
+SYMBOL        #3
+  NAME "Gruenanlage"
+  TYPE PIXMAP
+  IMAGE "gruenanlage.png"
+  TRANSPARENT 1
+END
+
+SYMBOL        #4
+  NAME "(Klein-)Garten"
+  TYPE PIXMAP
+  IMAGE "garten.png"
+  TRANSPARENT 1
+END
+
+SYMBOL        #5
+  NAME "Gruenland_Bild"
+  TYPE PIXMAP
+  IMAGE "gruenland.png"
+  TRANSPARENT 1
+END
+
+SYMBOL        #6
+  NAME "Gartenland (allgemein)"
+  TYPE PIXMAP
+  IMAGE "gartenland.png"
+  TRANSPARENT 1
+END
+
+SYMBOL        #7
+  NAME "Nadelwald_Bild"
+  TYPE PIXMAP
+  IMAGE "nadelwald.png"
+  TRANSPARENT 1
+END
+
+SYMBOL        #8
+  NAME "Mischwald_Bild"
+  TYPE PIXMAP
+  IMAGE "mischwald.png"
+  TRANSPARENT 1
+END
+
+SYMBOL        #9
+  NAME "Linie"
+  TYPE ELLIPSE
+  POINTS
+    1 1
+  END
+END
+
+SYMBOL #10
+  NAME "Flurgrenze"
+  TYPE ELLIPSE
+  POINTS 1 1 END
+ # FILLED true
+  STYLE 1 4 1 4 1 4 1 4 4 END
+END
+
+SYMBOL #11
+  NAME "B-Plan-Grenze"
+  TYPE ELLIPSE
+  POINTS 1 1 END
+  FILLED true
+  STYLE 5 10 5 END
+END
+
+SYMBOL #12
+  NAME "Gemarkungsgrenze"
+  TYPE ELLIPSE
+  POINTS 1 1 END
+  STYLE 1 4 1 4 14 4 END
+END
+
+SYMBOL #13
+  NAME "Gemeindegrenze"
+  TYPE ELLIPSE
+  POINTS 1 1 END
+  STYLE 1 4 14 4 END
+END
+
+SYMBOL        #14
+  NAME "Denkmal_Bild"
+  TYPE PIXMAP
+  IMAGE "denkmal.png"
+  TRANSPARENT 255
+END
+
+SYMBOL #15
+  NAME "Alt-Liegenschaft"
+  TYPE VECTOR
+  POINTS
+    1 12
+    1 1
+    4 3
+    1 6
+    1 12
+  END
+END
+
+SYMBOL #16
+  NAME "Naturdenkmal"
+  TYPE VECTOR
+  POINTS
+    1 10
+    5 10
+    1 10
+  END
+  POINTS
+    9 10
+    13 10
+    9 10
+  END
+  POINTS
+    3 10
+    7 5
+    3 10
+  END
+  POINTS
+    11 10
+    7 5
+    11 10
+  END
+  POINTS
+    7 5
+    3 3
+    7 1
+    11 3
+    7 5
+  END
+  POINTS
+    1 1
+    3 1
+    1 1
+  END
+END
+
+
+SYMBOL        #17
+  NAME "Altlastenbilder"
+  TYPE PIXMAP
+  IMAGE "kamera.png"
+  TRANSPARENT 255
+END
+
+SYMBOL    #18
+  NAME "Telephon"
+  TYPE VECTOR
+  POINTS
+    1 0
+    2 0
+    2 2
+    1 2
+    1 4
+    2 4
+    2 6
+    1 6
+    0 5
+    0 1
+    1 0
+  END
+END
+
+SYMBOL   #19
+  NAME "diagonal-auf"
+  TYPE PIXMAP
+  IMAGE "diagonal-auf.png"
+  TRANSPARENT 1
+END
+
+Symbol #20
+Name 'star'
+Type VECTOR
+Filled TRUE
+Points
+0 .375
+.35 .375
+.5 0
+.65 .375
+1 .375
+.75 .625
+.875 1
+.5 .75
+.125 1
+.25 .625
+END
+END 
+
+Symbol #21
+Name 'triangle'
+Type VECTOR
+Filled TRUE
+Points
+0 1
+.5 0
+1 1
+0 1
+END
+END 
+
+Symbol #22
+Name 'square'
+Type VECTOR
+Filled TRUE
+Points
+0 1
+0 0
+1 0
+1 1
+0 1
+END
+END 
+
+Symbol #23
+Name 'plus'
+Type VECTOR
+Points
+.5 0
+.5 1
+-99 -99
+0 .5
+1 .5
+END
+END 
+
+Symbol #24
+Name 'cross'
+Type VECTOR
+Points
+0 0
+1 1
+-99 -99
+0 1
+1 0
+END
+END
+
+Symbol #25
+Name 'circle'
+Type ELLIPSE
+Filled TRUE
+Points
+1 1
+END
+END 
+
+SYMBOL #26
+  NAME "punkt"
+  TYPE ELLIPSE
+  Filled True
+  POINTS
+    1 1
+  END
+END 
+
+Symbol #27
+Type VECTOR
+TRANSPARENT 0
+Points
+1 0
+1 1
+END
+END 
+
+Symbol #28
+Type VECTOR
+TRANSPARENT 0
+Points
+0 0
+1 1
+END
+END 
+
+Symbol #29
+Type VECTOR
+TRANSPARENT 0
+Points
+0 1
+1 0
+END
+END 
+
+Symbol #30
+Type VECTOR
+Points
+0 1
+1 0
+-99 -99
+0 0
+1 1
+END
+END 
+
+Symbol #31
+Type ELLIPSE
+Filled TRUE
+Points
+1 1
+END
+END 
+
+SYMBOL #32
+	NAME "filledcircle"
+	TYPE ELLIPSE
+	POINTS
+	  1 1
+	END
+	FILLED TRUE
+END 
+
+SYMBOL #33
+	Type ELLIPSE
+	POINTS
+		1 1
+	END
+	FILLED TRUE
+	STYLE	10 0 10 END
+END
+
+SYMBOL #34
+  NAME 'glseitstehdreieck'
+  TYPE VECTOR
+  POINTS
+    0 2.5
+    2 -1
+    4 2.5
+    0 2.5
+  END
+  FILLED TRUE
+END
+
+SYMBOL #35 Auf dem Kopf stehendes gleichseitiges Dreieck
+  NAME 'glseitkopfdreieck'
+  TYPE VECTOR
+  POINTS
+    0 1
+    2 4.5
+    4 1
+    0 1
+  END
+  FILLED TRUE
+END
+
+SYMBOL #36
+  NAME 'documentensymbol'
+  TYPE VECTOR
+  POINTS
+    0 4
+    3.5 4
+    3.5 1
+    2.5 0
+    2.5 1
+    3.5 1
+    2.5 0
+    0   0
+  END
+  FILLED TRUE
+END
+
+SYMBOL #37
+  NAME 'zugehoerigkeitspfeil'
+  TYPE VECTOR
+  POINTS
+    5  5
+   10  9
+    9  9
+    9 10
+    5  5
+  END
+  FILLED TRUE
+END
+
+SYMBOL # 38
+	NAME "Text"
+	TYPE TRUETYPE
+	FONT verdana
+	FILLED true
+	ANTIALIAS true
+	CHARACTER "&#65;"
+END
+
+######
+
+SYMBOL #100
+  NAME "Haus"
+  TYPE VECTOR
+  POINTS
+  0 .4
+  .5 0
+  1 .4
+  .8 .4
+  .8 1
+  .2 1
+  .2 .4
+  END
+  FILLED TRUE
+END
+
+SYMBOL #101
+  NAME "Gefluegel"
+  TYPE PIXMAP
+  IMAGE "gefluegel.gif"
+  TRANSPARENT 1
+END
+
+SYMBOL #102
+  NAME "tls"
+  TYPE VECTOR
+  POINTS
+  0 0
+  1 0
+  1 .5
+  .6 .5
+  .6 1.5
+  .4 1.5
+  .4 .5
+  0 .5
+  END
+  FILLED TRUE
+END
+
+SYMBOL #112
+  NAME "Stall"
+  TYPE VECTOR
+  POINTS
+  0 .4
+  .5 0
+  1 .4
+  .9 .4
+  .7 1
+  .3 1
+  .1 .4
+  0 .4
+  END
+  FILLED TRUE
+END
+
+  
+
+SYMBOL #103
+  NAME "Baudenkmal"
+  TYPE PIXMAP
+  IMAGE "Baudenkmal.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #104
+  NAME "Eule"
+  TYPE PIXMAP
+  IMAGE "eule.gif"
+  TRANSPARENT 45
+END
+
+SYMBOL #105
+  NAME "yellowpoint"
+  TYPE PIXMAP
+  IMAGE "yellow_point.gif"
+  TRANSPARENT 255
+END
+SYMBOL #106
+  NAME "wh"
+  TYPE PIXMAP
+  IMAGE "wertstoffhof.gif"
+  TRANSPARENT 34
+END
+SYMBOL #107
+  NAME "sfmobil"
+  TYPE PIXMAP
+  IMAGE "sfmobil.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #112
+  NAME "busstop"
+  TYPE PIXMAP
+  IMAGE "busstop.gif"
+  TRANSPARENT 0
+END
+
+SYMBOL #108
+  NAME "swim"
+  TYPE PIXMAP
+  IMAGE "swim.png"
+  TRANSPARENT 255
+END
+
+SYMBOL #109
+  NAME "kita"
+  TYPE PIXMAP
+  IMAGE "kita.gif"
+  TRANSPARENT 250
+END
+
+SYMBOL #110
+  NAME "schule"
+  TYPE PIXMAP
+  IMAGE "schule.png"
+  TRANSPARENT 255
+END
+
+SYMBOL #111
+  NAME "senioren_wh"
+  TYPE PIXMAP
+  IMAGE "senioren.gif"
+  TRANSPARENT 254
+END
+
+SYMBOL #113
+  NAME "tagespflege"
+  TYPE PIXMAP
+  IMAGE "tp.gif"
+  TRANSPARENT 5
+END
+
+SYMBOL #202
+  NAME "LSG"
+  TYPE ELLIPSE
+  POINTS 1 1 END
+  FILLED TRUE
+  STYLE 5 10 5 END
+END
+
+SYMBOL #203
+  NAME "FFH"
+  TYPE ELLIPSE
+  POINTS 1 1 END
+  FILLED TRUE
+  STYLE 5 20 5 END
+END
+
+SYMBOL #204
+  NAME "NSG"
+  TYPE ELLIPSE
+  POINTS 1 1 END
+  FILLED TRUE
+  STYLE 20 9 20 END
+END
+
+SYMBOL #205
+  NAME "Nutzungsartgrenze"
+  TYPE ELLIPSE
+  POINTS 1 1 END
+  FILLED TRUE
+  STYLE 8 4 8 END
+END
+
+SYMBOL #206
+  NAME "WSG-Grenze"
+  TYPE ELLIPSE
+  POINTS 1 1 END
+  FILLED true
+  STYLE 5 10 5 END
+END
+
+SYMBOL #207
+  NAME "biogas"
+  TYPE PIXMAP
+  IMAGE "biogas.png"
+  TRANSPARENT 0
+END
+
+SYMBOL #208
+  NAME "hydrant"
+  TYPE PIXMAP
+  IMAGE "hydrant.png"
+  TRANSPARENT 0
+END
+
+SYMBOL #209
+  NAME "arzt"
+  TYPE PIXMAP
+  IMAGE "arzt.png"
+  TRANSPARENT 0
+END
+
+SYMBOL #210
+  NAME "kirche"
+  TYPE PIXMAP
+  IMAGE "kirche.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #211
+  NAME "sendemast"
+  TYPE PIXMAP
+  IMAGE "sendemast.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #212
+  NAME "umspannwerk"
+  TYPE PIXMAP
+  IMAGE "umspannwerk.gif"
+  TRANSPARENT 0
+END
+
+SYMBOL #212
+  NAME "lotse"
+  TYPE PIXMAP
+  IMAGE "lotse.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #213
+  NAME "wka"
+  TYPE PIXMAP
+  IMAGE "wka.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #214
+  NAME "marina"
+  TYPE PIXMAP
+  IMAGE "marina.png"
+  TRANSPARENT 100
+END
+
+SYMBOL #215
+  NAME "shydrant"
+  TYPE PIXMAP
+  IMAGE "shydrant.png"
+  TRANSPARENT 0
+END
+
+SYMBOL #216
+  NAME "verbot"
+  TYPE PIXMAP
+  IMAGE "verbot.png"
+  TRANSPARENT 0
+END
+
+SYMBOL #217
+  NAME "hinweis"
+  TYPE PIXMAP
+  IMAGE "hinweis.png"
+  TRANSPARENT 255
+END
+
+SYMBOL #218
+  NAME "tonne"
+  TYPE PIXMAP
+  IMAGE "tonne.png"
+  TRANSPARENT 0
+END
+
+SYMBOL #219
+  NAME "klaeranlage"
+  TYPE PIXMAP
+  IMAGE "klaeranlage.png"
+  TRANSPARENT 0
+END
+
+SYMBOL #220
+  NAME "schule_2"
+  TYPE PIXMAP
+  IMAGE "buch.gif"
+  TRANSPARENT 0
+END
+
+SYMBOL #221
+  NAME "bildungstraeger"
+  TYPE PIXMAP
+  IMAGE "bildungstraeger.gif"
+  TRANSPARENT 0
+END
+
+SYMBOL #222
+  NAME "museum"
+  TYPE PIXMAP
+  IMAGE "museum.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #223
+  NAME "bibo"
+  TYPE PIXMAP
+  IMAGE "bibo.gif"
+  TRANSPARENT 0
+END
+
+SYMBOL #223
+  NAME "park"
+  TYPE PIXMAP
+  IMAGE "park_2.gif"
+  TRANSPARENT 0
+END
+
+SYMBOL #224
+  NAME "hand"
+  TYPE PIXMAP
+  IMAGE "hand.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #225
+  NAME "frage"
+  TYPE PIXMAP
+  IMAGE "frage.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #226
+  NAME "bank"
+  TYPE PIXMAP
+  IMAGE "bank.gif"
+  TRANSPARENT 31
+END
+
+SYMBOL #227
+  NAME "tank"
+  TYPE PIXMAP
+  IMAGE "tank.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #228
+  NAME "rtw"
+  TYPE PIXMAP
+  IMAGE "rtw.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #229
+  NAME "teich"
+  TYPE PIXMAP
+  IMAGE "loeschwasserteich.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #230
+  NAME "saugstelle"
+  TYPE PIXMAP
+  IMAGE "saugstelle.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #231
+  NAME "brunnen"
+  TYPE PIXMAP
+  IMAGE "loeschwasserbrunnen.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #232
+  NAME "uhydrant"
+  TYPE PIXMAP
+  IMAGE "uhydrant.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #233
+  NAME "uehydrant"
+  TYPE PIXMAP
+  IMAGE "uehydrant.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #234
+  NAME "zisterne"
+  TYPE PIXMAP
+  IMAGE "zisterne.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #235
+  NAME "entnahmestelle"
+  TYPE PIXMAP
+  IMAGE "entnahmestelle.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #236
+  NAME "touri"
+  TYPE PIXMAP
+  IMAGE "touri.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #237
+  NAME "gewerbegebiet"
+  TYPE PIXMAP
+  IMAGE "gewerbe.gif"
+  TRANSPARENT 100
+END
+
+SYMBOL #238
+  NAME "verein"
+  TYPE PIXMAP
+  IMAGE "verein.gif"
+  TRANSPARENT 0
+END
+
+SYMBOL #239
+  NAME "schwimmbad"
+  TYPE PIXMAP
+  IMAGE "schwimmbad.gif"
+  TRANSPARENT 12
+END
+
+SYMBOL #240
+  NAME "apotheke"
+  TYPE PIXMAP
+  IMAGE "apotheke.gif"
+  TRANSPARENT 200
+END
+
+SYMBOL #241
+  NAME "kh"
+  TYPE PIXMAP
+  IMAGE "kh.gif"
+  TRANSPARENT 200
+END
+
+SYMBOL #242
+  NAME "reha"
+  TYPE PIXMAP
+  IMAGE "reha.gif"
+  TRANSPARENT 200
+END
+
+SYMBOL #243
+  NAME "polizei"
+  TYPE PIXMAP
+  IMAGE "polizei.gif"
+  TRANSPARENT 200
+END
+
+SYMBOL #244
+  NAME "stadtwerke"
+  TYPE PIXMAP
+  IMAGE "stadtwerke.gif"
+  TRANSPARENT 200
+END
+
+SYMBOL #245
+  NAME "einkauf"
+  TYPE PIXMAP
+  IMAGE "einkauf.gif"
+  TRANSPARENT 200
+END
+
+SYMBOL #246
+  NAME "seeadler"
+  TYPE PIXMAP
+  IMAGE "seeadler.gif"
+  TRANSPARENT 200
+END
+
+SYMBOL #247
+  NAME "amtssitz"
+  TYPE PIXMAP
+  IMAGE "amt.gif"
+  TRANSPARENT 254
+END
+
+SYMBOL #248
+  NAME "tank_aktiv"
+  TYPE PIXMAP
+  IMAGE "tank_aktiv.gif"
+  TRANSPARENT 254
+END
+
+SYMBOL #249
+  NAME "tank_hist"
+  TYPE PIXMAP
+  IMAGE "tank_hist.gif"
+  TRANSPARENT 254
+END
+
+SYMBOL #250
+  NAME "taxi"
+  TYPE PIXMAP
+  IMAGE "taxi.gif"
+  TRANSPARENT 15
+END
+
+SYMBOL #251
+  NAME "feuerwehr"
+  TYPE PIXMAP
+  IMAGE "feuerwehr.gif"
+  TRANSPARENT 15
+END
+
+SYMBOL #252
+  NAME "hort"
+  TYPE PIXMAP
+  IMAGE "hort.gif"
+  TRANSPARENT 15
+END
+
+SYMBOL #253
+  NAME "sportplatz"
+  TYPE PIXMAP
+  IMAGE "sportplatz.gif"
+  TRANSPARENT 15
+END
+
+SYMBOL #254
+  NAME "kreissitz"
+  TYPE PIXMAP
+  IMAGE "kreissitz.png"
+  TRANSPARENT 0
+END
+
+SYMBOL #255
+  NAME "arbeitsamt"
+  TYPE PIXMAP
+  IMAGE "arbeitsamt.gif"
+  TRANSPARENT 10
+END
+
+SYMBOL #256
+  NAME "biomasseanlage"
+  TYPE PIXMAP
+  IMAGE "biomasseanlage.png"
+  TRANSPARENT 10
+END
+
+SYMBOL #257
+  NAME "biokraftstoffanlage"
+  TYPE PIXMAP
+  IMAGE "biokraftstoff.png"
+  TRANSPARENT 10
+END
+
+SYMBOL #258
+  NAME "klaergasanlage"
+  TYPE PIXMAP
+  IMAGE "klaergasanlage.png"
+  TRANSPARENT 10
+END
+
+SYMBOL #258
+  NAME "deponieanlage"
+  TYPE PIXMAP
+  IMAGE "deponieanlage.png"
+  TRANSPARENT 10
+END
+
+SYMBOL #259
+  NAME "solar"
+  TYPE PIXMAP
+  IMAGE "solar.gif"
+  TRANSPARENT 10
+END
+
+SYMBOL #260
+  NAME "ortsschild"
+  TYPE PIXMAP
+  IMAGE "ortsschild.png"
+  TRANSPARENT 131
+END
+
+SYMBOL #261
+  NAME "grundschule"
+  TYPE PIXMAP
+  IMAGE "grundschule.gif"
+  TRANSPARENT 88
+END
+
+SYMBOL #262
+  NAME "foerderschule"
+  TYPE PIXMAP
+  IMAGE "foerderschule.gif"
+  TRANSPARENT 3
+END
+
+SYMBOL #263
+  NAME "gymnasium"
+  TYPE PIXMAP
+  IMAGE "gymnasium.gif"
+  TRANSPARENT 120
+END
+
+SYMBOL #264
+  NAME "regionalschule"
+  TYPE PIXMAP
+  IMAGE "regionalschule.gif"
+  TRANSPARENT 58
+END
+
+SYMBOL #265
+  NAME "kvhs"
+  TYPE PIXMAP
+  IMAGE "kvhs.gif"
+  TRANSPARENT 116
+END
+
+SYMBOL #266
+  NAME "grundschule_p"
+  TYPE PIXMAP
+  IMAGE "grundschule_p.gif"
+  TRANSPARENT 108
+END
+
+SYMBOL #267
+  NAME "gymnasium_p"
+  TYPE PIXMAP
+  IMAGE "gymnasium_p.gif"
+  TRANSPARENT 86
+END
+
+SYMBOL #268
+  NAME "igs"
+  TYPE PIXMAP
+  IMAGE "igs.gif"
+  TRANSPARENT 111
+END
+
+SYMBOL #269
+  NAME "kgs"
+  TYPE PIXMAP
+  IMAGE "kgs.gif"
+  TRANSPARENT 133
+END
+
+SYMBOL #270
+  NAME "berufsschule"
+  TYPE PIXMAP
+  IMAGE "berufsschule.gif"
+  TRANSPARENT 61
+END
+
+SYMBOL #271
+  NAME "musikschule"
+  TYPE PIXMAP
+  IMAGE "musikschule.gif"
+  TRANSPARENT 50
+END
+
+SYMBOL #272
+  NAME "ndm"
+  TYPE PIXMAP
+  IMAGE "naturdenkmal2.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #273
+  NAME "smv"
+  TYPE PIXMAP
+  IMAGE "smv.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #274
+  NAME "sba"
+  TYPE PIXMAP
+  IMAGE "sba.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #275
+  NAME "finanzamt"
+  TYPE PIXMAP
+  IMAGE "finanzamt.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #276
+  NAME "jobcenter"
+  TYPE PIXMAP
+  IMAGE "jobcenter.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #277
+  NAME "notare"
+  TYPE PIXMAP
+  IMAGE "notar.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #278
+  NAME "landgericht"
+  TYPE PIXMAP
+  IMAGE "landgericht.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #279
+  NAME "amtsgericht"
+  TYPE PIXMAP
+  IMAGE "amtsgericht.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #280
+  NAME "staatsanwaltschaft"
+  TYPE PIXMAP
+  IMAGE "staatsanwaltschaft.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #281
+  NAME "arbeitsgericht"
+  TYPE PIXMAP
+  IMAGE "arbeitsgericht.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #282
+  NAME "sozialgericht"
+  TYPE PIXMAP
+  IMAGE "sozialgericht.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #283
+  NAME "landessozialgericht"
+  TYPE PIXMAP
+  IMAGE "landessozialgericht.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #284
+  NAME "feuerwehr_sch"
+  TYPE PIXMAP
+  IMAGE "feuerwehr_sch.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #285
+  NAME "feuerwehr_st"
+  TYPE PIXMAP
+  IMAGE "feuerwehr_st.gif"
+  TRANSPARENT 235
+END
+
+SYMBOL #286
+  NAME "gallerie"
+  TYPE PIXMAP
+  IMAGE "gallerie.gif"
+  TRANSPARENT 31
+END
+
+SYMBOL #287
+  NAME "siedlung"
+  TYPE PIXMAP
+  IMAGE "siedlung.png"
+  TRANSPARENT 31
+END
+
+SYMBOL #288
+  NAME "wbv"
+  TYPE PIXMAP
+  IMAGE "wbv.gif"
+  TRANSPARENT 31
+END
+
+SYMBOL #289
+  NAME "haus_2"
+  TYPE PIXMAP
+  IMAGE "haus.gif"
+  TRANSPARENT 31
+END
+
+SYMBOL #290
+  NAME "wachturm"
+  TYPE PIXMAP
+  IMAGE "wachturm.gif"
+  TRANSPARENT 7
+END
+
+SYMBOL #291
+  NAME "wbek_brunnen"
+  TYPE PIXMAP
+  IMAGE "brunnen.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #292
+  NAME "wbek_hydrant"
+  TYPE PIXMAP
+  IMAGE "wbek_hydrant.gif"
+  TRANSPARENT 1
+END
+
+SYMBOL #293
+  NAME "wbek_lt"
+  TYPE PIXMAP
+  IMAGE "wbek_lt.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #294
+  NAME "wbek_sfg"
+  TYPE PIXMAP
+  IMAGE "wbek_sfg.gif"
+  TRANSPARENT 1
+END
+
+SYMBOL #295
+  NAME "wbek_ssg"
+  TYPE PIXMAP
+  IMAGE "wbek_ssg.gif"
+  TRANSPARENT 1
+END
+
+SYMBOL #296
+  NAME "wbek_wfb"
+  TYPE PIXMAP
+  IMAGE "wbek_wfb.gif"
+  TRANSPARENT 14
+END
+
+SYMBOL #297
+  NAME "wbek_wab"
+  TYPE PIXMAP
+  IMAGE "wbek_wab.gif"
+  TRANSPARENT 19
+END
+
+SYMBOL #298
+  NAME "wbek_ww"
+  TYPE PIXMAP
+  IMAGE "wbek_ww.gif"
+  TRANSPARENT 14
+END
+
+SYMBOL #299
+  NAME "wbek_br40"
+  TYPE PIXMAP
+  IMAGE "wbek_br40.gif"
+  TRANSPARENT 1
+END
+
+SYMBOL #300
+  NAME "wbek_brue40"
+  TYPE PIXMAP
+  IMAGE "wbek_brue40.gif"
+  TRANSPARENT 1
+END
+
+SYMBOL #301
+  NAME "wbek_hlp100"
+  TYPE PIXMAP
+  IMAGE "wbek_hlp100.gif"
+  TRANSPARENT 17
+END
+
+SYMBOL #302
+  NAME "wbek_hlp50"
+  TYPE PIXMAP
+  IMAGE "wbek_hlp50.gif"
+  TRANSPARENT 14
+END
+
+SYMBOL #303
+  NAME "wbek_lp"
+  TYPE PIXMAP
+  IMAGE "wbek_lp.gif"
+  TRANSPARENT 14
+END
+
+SYMBOL #304
+  NAME "wbek_sp"
+  TYPE PIXMAP
+  IMAGE "wbek_sp.gif"
+  TRANSPARENT 14
+END
+
+SYMBOL #305
+  NAME "wbek_w"
+  TYPE PIXMAP
+  IMAGE "wbek_w.gif"
+  TRANSPARENT 14
+END
+
+SYMBOL #306
+  NAME "wbek_wp"
+  TYPE PIXMAP
+  IMAGE "wbek_wp.gif"
+  TRANSPARENT 14
+END
+
+SYMBOL #307
+  NAME "wbek_zp"
+  TYPE PIXMAP
+  IMAGE "wbek_zp.gif"
+  TRANSPARENT 14
+END
+
+SYMBOL #308
+  NAME "wbek_npa"
+  TYPE PIXMAP
+  IMAGE "wbek_npa.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #309
+  NAME "wbek_rf"
+  TYPE PIXMAP
+  IMAGE "wbek_rf.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #310
+  NAME "wbek_bfa"
+  TYPE PIXMAP
+  IMAGE "wbek_bfa.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #311
+  NAME "wbek_fa"
+  TYPE PIXMAP
+  IMAGE "wbek_fa.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #312
+  NAME "wbek_f"
+  TYPE PIXMAP
+  IMAGE "wbek_f.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #313
+  NAME "wbek_bt"
+  TYPE PIXMAP
+  IMAGE "wbek_bt.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #314
+  NAME "wbek_bts"
+  TYPE PIXMAP
+  IMAGE "wbek_bts.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #315
+  NAME "wbek_gd"
+  TYPE PIXMAP
+  IMAGE "wbek_gd.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #316
+  NAME "wbek_fpf"
+  TYPE PIXMAP
+  IMAGE "wbek_fpf.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #317
+  NAME "wbek_fzu"
+  TYPE PIXMAP
+  IMAGE "wbek_fzu.gif"
+  TRANSPARENT 2
+END
+
+SYMBOL #318
+  NAME "gruener_punkt"
+  TYPE PIXMAP
+  IMAGE "gruener_punkt.gif"
+  TRANSPARENT 255
+END
+
+SYMBOL #319
+  NAME "schadstoff"
+  TYPE PIXMAP
+  IMAGE "schadstoff.gif"
+  TRANSPARENT 162
+END

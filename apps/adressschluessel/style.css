@@ -1,0 +1,282 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #f1f1f1;
+}
+
+#regForm {
+  background-color: #ffffff;
+  margin: 10px auto;
+  font-family: Raleway;
+  padding: 40px;
+  width: 50%;
+  min-width: 0px;
+  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.15);
+}
+
+h1 {
+  text-align: center;  
+}
+label {
+    width: 150px;
+    text-align:left;
+	margin-top:15px;
+    float: left;
+}
+select {
+  padding: 10px;
+  width: 100%;
+  font-size: 17px;
+  text-align:left;
+  font-family: Raleway;
+  border: 1px solid #aaaaaa;
+  display: inline-block;
+}
+
+/* Mark input boxes that gets an error on validation: */
+input.invalid {
+  background-color: #ffdddd;
+}
+
+/* Hide all steps by default: */
+/*.tab {
+  display: none;
+}*/
+
+button {
+	background-color: #006085;
+	color: #ffffff;
+	border: none;
+	padding: 10px 20px;
+	font-size: 17px;
+	font-family: Raleway;
+	cursor: pointer;
+	font-weight:bolder;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+#prevBtn {
+  background-color: #75b726;
+}
+
+#prevBtn_disabled{
+  background-color: #75b726;
+  opacity:0.6;
+}
+
+#nextBtn_pruef{
+  background-color: #d22d2d;
+}
+
+#reset {
+  background-color: #333 ;
+}
+
+/* Make circles that indicate the steps of the form: */
+.step {
+  height: 40px;
+  width: 40px;
+  margin: 0 30px;
+  background-color: #bbbbbb;
+  border: none;  
+  border-radius: 50%;
+  display: inline-block;
+  opacity: 0.5;
+  padding-top:10px;
+  text-align:center;
+  font-size: 18px;
+  color:white;
+}
+
+.step.active {
+  opacity: 1;
+  font-weight: bold;
+  background-color:#75b726;
+}
+
+/* Mark the steps that are finished and valid: */
+.step.finish {
+  background-color: #75b726;
+}
+
+.table{
+	background-color:white;
+	box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.15);
+}
+
+.kopf{
+	position:relative;
+	margin-top:-20px;
+	left:0px;
+    margin-left:0px;
+	height:5px;
+	width:100%;
+	background-color:#75b726;
+	display:block;
+	/*box-shadow: 6px 6px 30px rgba(1,1,1,0.4);*/
+	
+	opacity:1;
+}
+
+hr{
+	border-top: 1px dotted  black;
+}
+
+
+#loading-wrapper {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color:#fff;
+  opacity:1;
+  z-index:100;
+}
+
+#loading-text {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: #000;
+  width: 100px;
+  height: 30px;
+  margin: -7px 0 0 -45px;
+  text-align: center;
+  font-size: 20px;
+}
+
+#loading-text-1 {
+	color:#000;
+width: 100%;
+ position: absolute;
+ top: 20%;
+ -webkit-transform: translateY(-50%);
+ -ms-transform: translateY(-50%);
+ transform: translateY(-50%);
+  font-family: 'PT Sans Narrow', sans-serif;
+  font-size: 30px;
+}
+
+#loading-content {
+  display: block;
+  position: relative;
+  left: 50%;
+  top: 50%;
+  width: 170px;
+  height: 170px;
+  margin: -85px 0 0 -85px;
+  border: 3px solid #F00;
+}
+
+#loading-content:after {
+  content: "";
+  position: absolute;
+  border: 3px solid #0F0;
+  left: 15px;
+  right: 15px;
+  top: 15px;
+  bottom: 15px;
+}
+
+#loading-content:before {
+  content: "";
+  position: absolute;
+  border: 3px solid #00F;
+  left: 5px;
+  right: 5px;
+  top: 5px;
+  bottom: 5px;
+}
+
+#loading-content {
+  border: 5px solid transparent;
+  border-top-color: #006085;
+  border-bottom-color: #006085;
+  border-radius: 50%;
+  -webkit-animation: loader 2s linear infinite;
+  -moz-animation: loader 2s linear infinite;
+  -o-animation: loader 2s linear infinite;
+  animation: loader 2s linear infinite;
+}
+
+#loading-content:before {
+  border: 5px solid transparent;
+  border-top-color: #75b726;
+  border-bottom-color: #75b726;
+  border-radius: 50%;
+  -webkit-animation: loader 3s linear infinite;
+    -moz-animation: loader 2s linear infinite;
+  -o-animation: loader 2s linear infinite;
+  animation: loader 3s linear infinite;
+}
+
+#loading-content:after {
+  border: 5px solid transparent;
+  border-top-color: #333;
+  border-bottom-color: #333;
+  border-radius: 50%;
+  -webkit-animation: loader 1.5s linear infinite;
+  animation: loader 1.5s linear infinite;
+    -moz-animation: loader 2s linear infinite;
+  -o-animation: loader 2s linear infinite;
+}
+
+@-webkit-keyframes loaders {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+#content-wrapper {
+  color: #FFF;
+  position: fixed;
+  left: 0;
+  top: 20px;
+  width: 100%;
+  height: 100%;
+}
+
+#header
+{
+  width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  height: 100px;
+  background-color: #666;
+}
+
+#content
+{
+  width: 800px;
+  height: 1000px;
+  margin: 0 auto;
+  text-align: center;
+  background-color: #888;
+}	

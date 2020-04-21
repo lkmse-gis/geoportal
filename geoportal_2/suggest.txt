@@ -1,0 +1,14 @@
+https://www.drweb.de/magazin/einfache-suggest-funktion-mit-ajax-und-php/
+
+ich werd das aber ersteinma bauen und dir dann hier noch das script reinhauen
+
+
+
+
+SELECT * FROM "archiv"."ablageObjekt", "archiv"."ablageObjekt_DokArt", "archiv"."ablageObjekt_DokUArt", "archiv"."ablageObjekt_Flur", "archiv"."ablageObjekt_Gmrk" WHERE "ablageObjekt"."idAltkreis" = 1
+
+
+http://geoport-lk-mse.de/archivprojekt/suche/select.php?sel_altkreis=2
+
+SELECT "bezeichnung", "idAblageObjekt","idDokArt" FROM "archiv"."dokumentart", "archiv"."ablageObjekt_DokArt" WHERE "ablageObjekt_DokArt"."idDokArt"=1 AND "idAblageObjekt" = 1
+SELECT "bezeichnung", "idAblageObjekt","ablageObjekt_DokArt"."idDokArt" FROM "archiv"."dokumentart", "archiv"."ablageObjekt_DokArt" WHERE "ablageObjekt_DokArt"."idDokArt"= 1 AND "idAblageObjekt" = 2 and "dokumentart"."idDokArt"= 1

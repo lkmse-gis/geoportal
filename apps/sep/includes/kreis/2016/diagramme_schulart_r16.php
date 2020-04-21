@@ -1,0 +1,20 @@
+							<div class="btn-group">				 
+									<button class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-floppy-disk"> Speichern </span>&nbsp;&nbsp;<span class="caret"></span></button> 
+									<ul class="dropdown-menu">					
+										<li>
+											<a href="#" onclick="$('#tB62').tableExport({type:'png'});"><img src='../../export_libs/icons/png.png' alt="PNG" style="width:24px">  ... als PNG</a>
+										</li>
+									</ul>
+								</div>
+												<table id="tB62">													
+													<tr>
+														<td>Kreisdiagramm</td>
+														<td>Kreisdiagramm</td>
+													</tr>
+													<tr>
+														<?php echo "<td><img src=\"../Diagramme/Schulart/Kreisdiagramm_schulart_k.php?stichtage=$stichtage[5]\"></td>"; ?>
+														<?php echo "<td><img src=\"../Diagramme/Schulart/Kreisdiagramm_bildungsgang_k.php?stichtage=$stichtage[5]\"></td>"; ?>
+													</tr>													
+												</table>
+											
+										

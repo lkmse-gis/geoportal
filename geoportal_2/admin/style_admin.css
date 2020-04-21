@@ -1,0 +1,459 @@
+*{
+	margin:0;
+	padding:0;
+	/*outline: 1px solid red; DEBUG BOX */
+}
+
+html {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+	background-color: #f8f9fb;
+	padding: 0;
+	margin: 0;
+	height:100%;
+	font-size: 14px;
+	font-family: "Open Sans",sans-serif;
+}
+
+.admin-panel {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color:#f8f9fb;
+  position:relative;
+}
+
+.slidebar {
+	width:15%;
+	height:100%;
+	float: left;
+	background-color: #222;
+	
+}
+.slidebar ul {
+  position:relative;
+
+}
+
+.slidebar a{
+  color: #bbb;
+  text-decoration:none;
+}
+.slidebar li{
+  text-align:center;
+  padding: 0x 0px;
+}
+
+ul {
+	padding: 0;
+	margin:0;
+}
+li {
+	list-style-type: none;
+	margin: 0;
+	position: relative;
+	text-align:center;
+	color:#B3B3B3
+}
+.slidebar i {
+  display:block;
+  text-align:center;
+  color:#B3B3B3;
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.slidebar ul a {
+  color:#B3B3B3;
+	text-decoration: none;
+	box-sizing:border-box;
+	display: block;
+	text-transform: capitalize;
+  padding: 20px;
+}
+.slidebar li:hover a, li#active{
+	background-color: #313131;
+}
+.slidebar li:hover i, li#active i{
+	color: #75b726;
+}
+.slidebar li:focus i {
+	color: #75b726;
+}
+
+.main {
+	float: left;
+	width: 85%;
+	height:100%;
+	background-color: #f8f9fb;
+	position: relative;
+	overflow:auto;
+}
+
+.main h2 {
+	height:100px;
+	margin-top:0px;
+	color:#ffffff;
+	font-size: 20px;
+	background-color:grey;
+	font-weight:600;
+	border-bottom: 0px solid #bbb;
+	padding: 28px 00px 20px 20px;
+	  
+}
+
+.admin-titel{
+	text-align:center;
+	color:#bbb;
+}
+
+.admin-version{
+	text-align:center;
+	
+	color:#bbb;
+}
+
+.wizard {
+    margin: 20px auto;
+   background: transparent;
+	/*box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.15);*/
+	padding:20px;
+}
+
+    .wizard .nav-tabs {
+        position: relative;
+        margin: 40px auto;
+        margin-bottom: 0;
+        border-bottom-color: #e0e0e0;
+    }
+
+    .wizard > div.wizard-inner {
+        position: relative;
+    }
+
+.connecting-line {
+    height: 2px;
+    background: #e0e0e0;
+    position: absolute;
+    width: 80%;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    top: 50%;
+    z-index: 1;
+}
+
+.wizard .nav-tabs > li.active > a, .wizard .nav-tabs > li.active > a:hover, .wizard .nav-tabs > li.active > a:focus {
+    color: #555555;
+    cursor: default;
+    border: 0;
+    border-bottom-color: transparent;
+}
+
+
+#btn{
+	border-radius:0px;
+	background-color:#006085;
+	color:white;
+}
+
+#btn-final{
+	border-radius:0px;
+	color:white;
+}
+
+span.round-tab {
+    width: 70px;
+    height: 70px;
+    line-height: 70px;
+    display: inline-block;
+    border-radius: 100px;
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    z-index: 2;
+    position: absolute;
+    left: 0;
+    text-align: center;
+    font-size: 25px;
+}
+span.round-tab i{
+    color:#555555;
+	margin-top:20px;
+	position:relative;
+}
+.wizard li.active span.round-tab {
+    background: #fff;
+    border: 2px solid #006085;
+    
+}
+.wizard li.active span.round-tab i{
+    color: #006085;
+}
+
+span.round-tab:hover {
+    color: #333;
+    border: 2px solid #333;
+}
+
+.wizard .nav-tabs > li {
+    width: 25%;
+}
+
+.wizard li:after {
+    content: " ";
+    position: absolute;
+    left: 46%;
+    opacity: 0;
+    margin: 0 auto;
+    bottom: 0px;
+    border: 5px solid transparent;
+    border-bottom-color: #75b726;
+    transition: 0.1s ease-in-out;
+}
+
+.wizard li.active:after {
+    content: " ";
+    position: absolute;
+    left: 46%;
+    opacity: 1;
+    margin: 0 auto;
+    bottom: 0px;
+    border: 10px solid transparent;
+    border-bottom-color: #75b726;
+}
+
+.wizard .nav-tabs > li a {
+    width: 70px;
+    height: 70px;
+    margin: 20px auto;
+    border-radius: 100%;
+    padding: 0;
+}
+
+    .wizard .nav-tabs > li a:hover {
+        background: transparent;
+    }
+
+.wizard .tab-pane {
+    position: relative;
+    padding-top: 50px;
+}
+
+.wizard h3 {
+    margin-top: 0;
+}
+
+@media( max-width : 585px ) {
+
+    .wizard {
+        width: 90%;
+        height: auto !important;
+    }
+
+    span.round-tab {
+        font-size: 16px;
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+    }
+
+    .wizard .nav-tabs > li a {
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+    }
+
+    .wizard li.active:after {
+        content: " ";
+        position: absolute;
+        left: 35%;
+    }
+}
+
+.image{
+background-image: url("bulldozer.jpg");
+height:350px;
+width:auto;
+}
+
+.p_img{
+	background-color:white;
+	color:black;
+	font-weight:bold;
+	width:100%;
+	margin:0px;
+	border:none;
+	padding:0px;
+	position:absolute;
+}
+
+header {
+  padding: 2em 0;
+  border-bottom: 5px solid #75b726;
+  background: #006085;
+  color: #FFFFFF;
+  overflow: hidden;
+
+  
+}
+header h1 {
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 2em;
+  font-weight: 300;
+  letter-spacing: 5px;
+  text-shadow: 1px  1px  #00455f, 2px  2px  #00455f, 3px  3px  #00455f, 4px  4px  #00455f, 5px  5px  #00455f, 6px  6px  #00455f, 7px  7px  #00455f, 8px  8px  #00455f, 9px  9px  #00455f, 10px  10px  #00455f, 11px  11px  #00455f, 12px  12px  #00455f, 13px  13px  #00455f, 14px  14px  #00455f, 15px  15px  #00455f, 16px  16px  #00455f, 17px  17px  #00455f, 18px  18px  #00455f, 19px  19px  #00455f, 20px  20px  #00455f, 21px  21px  #00455f, 22px  22px  #00455f, 23px  23px  #00455f, 24px  24px  #00455f, 25px  25px  #00455f, 26px  26px  #00455f, 27px  27px  #00455f, 28px  28px  #00455f, 29px  29px  #00455f, 30px  30px  #00455f, 31px  31px  #00455f, 32px  32px  #00455f, 33px  33px  #00455f, 34px  34px  #00455f, 35px  35px  #00455f, 36px  36px  #00455f, 37px  37px  #00455f, 38px  38px  #00455f, 39px  39px  #00455f, 40px  40px  #00455f, 41px  41px  #00455f, 42px  42px  #00455f, 43px  43px  #00455f, 44px  44px  #00455f, 45px  45px  #00455f, 46px  46px  #00455f, 47px  47px  #00455f, 48px  48px  #00455f, 49px  49px  #00455f, 50px  50px  #00455f, 51px  51px  #00455f, 52px  52px  #00455f, 53px  53px  #00455f, 54px  54px  #00455f, 55px  55px  #00455f, 56px  56px  #00455f, 57px  57px  #00455f, 58px  58px  #00455f, 59px  59px  #00455f, 60px  60px  #00455f, 61px  61px  #00455f, 62px  62px  #00455f, 63px  63px  #00455f, 64px  64px  #00455f, 65px  65px  #00455f, 66px  66px  #00455f, 67px  67px  #00455f, 68px  68px  #00455f, 69px  69px  #00455f, 70px  70px  #00455f, 71px  71px  #00455f, 72px  72px  #00455f, 73px  73px  #00455f, 74px  74px  #00455f, 75px  75px  #00455f, 76px  76px  #00455f, 77px  77px  #00455f, 78px  78px  #00455f, 79px  79px  #00455f, 80px  80px  #00455f, 81px  81px  #00455f, 82px  82px  #00455f, 83px  83px  #00455f, 84px  84px  #00455f, 85px  85px  #00455f, 86px  86px  #00455f, 87px  87px  #00455f, 88px  88px  #00455f, 89px  89px  #00455f, 90px  90px  #00455f, 91px  91px  #00455f, 92px  92px  #00455f, 93px  93px  #00455f, 94px  94px  #00455f, 95px  95px  #00455f, 96px  96px  #00455f, 97px  97px  #00455f, 98px  98px  #00455f, 99px  99px  #00455f, 100px  100px  #00455f, 101px  101px  #00455f, 102px  102px  #00455f, 103px  103px  #00455f, 104px  104px  #00455f, 105px  105px  #00455f, 106px  106px  #00455f, 107px  107px  #00455f, 108px  108px  #00455f, 109px  109px  #00455f, 110px  110px  #00455f, 111px  111px  #00455f, 112px  112px  #00455f, 113px  113px  #00455f, 114px  114px  #00455f, 115px  115px  #00455f, 116px  116px  #00455f, 117px  117px  #00455f, 118px  118px  #00455f, 119px  119px  #00455f, 120px  120px  #00455f;
+}
+
+.finish{
+	font-size:2em;
+	color:#75b726;
+	padding:20px;
+}
+
+table{
+	margin-top:20px;
+	margin-left:auto;
+	margin-right:auto;
+	text-align:center;
+	background-color:#fff;
+}
+
+.verwaltung{
+	margin-left:auto;
+	margin-right:auto;
+	width:90%;
+	box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.15);
+	position:relative;
+	margin-top:20px;
+}
+
+.center{
+	margin-left:auto;
+	margin-right:auto;
+	position:relative;
+}
+
+.verwaltung2{
+     float: left;
+     width: 45%;
+	 margin-top:20px;
+	 margin-left:20px;
+     margin-right:20px;
+     padding: 20px;
+	height:200px;
+	box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.15);
+
+}
+
+#myInput {
+    background-image: url('/css/searchicon.png'); /* Add a search icon to input */
+    background-position: 10px 12px; /* Position the search icon */
+    background-repeat: no-repeat; /* Do not repeat the icon image */
+    width: 100%; /* Full-width */
+    font-size: 16px; /* Increase font-size */
+    padding: 12px 20px 12px 40px; /* Add some padding */
+    border: 1px solid #ddd; /* Add a grey border */
+    margin-bottom: 12px; /* Add some space below the input */
+}
+#myTable {
+    border-collapse: collapse; /* Collapse borders */
+    width: 100%; /* Full-width */
+    border: 1px solid #ddd; /* Add a grey border */
+    font-size: 18px; /* Increase font-size */
+}
+
+#myTable th, #myTable td {
+    text-align: center; /* Left-align text */
+    padding: 12px; /* Add padding */
+}
+
+#myTable tr {
+    /* Add a bottom border to all table rows */
+    border-bottom: 1px solid #ddd; 
+}
+
+#myTable tr.header, #myTable tr:hover {
+    /* Add a grey background color to the table header and on hover */
+    background-color: #f1f1f1;
+} 
+
+
+/*/////////////////////////////// Checkbox Toggle ///////////////////////*/
+
+.switch {
+  display: inline-block;
+  height: 34px;
+  position: relative;
+  width: 60px;
+}
+
+.switch input {
+  display:none;
+}
+
+.slider {
+  background-color: #c9302c;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: .4s;
+}
+
+.slider:before {
+  background-color: #fff;
+  bottom: 4px;
+  content: "";
+  height: 26px;
+  left: 4px;
+  position: absolute;
+  transition: .4s;
+  width: 26px;
+}
+
+input:checked + .slider {
+  background-color: #66bb6a;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+
+/*////////////////////////////////// Progress Bar ///////////////////*/
+
+.progress .tooltip{ 
+  position:relative;
+  float:right;
+}
+.progress .tooltip > .tooltip-inner {background-color: #75b726; padding:5px 15px; color:white; font-weight:bold; font-size:13px;}
+.progress .popOver + .tooltip > .tooltip-arrow {	border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #eebf3f;}
+
+section{
+  margin:100px auto; 
+  height:1000px;
+}
+.progress{
+  border-radius:0;
+  overflow:visible;
+}
+.progress-bar{
+   background:#006085; 
+  -webkit-transition: width 1.5s ease-in-out;
+  transition: width 1.5s ease-in-out;
+}

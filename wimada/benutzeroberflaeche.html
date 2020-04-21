@@ -1,0 +1,960 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
+		<title>Wie macht man das?</title>
+			<link href="css/wimadastyle.css" rel="stylesheet">
+			<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+	</head>
+	<body>
+		<header>
+			<table class="kopf" border=0>
+				<td class="kopf1">WIMADA&nbsp;<img class="wimadamann" src="wimadamann.png" alt="WIMADAMann"><br><h1>Wie macht man das?</h1></td>
+				<td class="kopf4"></td>
+				<td class="kopf4"></td>
+				<td class="kopf3"><a class="kopf2" href="http://geoport-lk-mse.de/training/norman_budnick/wimada/" target="blank">Startseite</a><a class="kopf2" href="https://geoport-lk-mse.de/kvwmap/index.php" target="blanks">kvwmap</a><a class="kopf2" href="mailto:norman.budnick@lk-seenplatte.de,%20timo.schewe@lk-seenplatte.de?Subject=Feedback%20WIMADA & body=Hallo liebes Wimada-Team.%0D%0A%0D%0AEure Hilfeseite ist wirklich der Hammer!%0D%0AIch kann mir garnicht mehr vorstellen wie das Leben ohne Sie wäre.%0D%0A%0D%0AFür folgendes Thema würde ich mir eine Beschreibung wünschen: [Wunschthema] %0D%0A%0D%0ASpezieller Wunsch/Kommentar: [Kommentar]" target="_top">Themenwunsch</a></td>
+			</table>
+		</header>
+		
+				<table style="width:100%" border=0>
+<!------------------------------------Tabellenüberschrift----------------------------------------------------------------------->			
+				  <tr>
+						<th class="links" rowspan="8"></th>
+						<th class="streifen" rowspan="8"></th>
+						<th class="beschreibungabstand">Beschreibung</th> 
+						<th class="darstellungabstand">Darstellung</th>
+						<th class="streifen" rowspan="8"></th>
+						<th class="rechts"  rowspan="8"></th>
+				  </tr>
+<!-------------------------------------------Benutzeroberfläche---------------------------------------------------------->					
+				  <tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>1. Benutzeroberfläche</h3>
+														<p>
+														<b>1. Menüleiste mit Übersichtskarte</b><br> <br>
+														<b>2. Werkzeugleiste</b><br> <br>
+														<b>3. Kartenfenster</b><br> <br>
+														<b>4. Themenbaum</b><br> <br>
+														<b>5. Maßstabsleiste</b><br> <br>
+														<b>6. Kartenfensteroptionen</b><br> <br>
+														</p> 
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="option1 fade">
+								  <div class="numbertext">1 / 1</div>
+									<div class="screen">
+									<img src="bilder/benutzeroberflaeche.png" style="width:100%">
+									</div>
+								  <div class="text"></div>
+								</div>
+								
+
+								
+
+								<a class="prev" onclick="plusSlides3(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides3(1)">&#10095;</a>
+
+							</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot" onclick="currentSlide3(1)"></span> 
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides3(slideIndex);
+
+								function plusSlides3(n) {
+								  showSlides3(slideIndex += n);
+								}
+
+								function currentSlide3(n) {
+								  showSlides3(slideIndex = n);
+								}
+
+								function showSlides3(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("option1");
+								  var dots = document.getElementsByClassName("dot");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+				</tr>
+				
+<!------------------------------1.1 Menueleiste----------->
+
+
+			
+					
+					<tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>1.1 Menüleiste</h3>
+												<p>
+													Der Umfang der Menüleiste hängt von der jeweiligen Stelle ab in der man sich befindet und wird vom jeweiligen Administrator der Seite festgelegt. Hier wird der Teil der Menüleiste erklärt, der jedem zugänglich ist.<br> Wenn bestimmte Menüpunkte nicht angezeigt werden, so benötigt man sie in der Regel auch nicht.<br>
+													Klickt man auf den Menüpunkt <b>"Logout"</b> wird der derzeitige Benutzer ausgeloggt und man findet sich auf dem Anmeldebildschirm wieder.<br><br> 
+													Klickt man auf den Menüpunkt <b>"Stelle wählen"</b> gelangt man zu einer Übersicht. Darin enthalten sind diverse Einstellungsoptionen, sowie die Gesamtheit aller Stellen, auf die der jeweilige Benutzer Zugriff hat.<br><br> 
+													Klickt man auf den Menüpunkt <b>"Übersicht"</b> wird auf die maximale Ausdehnung des Bereiches der jeweiligen Stelle gezoomt in der man sich befindet. Die Gleiche Funktion erfüllt auch der Button <b>"Gesamtansicht"</b> in den Karten-Tools. 
+													Klickt man auf den Menüpunkt <b>"Karte"</b> gelangt man auf die Karte des Bereichs der jeweiligen Stelle.<br><br>
+													In dem Menü finden sich auch schwarze Menüpunkte. Diese Menüpunkte haben einen oder mehrere Unterpunkte. Die Unterpunkte werden durch anklicken der schwarzen Menüpunkte sichtbar oder unsichtbar gemacht. 
+													Unter dem Menüpunkt <b>"Suchen"</b> kann man nach (Fach-)Themen, Adressen, Flurstücken, Namen und Grundbuchblättern suchen. 
+													Unter dem Menüpunkt <b>"Layerverwaltung"</b> ist es möglich einen neuen Datensatz zu erstellen, das bedeutet, dass man eine vorhandenen mindestens ein neues Objekt hinzufügt.<br> 
+													Unter dem Menüpunkt <b>"Druckmanager"</b> kann man den aktuell auf der Karte dargestellten Kartenausschnitt drucken.
+
+												</p> 
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="option12 fade">
+								  <div class="numbertext">1 / 1</div>
+									<div class="screen">
+									<img src="bilder/menuleiste.PNG" style="width:100%">
+									</div>
+								  <div class="text"></div>
+								</div>
+								
+
+								
+
+								<a class="prev" onclick="plusSlides12(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides12(1)">&#10095;</a>
+
+							</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot4" onclick="currentSlide12(1)"></span> 
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides12(slideIndex);
+
+								function plusSlides12(n) {
+								  showSlides12(slideIndex += n);
+								}
+
+								function currentSlide12(n) {
+								  showSlides12(slideIndex = n);
+								}
+
+								function showSlides12(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("option12");
+								  var dots = document.getElementsByClassName("dot4");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+				</tr>
+
+				
+<!--------------------------------------Werkzeugleiste--------------------------------------------------------------->					
+				  <tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>1.2 Werkzeugliste</h3>
+												<p>
+													Die Werkzeugleiste befindet sich im oberen Teil der Karte und beinhaltet folgende Funktionen<br><br>
+													
+													<img src="bilder/pfeillinks1.PNG" style="100%">
+													
+													
+													<h2>Accordion</h2>
+
+														<button class="accordion">vorherige Ansicht</button>
+															<div class="panel">
+																<p>Wenn man in der aktuellen Sitzung mindestens einmal den Kartenausschnitt geändert hat, kann man mit dem Pfeil nach links wieder zum vorherigen Ausschnitt zurückkehren. Man kann auf alle vorherigen Ausschnitte bis zum Anfang zurückgehen.</p>
+															</div>
+															
+															<script>
+																var acc = document.getElementsByClassName("accordion");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+															</script>
+															<br>
+													
+													<img src="bilder/pfeilrechts.PNG" style="100%"><br>
+													
+													<h2>Accordion</h2>
+
+														<button class="accordion1">nächste Ansicht</button>
+															<div class="panel">
+																<p>Wenn man zu einem vorherigen Ausschnitt zurückgekehrt ist, wird der Pfeil nach rechts aktiv. Dann kann man wieder "nach vorne" blättern.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion1");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>	
+															<br>
+															
+																							
+																							
+													<img src="bilder/gesamtansicht.PNG" style="100%">
+													
+													<h2>Accordion</h2>
+
+														<button class="accordion2">Gesamtansicht</button>
+															<div class="panel">
+																<p>Klickt man auf diesen Button wird die Karte auf die größtmögliche Ausdehnung gezoomt. Sie zeigt dann folglich den gesamten Bereich, welcher der jeweiligen Stelle zugewiesen ist. Gleiches kann man erreichen indem man auf den Menüpunkt "Übersicht" klickt.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion2");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>
+																							
+													<img src="bilder/bewegen.PNG" style="100%">	
+													
+													<h2>Accordion</h2>
+
+														<button class="accordion11">Verschieben/Pan</button>
+															<div class="panel">
+																<p>Damit verschiebt man den Kartenausschnitt, wobei man den aktuellen Maßstab beibehält. Wenn man diesen Button aktiviert, zieht man das Bild mit gedrückter linker Maustaste in die gewünschte Position. Nach Loslassen der Maustaste wird das Kartenbild mit gleichem Maßstab neu aufgebaut. Wenn man auf einen Punkt in der Karte klickt, wird dieser Punkt der neue Bildmittelpunkt.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion11");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>
+
+																
+													<img src="bilder/vergroessern.PNG" style="100%">
+																							
+																							
+														<h2>Accordion</h2>
+
+														<button class="accordion3">Hereinzoomen</button>
+															<div class="panel">
+																<p>Damit zoomt man in das Kartenbild hinein. Wenn man diesen Button aktiviert, kann man mit gedrückter linker Maustaste ein Rechteck aufziehen, welches nach Loslassen der Maustaste der neue Kartenausschnitt wird. Wenn man - alternativ - in die Karte klickt, wird mit dem Zoomfaktor "2" in die Karte hineingezoomt, das bedeutet, dass sich der Maßstab verdoppelt(z.B. von 1:10000 zu 1:5000) bzw. der angezeigte Kartenausschnitt nur noch halb so groß ist wie zuvor. Der Zoomfaktor lässt sich im Menüpunkt "Stelle wählen" einstellen. Man kann aber auch mit dem Mausrad zoomen.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion3");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>									
+		
+																	
+																							
+													<img src="bilder/verkleinern.PNG" style="100%">
+													
+													
+													<h2>Accordion</h2>
+
+														<button class="accordion4">Herauszoomen</button>
+															<div class="panel">
+																<p>Damit zoomt man sich aus dem Kartenbild hinaus. Wenn man diesen Button aktiviert, klickt man in das Kartenbild. Man erhält ein neues verkleinertes Kartenbild. Als Zoom-Faktor ist eine "2" eingetragen, was bedeutet, dass sich der Maßstab beim Herauszoomen halbiert, z.B. von 1:2.000 auf 1:4.000. Der Zoomfaktor lässt sich im Menüpunkt "Stelle wählen" einstellen. Man kann aber auch mit dem Mausrad zoomen.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion4");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>		
+													
+																							
+													<img src="bilder/koordinatenzoom.PNG" style="100%"><br>
+													
+													
+													<h2>Accordion</h2>
+
+														<button class="accordion5">Koordinatenzoom</button>
+															<div class="panel">
+																<p><b>Zoom</b>: Wenn man den Button anklickt, öffnet sich ein kleines Eingabefenster, in das man eine beliebige Koordinate eingibt - Rechtswert zuerst, dann Leerzeichen, dann Hochwert. Das Bild wird dann mit diesem Punkt als neuer Bildmitte und mit dem zuletzt eingestellten Maßstab neu aufgebaut. Das funktioniert nur, wenn man die Koordinate im selben Koordinatensystem eingibt, das auch für die Karte eingestellt ist (das Kartenkoordinatensystem wird unter "Stelle wählen" im Punkt "1.Kartenprojektion (EPSG-Code)" angezeigt). Der Punkt selber erscheint in der Kartenbildmitte als Markierung und in der Legende als Eintrag in der Gruppe Suchergebnis. Dort können Sie ihn auch wieder entfernen. <br><br>
+																							
+																<b>Abfrage</b>: Wenn man den Koordinateneingabe-Button anklickt und anschließend das kleine Eingabefenster (ohne irgendeine Eingabe) mit "Abbrechen" wieder schließt, kann man die aktuelle Cursorkoordinate ausgeben. Klickt man in die Karte an die Stelle, deren Koordinate man wissen will. Unterhalb der Karte, direkt unter der Maßstabsleiste wird sie ausgegeben. Man kann diese Koordinate in die Zwischenablage kopieren und in einem anderen Programm weiter verwenden. Diese Funktion bleibt solange aktiv, bis man einen anderen Button anklickt. Wenn man in den Optionen ein zweites Koordinatenreferenzsystem ausgewählt hat, wird die Cursorkoordinate in beiden Systemen ausgegeben.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion5");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>		
+																						
+																							
+														<img src="bilder/koordinatenabfrage.PNG" style="100%"><br>
+														
+															<h2>Accordion</h2>
+
+														<button class="accordion6">Koordinatenabfrage</button>
+															<div class="panel">
+																<p>Durch anklicken auf der Karte werden unterhalb der Kartenfensteroptionen Koordinaten in Gauß-Krüger EPSG 2398, sowie UTM EPSG 25833 ausgegeben.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion6");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>		
+														
+														<img src="bilder/infoangrenzende.PNG" style="100%"><br>
+														
+														<h2>Accordion</h2>
+
+														<button class="accordion7">Informationsabfrage auf angrenzende Objekte</button>
+															<div class="panel">
+																<p>Dieser Button funktioniert genauso wie der einfache Info-Button. Zusätzlich zu dem Objekt, das man angeklickt hat, werden aber auch noch alle anderen Objekte abgefragt, die das angeklickte Objekt berühren.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion7");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>		
+																							
+																					
+																							
+														<img src="bilder/infoumring.PNG" style="100%"><br>
+														
+														<h2>Accordion</h2>
+
+														<button class="accordion8">Informationsabfrage mit Suchradius</button>
+															<div class="panel">
+																<p>Mit diesem Button kann man in die Karte klicken und anschließend einen Abfrageradius (in Metern) angeben. Am Cursor erscheint ein Kreis, der der angegebenen Größe entspricht. Man erhält eine Sachdatenanzeige aller Objekte des ausgewählten Themas, die sich in diesem Kreis befinden.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion8");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>		
+														
+														
+															
+														<img src="bilder/infoimpolygon.PNG" style="100%"><br>
+														
+														<h2>Accordion</h2>
+
+														<button class="accordion9">Informationsabfrage im Polygon</button>
+															<div class="panel">
+																<p>Man kann freihändig ein Polygon definieren und eine Sachdatenanzeige aller Objekte des ausgewählten Themas erhalten, die sich in diesem Polygon befinden. Man gehe wie folgt vor: Nachdem man auf den Button geklickt hat, klickt man in die Karte und malt durch weitere Klicks ein Polygon um den Bereich, der einen interessiert. Das Zeichnen beendet man mit einem Doppelklick am letzten zu zeichnenden Punkt. Bei allen Zwischenpunkten wird einem die Flächengröße des gezeichneten Polygons angezeigt. Damit dient dieser Button gleichzeitig zur freihändigen Flächenmessung. Wenn man nur eine Fläche messen will, ohne eine Sachdatenabfrage, dann macht man zum Schluss keinen Doppelklick, sondern verlässt die Funktion durch erneutes Klicken auf den Info-Button.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion9");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>		
+														
+										
+																							
+														<img src="bilder/wegstreckemessen.PNG" style="100%"><br>
+														
+														<h2>Accordion</h2>
+
+														<button class="accordion10">Wegstrecke messen</button>
+															<div class="panel">
+																<p>Damit kann man in der Karte Strecken abgreifen. Wenn man diesen Button aktiviert, muss man zunächst einen Startpunkt festlegen. Durch weitere Klicks kann man eine beliebig viele Eckpunkte erzeugen. Man beendet das Messen, indem man erneut auf den Strecken-Mess-Button klickt. Man beachte, dass man während des Messens auch zoomen oder den Kartenausschnitt verschieben kann. Man macht einfach einen Doppelklick. Das Messen wird pausiert und man kann (ohne den Verschiebebutton zu klicken!) das Kartenbild verschieben oder mit dem Mausrad hinein- oder herauszoomen. Wenn man den Strecken-Mess-Button aktiviert hat, erscheint rechts unterhalb der Karte ein Häkchenfeld "Punktfang". Wenn man dort ein Häkchen setzt, werden alle Eckpunkte von allen aktiven Themen im Maßstabsbereich geladen. Man kann dann diese Punkte anklicken und so punktgenau messen. Wenn man das Häkchenfeld ausgewählt hat, werden alle Eckpunkte in der Karte blassrot markiert. Man beachte bitte, dass das Laden der Punkte einige Sekunden dauern kann. Die gesamte Strecke die gerade gemessen wird erscheint neben dem Mauscorsur. Die Summe der Strecken innerhalb der gesetzten Eckpunkte steht in Klammern dahinter.</p>
+															</div>
+													
+																							
+														<script>
+																var acc = document.getElementsByClassName("accordion10");
+																var i;
+
+																for (i = 0; i < acc.length; i++) {
+																acc[i].addEventListener("click", function() {
+																this.classList.toggle("active");
+																var panel = this.nextElementSibling;
+																if (panel.style.display === "block") {
+																	panel.style.display = "none";
+																} else {
+																panel.style.display = "block";
+																}
+																});
+																}
+														</script>
+															<br>		
+														
+														
+														
+														
+														
+														
+														
+																							
+																							
+																						
+																						
+																						
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="werkzeugleiste fade">
+								  <div class="numbertext">1 / 1</div>
+									<div class="screen">
+									<img src="bilder/werkzeugleiste.PNG" style="width:100%">
+									</div>
+								  <div class="text"></div>
+								</div>
+								
+
+								
+
+								<a class="prev" onclick="plusSlides4(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides4(1)">&#10095;</a>
+
+							</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot2" onclick="currentSlide4(1)"></span> 
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides4(slideIndex);
+
+								function plusSlides4(n) {
+								  showSlides4(slideIndex += n);
+								}
+
+								function currentSlide4(n) {
+								  showSlides4(slideIndex = n);
+								}
+
+								function showSlides4(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("werkzeugleiste");
+								  var dots = document.getElementsByClassName("dot2");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+					</tr>
+<!------------------------------1.3 Kartenfenster----------->
+
+
+			
+					
+					<tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>1.3 Kartenfenster</h3>
+													<p>
+													In der Mitte sieht man das Kartenfenster. Es wird mit jedem Aufruf nach den Maßgaben neu generiert. Wenn man also die Themenauswahl verändert, wenn man rein- oder rauszoomt, dann wird sich jeweils der Karteninhalt ändern. Das betrifft nicht nur den thematischen, sondern auch den kartographischen Inhalt. Übrigens: Rein- oder Rauszoomen geht auch mit dem Maus-Scrollrad, wenn der Mauscursor sich in der Karte befindet. 
+													</p> 
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="option2 fade">
+								  <div class="numbertext">1 / 1</div>
+									<div class="screen">
+									<img src="bilder/uebersichtskarte.png" style="width:100%">
+									</div>
+								  <div class="text"></div>
+								</div>
+								
+
+								
+
+								<a class="prev" onclick="plusSlides4(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides4(1)">&#10095;</a>
+
+								</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot4" onclick="currentSlide4(1)"></span> 
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides3(slideIndex);
+
+								function plusSlides4(n) {
+								  showSlides3(slideIndex += n);
+								}
+
+								function currentSlide4(n) {
+								  showSlides3(slideIndex = n);
+								}
+
+								function showSlides4(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("option2");
+								  var dots = document.getElementsByClassName("dot4");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+					</tr>
+						
+<!-----------------------------------------1.4 Themenbaum---------------------------->				
+					
+				<tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>1.4 Themenbaum</h3>
+												<p>
+												Der Begriff "Themengruppe" bezeichnet eine thematische Gruppierung von verwandten Themen. So ist der Punkt "Verwaltungsgrenzen" eine Themengruppe und beinhaltet thematisch zugehörige Themen (wie Verbandsgrenzen geometrisch, Flurstückszuordnung, betroffene Flurstücke, etc.) 
+												Die einzelnen Themengruppen lassen sich durch das +/- auf-/zuklappen(wichitg für Übersichtlichkeit). 
+												Eingeklappte Themengruppen die Fett dargestellt sind haben ein oder mehrere Themen sichtbar eingestellt. 
+												Es ist möglich in einer Themengruppe alle Themen mit einem Klick durh die Pfeile neben "alle" sichtbar oder anfragbar zu machen. 
+
+												</p> 
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="option3 fade">
+								  <div class="numbertext">1 / 1</div>
+									<div class="screen">
+									<img src="bilder/themenbaum.PNG" style="width:100%">
+									</div>
+								  <div class="text"></div>
+								</div>
+								
+
+								
+
+								<a class="prev" onclick="plusSlides5(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides5(1)">&#10095;</a>
+
+							</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot5" onclick="currentSlide5(1)"></span> 
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides5(slideIndex);
+
+								function plusSlides5(n) {
+								  showSlides5(slideIndex += n);
+								}
+
+								function currentSlide5(n) {
+								  showSlides5(slideIndex = n);
+								}
+
+								function showSlides5(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("option3");
+								  var dots = document.getElementsByClassName("dot5");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+				</tr>	
+<!-------------------1.5 Maßstabsleiste------------------->				
+				<tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>1.5 Maßstabsleiste</h3>
+												<p>
+												Links unterhalb des Kartenfensters wird einem der aktuelle Maßstab angezeigt, rechts unterhalb eine entsprechende Maßstabsleiste. Man kann einen beliebigen Maßstab eintragen. Durch Drücken der Entertaste wird das Kartenbild mit dem gewählten Maßstab neu aufgebaut. Man beachte, dass die Inhalte der Karte maßstabsabhängig dargestellt werden. Man beachte, dass in den jeweiligen Stellen verschiedene Ober- und Untergrenzen für den Maßstab festgelegt sind.  
+
+												</p> 
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="option4 fade">
+								  <div class="numbertext">1 / 1</div>
+									<div class="screen">
+									<img src="bilder/massstabsleiste.png" style="width:100%">
+									</div>
+								  <div class="text"></div>
+								</div>
+								
+
+								
+
+								<a class="prev" onclick="plusSlides6(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides6(1)">&#10095;</a>
+
+							</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot6" onclick="currentSlide6(1)"></span> 
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides6(slideIndex);
+
+								function plusSlides6(n) {
+								  showSlides6(slideIndex += n);
+								}
+
+								function currentSlide6(n) {
+								  showSlides6(slideIndex = n);
+								}
+
+								function showSlides6(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("option4");
+								  var dots = document.getElementsByClassName("dot6");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+				</tr>		
+					
+	<!-------------------1.6 Kartenfensteroption------------------->				
+				<tr>
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3>1.6 Kartenfensteroption</h3>
+												<p>
+												Man kann den räumlichen Ausschnitt (also nur den Kartenausschnitt, Legende und Menü werden nicht mit angezeigt) speichern, indem man auf "Ausschnitt speichern" klickt. Man kann einen kurzen Kommentartext mitspeichern. Über den Link "Ausschnitt laden" kann man den gespeicherten räumlichen Kartenausschnitt später jederzeit wieder aufrufen  
+
+												</p> 
+							</div>														
+						</td>
+						<td class="ausschnitt">
+							
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<div class="slideshow-container">
+								<div class="option7 fade">
+								  <div class="numbertext">1 / 1</div>
+									<div class="screen">
+									<img src="bilder/kartenfensteroption.png" style="width:100%">
+									</div>
+								  <div class="text"></div>
+								</div>
+								
+
+								
+
+								<a class="prev" onclick="plusSlides7(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides7(1)">&#10095;</a>
+
+							</div>
+								<br>
+
+								<div style="text-align:center">
+								  <span class="dot7" onclick="currentSlide7(1)"></span> 
+								</div>
+							</div>	
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides7(slideIndex);
+
+								function plusSlides7(n) {
+								  showSlides7(slideIndex += n);
+								}
+
+								function currentSlide7(n) {
+								  showSlides7(slideIndex = n);
+								}
+
+								function showSlides7(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("option7");
+								  var dots = document.getElementsByClassName("dot7");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+				</tr>				
+				
+				</table>
+	</body>
+		<footer>
+			<table class="tabellen_footer" border=0>
+<!--LK Logo-->
+							<td class="unten">
+								<a href="https://www.lk-mecklenburgische-seenplatte.de/" target="blank"><img class="natuerlich" src="landkreis_logoneu.png" alt="LK MSE Logo"></a>
+							</td>
+<!--Adresse-->
+							<td class="kontakt">
+								<h2>Adresse</h2>
+									<p class="p_timo">
+									Regionalstandort Neubrandenburg<br>
+									Kataster- und Vermessungsamt<br>
+									Platanenstraße 43<br>
+									17033 Neubrandenburg<br>
+									</p>
+							</td>
+<!--Button zu kvwmap-->
+							<td class="footer_button">
+								<a href="https://geoport-lk-mse.de/kvwmap/index.php" target="blanks"><div class="kvwmap">Ausprobieren auf kvwmap</div></a>
+							</td>
+<!--Impressum-->
+							<td class="impressum">
+								<h2>Impressum</h2>
+									<p class="p_timo">
+									©2018 Norman Budnick<br>
+									©2018 Timo Schewe<br>
+									Geomatiker 2.Lehrjahr<br>
+									KVA MSE<br>
+									</p>
+							</td>
+			</table>
+		</footer>
+</html>

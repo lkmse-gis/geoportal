@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+
+	
+<html>
+<head>
+<title>Flust&uuml;cksauskunft</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="author" content="Olaf Bräunlich">
+<link rel="stylesheet" href="style.css" type="text/css" />
+<!-- ä = &auml; ö = &ouml; ü = &uuml;  Ä = &Auml; Ö = &Ouml;  Ü = &Uuml; ß = &szlig; ² = &sup2; -->
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+
+
+<script type="text/javascript">
+function preload(){
+document.getElementById('preload').style.display = 'none';
+}
+</script>
+</head>
+
+
+<body text="#000000" bgcolor="#ffffff" link="#000000" alink="#000000" vlink="#000000" onLoad="preload()">
+	<span style="width:100%; height:100%; top:0px; left:0px; background-color:#fff;opacity: 0.9; position:absolute; z-index:1; display:block;" id="preload">
+		<table style="position:absolute; top:35%;left:30%;" >
+			<tr>
+				<td>
+					<font style="font-size:26px;"><b>Geoportal Landkreis Mecklenburgische Seenplatte</b></font><br><br>
+					<font style="font-size:26px;">Flurstücksauskunft ALKIS Druckdokument wird generiert</font><br>
+					<br>
+					<br>
+					<img src="lade3.gif">
+				</td>
+			</tr>
+		</table>
+	</span>
+<center>
+<img src="geoportal_logo.png" width="806">
+<table id="kopf">
+  <tr>
+    <td id="tdkopf1" width="520" valign="top" ><b>Flurst&uuml;cksauskunft<br>
+			<?php
+			$datum = getdate(time());
+			$year=$datum[year];
+			$month=$datum[mon];
+			$day=$datum[mday];
+			$hour=$datum[hours];
+			$minute=$datum[minutes];
+			$second=$datum[seconds];
+			if (strlen($month) == 1) $month='0'.$month;
+			if (strlen($day) == 1) $day='0'.$day;
+			if (strlen($hour) == 1) $hour='0'.$hour;
+			if (strlen($minute) == 1) $minute='0'.$minute;
+			if (strlen($second) == 1) $second='0'.$second;
+			$heute=$year.'-'.$month.'-'.$day;
+			$print_datum=$day.".".$month.".".$year;
+			$lfdmon=$year.'-'.$month;
+
+		echo"<small>Stand: $print_datum<br>"
+		?>
+	</td>
+	<td>
+	<table>
+	<tr>
+    <td width="270" valign="top,right" align="right">Aktenzeichen: <input type=text name="akte" id="textfeld"><br></td></tr><tr><td align="right">
+<!--------Lesemodus----------------------------------------------------------------------------------------------------->
+		<form method="POST" >
+			<input style="background-color:white;" valign="right" type="button" value="Lesemodus" onclick="location.href = '<? 
+			include("../../includes/connect_geobasis.php");
+			$flstkennz=$_GET["flst"];
+			$basis=$_GET["basis"];
+			echo"http://geoport-lk-mse.de/geoportal/apps/flstauskunft/flstauskunft_alkis.php?flst=",$flstkennz,"&basis=",$basis; ?>';" />
+		</form></td></tr></table>
+<!-------------------------------------------------------------------------------------------------------------------------->
+	</td>
+  </tr>
+  <tr>
+    <td colspan="2">
+	<table id="tdkopf2" >
+	<tr>
+		<td width="200"><br>
+			Regionalstandort Neubrandenburg<br>
+			Platanenstra&szlig;e 43<br>
+			17033 Neubrandenburg 
+		</td>
+		<td width="200"><br>
+			Regionalstandort Waren (M&uuml;ritz)<br>
+			Zum Amtsbrink 2<br>
+			17192 Waren (M&uuml;ritz)
+		</td>
+		<td width="200"><br>
+			Regionalstandort Demmin<br>
+			Reitweg 1<br>
+			17109 Demmin </td>
+		</td>
+			<td width="200"><br>
+			Regionalstandort Neustrelitz<br>
+			Woldegker Chaussee 35<br>
+			17235 Neustrelitz 
+		</td>
+	</tr>
+	</table>
+	</td>
+  </tr>
+</table>
+</p>
+
+<table id="tableauskunft" valign="left" >
+<?php
+
+include("../../includes/connect_geobasis.php");
+$flstkennz=$_GET["flst"];
+$basis=$_GET["basis"];
+$remote = "82.193.248.66";
+
+
+
+##############Cookie Abfrage####################
+
+if (isset($_COOKIE["flur"]))
+	{
+		$flstkennz = $_COOKIE["flur"];
+		$basis = $_COOKIE["basis"];
+		setcookie("flur",$flstkennz,time()-3600);
+		setcookie("basis",$basis,time()-3600);
+	}
+
+
+##############Bildentzerrung###################	
+	
+$query="SELECT b.gemarkungsname_kurz as bezeichnung,a.flurnummer,a.zaehler,a.nenner,a.amtlicheflaeche,c.gemeinde,d.name as amt,a.gemarkungsnummer,a.land ,c.gem_schl ,st_box(st_buffer(a.wkb_geometry,20)) as bounding_box, round(st_area(a.wkb_geometry)::numeric,2) as gerechnet  FROM alkis.ax_flurstueck as a, public.gemarkung as b, public.gemeinden as c, public.fd_amtsbereiche as d WHERE a.flurstueckskennzeichen='$flstkennz' AND a.gemarkungsnummer=b.gemarkung::integer AND c.gem_schl::integer=b.gemeinde::integer AND c.amt_id::integer=d.amts_sf AND a.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$r = $fetcharrayp($result);
+$box = $r[bounding_box];
+$klammer = array("(",")");
+$box2 = str_replace($klammer,"",$box);
+$array = explode(",",$box2);
+
+//if ($isEmpty===null)
+//{ 
+//$fehler = "<font color='ff0000'>Keine Anwendung der Kreisgebietsreform f&uuml;r das Flurst&uuml;ck erfolgt !</font>";
+//}
+
+//$bbox = $array[2].",".$array[3].",".$array[0].",".$array[1];
+
+$a0 = $array[0];
+$a1 = $array[1];
+$a2 = $array[2];
+$a3 = $array[3];
+
+$x=$a0 - $a2;
+$y=$a1 - $a3;
+
+if ($x>$y) 
+	{
+		$diff=$x-$y;
+		$hoch_neu=$a1+$diff;
+		$bbox=$a2.",".$a3.",".$a0.",".$hoch_neu;
+	}
+else 
+	{
+		$diff=$y-$x;
+		$rechts_neu=$a0+$diff;
+		$bbox=$a2.",".$a3.",".$rechts_neu.",".$a1;
+	};
+
+echo 
+	"
+	<tr width='800' height='5'><td colspan=2><hr width='100%' NOSHADE size='1' color='#000000'></td></tr>
+	<tr><td id=padding><b>Amt:</td><td>$r[amt]$fehler</td>
+	<tr><td id=padding><b>Gemeinde:</td><td>$r[gemeinde] ($r[gem_schl])</td>
+	<tr><td id=padding><b>Gemarkung:</td><td>$r[bezeichnung] ($r[land]$r[gemarkungsnummer])</td></tr>
+	<tr><td id=padding><b>Flurnummer:</td><td>$r[flurnummer]</td>
+	<tr><td id=padding><b>Flurst&uuml;ck:</td><td>";
+		if ($r[nenner] != NULL) {
+			echo $r[zaehler]."/".$r[nenner];
+			}
+		else echo $r[zaehler];
+echo "</td>
+	<tr><td id=padding><b>Amtliche Fl&auml;che:</td><td>$r[amtlicheflaeche] m&sup2; ( gerechnet: $r[gerechnet] m&sup2; )</td></tr>
+	<tr width='800' height='5'><td colspan=2><hr width='100%' NOSHADE size='1' color='#000000'></td></tr>
+	";
+?> 
+</table>
+
+
+<!--------Karte----------------------------------------------------------------------------------------------------->
+<br>
+<table>
+<form name="form" >
+ <select name="link" SIZE="1" onChange="window.location.href = document.form.link.options[document.form.link.selectedIndex].value;">
+									 <option  value="<? echo"http://geoport-lk-mse.de/geoportal/apps/flstauskunft/flstauskunft_alkis_druck.php?flst=",$flstkennz,"&basis=ORKA"; ?>" 
+																<?php if($_GET['basis'] == "ORKA") echo "selected=\"selected\"";?>>Offene Regionalkarte (ORKa)</option>
+									 <option  value="<? echo"http://geoport-lk-mse.de/geoportal/apps/flstauskunft/flstauskunft_alkis_druck.php?flst=",$flstkennz,"&basis=DOP20"; ?>" 
+																<?php if($_GET['basis'] == "DOP20") echo "selected=\"selected\""; ?>>Luftbilder 2013 (DOP20)</option>
+ </select>
+ </form>
+</table> 
+<br>
+<?php
+echo "<img id=\"flauszug\" alt='Flurst&uuml;cksfehler' src=\"http://www.geoport-lk-mse.de/webservices/alkis07?REQUEST=GetMap&VERSION=1.1.1&SERVICE=WMS&LAYERS=",$basis,",ag_t_flurstueck,ag_l_flurstueck,sk2004_zuordnungspfeil_spitze,ag_p_flurstueck,ax_flurstueck,ax_besondereflurstuecksgrenze,ax_punktortta,ax_gebaeude_fl,ax_bauteil,ax_besonderegebaeudelinie,ag_t_gebaeude,ag_t_nebengeb,ag_l_gebaeude,ax_gebaeude_txt&BBOX=$bbox&SRS=EPSG:25833&FORMAT=image/png&WIDTH=735&HEIGHT=735&STYLES=\">";
+?> 
+
+<!----------------------------Abfrage Anzahl Ergebnisse ---------------------------------------------------------------------------------->
+
+<?php
+
+//////////////////////////////////////////Baudenkmale
+$query="SELECT a.nr,a.lfdnr,a.obj,a.ort
+ FROM fd_baudenkmal as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),b.wkb_geometry) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL;";
+
+$result = $dbqueryp($connectp,$query);
+$baud_count=0;
+
+while($r = $fetcharrayp($result))
+  {
+    $baud_count++;
+	}
+
+/////////////////////////////////////////Bodendenkmale blau
+$query="SELECT a.typ,a.gemarkung,a.fundplatz
+ FROM construction.bodendenkmale_blau as a,alkis.ax_flurstueck as b WHERE st_intersects(a.the_geom,b.wkb_geometry) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL;";
+
+$result = $dbqueryp($connectp,$query);
+$bodenb_count=0;
+
+while($r = $fetcharrayp($result))
+  {
+    $bodenb_count++;
+	}
+
+/////////////////////////////////////////Bodendenkmale rot
+$query="SELECT a.typ,gemarkung,a.fundplatz
+FROM construction.bodendenkmale_rot as a,alkis.ax_flurstueck as b WHERE st_intersects(a.the_geom,b.wkb_geometry) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$bodenr_count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+    $bodenr_count++;
+	}
+	
+////////////////////////////////////////Baulastenkarte
+$query="SELECT a.bl_bl_nr, a.bl_bl_s, a.ldf_nr, a.art, a.bemerk
+ FROM fd_baulasten as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$baul_count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+    $baul_count++;
+	}
+/////////////////////////////////////////Baulastenkarte MSBAU
+$query="SELECT a.spalte_5, a.spalte_6, a.spalte_7, a.spalte_8 
+FROM construction.baulasten_msbau as a,alkis.ax_flurstueck as b WHERE st_intersects(a.the_geom,st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$msbau_count=0;
+
+while($r = $fetcharrayp($result))
+  {
+    $msbau_count++;
+	}
+
+/////////////////////////////////////////B-Pläne
+$query="SELECT a.plan_nr,a.zusatz,a.bezeichnun,a.stand_verfahren,a.datum_stan FROM fd_vblp5 as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND a.in_entwicklung='nein' AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+$result = $dbqueryp($connectp,$query);
+$bplan_count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+    $bplan_count++;
+	}
+
+/////////////////////////////////////Störfallbetriebe
+$query="SELECT a.g_name, a.b_name, a.b_art, a.stoerfallbetrieb, a.stoerfall_radius, a.stoerfall_status
+FROM fd_gewerbedatei as a,alkis.ax_flurstueck as b WHERE st_intersects(st_buffer(st_transform(a.the_geom,25833),a.stoerfall_radius),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$stoerb_count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+    $stoerb_count++;
+	}
+	
+//////////////////////////////////Kampfmittelbelastung
+$query="SELECT a.kmk,a.name,a.art,a.belastung 
+FROM protection.kbelastete_gebiete_2015 as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.geom,25833),st_buffer(b.wkb_geometry,-1))  AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$kampfb_count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+    $kampfb_count++;
+	}
+
+/////////////////////////////////Naturschutzgebiete
+$query="SELECT a.label,a.name,a.lage,a.area_ha 
+FROM environment.sg_naturschutzgebiete as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$naturs_count=0;
+
+while($r = $fetcharrayp($result))
+  {
+    $naturs_count++;
+	}
+	
+////////////////////////////////Nationalparke
+$query="SELECT a.nr,a.name,a.area_ha
+FROM environment.sg_nationalparke as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$nationalp_count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+    $nationalp_count++;
+	}
+	
+/////////////////////////////Vogelschutzgebiete
+$query="SELECT a.eu_nr,a.nr,a.gebiet_nam, a.ha_etrs as area_ha 
+FROM environment.sg_spa_fl as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$vogels_count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+    $vogels_count++;
+	}
+	
+///////////////////////////Landschatsschutzgebiete
+$query="SELECT a.label,a.name,a.kreis1, a.area_ha
+FROM environment.sg_landschaftsschutzgebiete as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$lands_count=0;
+
+while($r = $fetcharrayp($result))
+  {
+    $lands_count++;
+	}
+	
+/////////////////////////Flora-Fauna-Habitat
+$query="SELECT a.eu_nr,a.name,a.ha_etrs as area_ha
+FROM environment.sg_ffh_fl as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$ffh_count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+    $ffh_count++;
+	}
+	
+?>
+<!----------------------------------------------------Themenübersicht---------------------------------------------------------------------------->
+<br>
+<br>
+<br>
+<hr width="800" NOSHADE size="1" color="#000000">	
+<table width="800" border="0">
+<tr><h4>Themen&uuml;bersicht</h4></tr>
+<tr>
+<td>
+<ul style="list-style-type: disc">
+<li>Baudenkmale (<?php echo $baud_count; ?>)</li>
+<li>Bodendenkmale blau (<?php echo $bodenb_count; ?>)</li>
+<li>Bodendenkmale rot (<?php echo $bodenr_count; ?>)</li>
+<li>Baulastenkarte (<?php echo $baul_count; ?>)</li>
+<li>Baulastenkarte MS-Bau (<?php echo $msbau_count; ?>)</li>
+</ul>
+</td>
+<td>
+<ul>
+<li>B Pl&aumlne  (<?php echo $bplan_count; ?>)</li>
+<li>Störfallbetriebe (<?php echo $stoerb_count; ?>)</li>
+<li>Kampfmittelbelastung (<?php echo $kampfb_count; ?>)</li>
+<li>Naturschutzgebiete (<?php echo $naturs_count; ?>)</li>
+</ul>
+</td>
+<td>
+<li>Nationalpark (<?php echo $nationalp_count; ?>)</li>
+<li>Vogelschutzgebiete (<?php echo $vogels_count; ?>)</li>
+<li>Landschaftsschutzgebiete (<?php echo $lands_count; ?>)</li>
+<li>Fauna-Flora-Habitat Gebiete (<?php echo $ffh_count; ?>)</li>
+</td>
+</tr>
+</table>
+
+<hr width="800" NOSHADE size="1" color="#000000">	
+
+<!-------------------------------------- Eigentümer ----------------------------------------------------->
+<?php
+
+$query="SELECT a.oid,d.gml_id,d.flurstueckskennzeichen,d.amtlicheflaeche,d.eigentuemer,a.gemeinde_name,
+CASE 
+	WHEN a.ortsteil_typ='Ort' 
+		THEN a.ortsteil 
+	WHEN (a.ortsteil_typ='Ortsteil' 
+	OR a.ortsteil_typ='Stadtteil') 
+		THEN a.gemeinde_name 
+END as ort,
+CASE 
+	WHEN (a.ortsteil_typ ='Ortsteil' or a.ortsteil_typ='Stadtteil') 
+		THEN a.ortsteil 
+	ELSE null 
+END as ortsteil,a.strasse_name,a.nummer,a.zusatz,a.kvwmap_anschrift,a.wkb_geometry 
+FROM address_registry.adresstabelle a,kataster.flst_mit_eigentuemer as d,alkis.ax_flurstueck as b
+WHERE st_intersects(a.wkb_geometry,d.wkb_geometry) AND st_intersects(a.wkb_geometry,b.wkb_geometry) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL;";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+$remote_addr = getenv('REMOTE_ADDR');
+//echo $remote_addr;
+if ($remote_addr == $remote)	
+{
+while($r = $fetcharrayp($result))
+	
+  {
+	$eigentuemer[$count] = $r[eigentuemer];
+	$anschrift[$count] = $r[kvwmap_anschrift];
+	$eigentuemer[$count] = str_replace("\n", "<br />", str_replace("\r", "", $eigentuemer[$count]));  
+    $count++;
+	}
+
+
+if ($count>0) 
+
+	{
+		echo "
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='6' ><b><a href=\"#anker\" onclick=\"klappe('eintrag_1_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Adresse mit Eigentümer</a></td></tr>
+			</table>
+			<div id=\"eintrag_1_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=100 id='tdinfo'><b>Eigentümer</td>
+				<td width=100 id='tdinfo'><b>Adresse</td>
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr >
+						<td width=70% align='left' style='padding-left:50px'><br>$eigentuemer[$i]<br></td>
+						<td width='300' style='padding-left:10px'>$anschrift[$i]</td>
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+}
+	
+?>
+
+	
+<!--------Baudenkmale----------------------------------------------------------------------------------------------------->
+
+<?php
+
+$query="SELECT a.nr,a.lfdnr,a.obj,a.ort, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM fd_baudenkmal as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),b.wkb_geometry) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL;";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+
+while($r = $fetcharrayp($result))
+  {
+	$nummer[$count] = $r[nr];
+	$laufdnr[$count] = $r[lfdnr];
+	$objekt[$count] = $r[obj];
+	$ort[$count] = $r[ort];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];
+	
+    $count++;
+	}
+
+if ($count>0) 
+
+	{
+		echo "
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='6' ><b><a href=\"#anker\" onclick=\"klappe('eintrag_1_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Baudenkmale (Derzeitig keine flächendeckende Erfassung)</a></td></tr>
+			</table>
+			<div id=\"eintrag_1_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=100 id='tdinfo'><b>Nummer</td>
+				<td width=100 id='tdinfo'><b>lfd.-Nr.</td>
+				<td width=300 id='tdinfo'><b>Objekt</td>
+				<td width=300 id='tdinfo'><b>Ort</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$nummer[$i]</td>
+						<td>$laufdnr[$i]</td>
+						<td>$objekt[$i]</td>
+						<td>$ort[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+	
+?>
+
+
+
+<!--------Bodendenkmale blau------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.typ,a.gemarkung,a.fundplatz, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(a.the_geom,b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(a.the_geom,b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM construction.bodendenkmale_blau as a,alkis.ax_flurstueck as b WHERE st_intersects(a.the_geom,b.wkb_geometry) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL;";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+while($r = $fetcharrayp($result))
+  {
+	$typ[$count] = $r[typ];
+	$gemarkung[$count] = $r[gemarkung];
+	$fundpl[$count] = $r[fundplatz];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+
+	{
+		echo "
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='5'><a href=\"#anker\" onclick=\"klappe('eintrag_2_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'><b>Bodendenkmale (blau)</a></td></tr>
+			</table>
+			<div id=\"eintrag_2_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=100 id='tdinfo'><b>Typ</td>
+				<td width=100 id='tdinfo'><b>Gemarkung</td>
+				<td width=200 id='tdinfo'><b>Fundplatz</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$typ[$i]</td>
+						<td>$gemarkung[$i]</td>
+						<td>$fundpl[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i]</td>
+					</tr>
+					
+					";
+			
+		}
+	}
+		echo "</table></div></p>";
+?>
+
+
+
+<!--------Bodendenkmale rot------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.typ,gemarkung,a.fundplatz, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(a.the_geom,b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(a.the_geom,b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM construction.bodendenkmale_rot as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),b.wkb_geometry) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+	$typ[$count] = $r[typ];
+	$gemarkung[$count] = $r[gemarkung];
+	$fundpl[$count] = $r[fundplatz];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+
+	{
+		echo "
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='5'><b><a href=\"#anker\" onclick=\"klappe('eintrag_3_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Bodendenkmale (rot)</a></td></tr>
+			</table>
+			<div id=\"eintrag_3_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=100 id='tdinfo'><b>Typ</td>
+				<td width=300 id='tdinfo'><b>Gemarkung</td>
+				<td width=300 id='tdinfo'><b>Fundplatz</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$typ[$i]</td>
+						<td>$gemarkung[$i]</td>
+						<td>$fundpl[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+?>
+
+
+
+<!--------Baulastenkarte----------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.bl_bl_nr, a.bl_bl_s, a.ldf_nr, a.art, a.bemerk, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM fd_baulasten as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+	$nummer[$count] = $r[bl_bl_nr];
+	$seite[$count] = $r[bl_bl_s];
+	$laufdnr[$count] = $r[ldf_nr];
+	$art[$count] = $r[art];
+	$bemerk[$count] = $r[bemerk];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+
+	{
+		echo "	
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='7'><b><a href=\"#anker\" onclick=\"klappe('eintrag_4_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Baulastenkarte</a></td></tr>
+			</table>
+			<div id=\"eintrag_4_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=40 id='tdinfo'><b>Nummer</td>
+				<td width=40 id='tdinfo'><b>Seite</td>
+				<td width=60 id='tdinfo'><b>lfd. Nr.</td>
+				<td width=150 id='tdinfo'><b>Art</td>
+				<td width=250 id='tdinfo'><b>Bemerkung</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$nummer[$i]</td>
+						<td>$seite[$i]</td>
+						<td>$laufdnr[$i]</td>
+						<td>$art[$i]</td>
+						<td>$bemerk[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>						
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+		
+?>
+
+
+
+<!--------Baulastenkarte MS-Bau---------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.spalte_5, a.spalte_6, a.spalte_7, a.spalte_8, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM construction.baulasten_msbau as a,alkis.ax_flurstueck as b WHERE st_intersects(a.the_geom,st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+while($r = $fetcharrayp($result))
+  {
+	$spalte5[$count] = $r[spalte_5];
+	$spalte6[$count] = $r[spalte_6];
+	$spalte7[$count] = $r[spalte_7];
+	$spalte8[$count] = $r[spalte_8];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];
+	
+    $count++;
+	}
+	
+	
+if ($count > 0) 
+	{
+		echo "	
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='6'><b><a href=\"#anker\" onclick=\"klappe('eintrag_5_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Baulasten (MS-Bau)</a></td></tr>
+			</table>
+			<div id=\"eintrag_5_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=25% id='tdinfo'><b>Spalte 5</td>
+				<td width=25% id='tdinfo'><b>Spalte 6</td>
+				<td width=25% id='tdinfo'><b>Spalte 7</td>
+				<td width=25% id='tdinfo'><b>Spalte 8</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$spalte5[$i]</td>
+						<td>$spalte6[$i]</td>
+						<td>$spalte7[$i]</td>
+						<td>$spalte8[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>	
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+?>
+
+
+
+<!--------B Pläne----------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.plan_nr,a.zusatz,a.bezeichnun,a.stand_verfahren,a.datum_stan, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM fd_vblp5 as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND a.in_entwicklung='nein' AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+	$plannr[$count] = $r[plan_nr];
+	$zusatz[$count] = $r[zusatz];
+	$bezeich[$count] = $r[bezeichnun];
+	$standverf[$count] = $r[stand_verfahren];
+	$datumstan[$count] = $r[datum_stan];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+
+	{
+		echo "
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='6'><b><a href=\"#anker\" onclick=\"klappe('eintrag_6_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>B-Pl&auml;ne</a></td></tr>
+			</table>
+			<div id=\"eintrag_6_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=60 id='tdinfo'><b>Plan-Nr.</td>
+				<td width=200 id='tdinfo'><b>Bezeichnung</td>
+				<td width=100 id='tdinfo'><b>Verfahrensstand</td>
+				<td width=100 id='tdinfo'><b>Datum</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$plannr[$i] $zusatz[$i]</td>
+						<td>$bezeich[$i]</td>
+						<td>$standverf[$i]</td>
+						<td>$datumstan[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>						
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+?>
+
+<!--------Störfallbetriebe--------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.g_name, a.b_name, a.b_art, a.stoerfallbetrieb, a.stoerfall_radius, a.stoerfall_status,
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM fd_gewerbedatei as a,alkis.ax_flurstueck as b WHERE st_intersects(st_buffer(st_transform(a.the_geom,25833),a.stoerfall_radius),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+	$gname[$count] = $r[g_name];
+	$bname[$count] = $r[b_name];
+	$art[$count] = $r[b_art];
+	$stoerfallbetrieb[$count] = $r[stoerfallbetrieb];
+	$stoerfallradius[$count] = $r[stoerfall_radius];
+	$stoerfallstatus[$count] = $r[stoerfall_status];
+	
+    $count++;
+	}
+	
+	if ($count> 0) 
+		{
+			echo "
+				<table id='tableinfo' border='1'>
+				<tr width=800 height='30'><td id='tkopf' colspan='6'><b><a href=\"#anker\" onclick=\"klappe('eintrag_14_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Störfallbetriebe</a></td></tr>
+				</table>
+				<div id=\"eintrag_14_1\" style=\"display: block\">
+				<table id='tableinfo' border='1'>
+				<tr id='trinfo'>
+					<td width=60 id='tdinfo'><b>Betreiber</td>
+					<td width=200 id='tdinfo'><b>Betriebsstätte</td>
+					<td width=100 id='tdinfo'><b>Betriebsart</td>
+					<td width=100 id='tdinfo'><b>Störfallanlage</td>
+					<td width=100 id='tdinfo'><b>Wirkradius</td>
+					<td width=80 id='tdinfo'><b>Status</td>
+				</tr>";
+
+			for ($i = 0; $i < $count; $i++)
+			{	
+				echo "	<tr>
+							<td>$gname[$i]</td>
+							<td>$bname[$i]</td>
+							<td>$art[$i]</td>
+							<td>$stoerfallbetrieb[$i]</td>
+							<td>$stoerfallradius[$i] m</td>
+							<td>$stoerfallstatus[$i]</td>						
+						</tr>";
+				
+			}
+		}
+			echo "</table></div></p>";
+		
+	
+?>
+
+<!--------Kampfmittelbelastung----------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.kmk,a.name,a.art,a.belastung, 
+CASE 
+	WHEN st_isvalid(a.geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM protection.kbelastete_gebiete_2015 as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.geom,25833),st_buffer(b.wkb_geometry,-1))  AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+	$kmk[$count] = $r[kmk];
+	$name[$count] = $r[name];
+	$art[$count] = $r[art];
+	$belast[$count] = $r[belastung];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+	{
+		echo "
+			<table id='tableinfo' border='1'>
+				<tr width=800 height='30'><td id='tkopf' colspan='6' ><b><a href=\"#anker\" onclick=\"klappe('eintrag_7_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Kampfmittel</a></td></tr>
+				</table>
+				<div id=\"eintrag_7_1\" style=\"display: block\">
+				<table id='tableinfo' border='1'>
+				<tr><td colspan=6 id='tdinfo'><b>Kampfmittelbelastung:</td></tr>
+				<tr id='trinfo'>
+					<td width=80 id='tdinfo'><b>Nr. KMK</td>
+					<td width=200 id='tdinfo'><b>Name</td>
+					<td width=200 id='tdinfo'><b>Art</td>
+					<td width=200 id='tdinfo'><b>Belastung</td>
+					<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+					<td width=80 id='tdinfo'><b>%</td>					
+				</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$kmk[$i]</td>
+						<td>$name[$i]</td>
+						<td>$art[$i]</td>
+						<td>$belast[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>							
+					</tr>";
+			
+		}
+	}
+
+
+$query="SELECT a.br_id,a.beginn,a.art,a.ende, 
+CASE 
+	WHEN st_isvalid(a.geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM protection.kberaeumte_gebiete_2015 as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.geom,25833),st_buffer(b.wkb_geometry,-1))  AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+	$brid[$count] = $r[br_id];
+	$beginn[$count] = $r[beginn];
+	$ende[$count] = $r[ende];
+	$art1[$count] = $r[art];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+
+	{
+		echo "<div id=\"eintrag_7_1\" style=\"display: block\">		
+				<tr><td colspan=6><b>Kampfmittelber&auml;umung:</td></tr>
+				<tr id='trinfo'>
+				<td width=80 id='tdinfo'><b>Ber&auml;umungsnr.</td>
+				<td width=200 id='tdinfo'><b>Beginn</td>
+				<td width=200 id='tdinfo'><b>Ende</td>
+				<td width=200 id='tdinfo'><b>Art</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>					
+				</tr>";
+				
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$brid[$i]</td>
+						<td>$beginn[$i]</td>
+						<td>$ende[$i]</td>
+						<td>$art1[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>							
+					</tr>";
+		}
+	}
+		echo "</table></div></p>";
+?>
+
+
+
+<!--------Naturschutzgebiete----------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.label,a.name,a.lage,a.area_ha, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM environment.sg_naturschutzgebiete as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+while($r = $fetcharrayp($result))
+  {
+	$label[$count] = $r[label];
+	$name[$count] = $r[name];
+	$lage[$count] = $r[lage];
+	$area[$count] = $r[area_ha];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];	
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+
+	{
+		echo "
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='6'><b><a href=\"#anker\" onclick=\"klappe('eintrag_8_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Naturschutzgebiete</a></td></tr>
+			</table>
+			<div id=\"eintrag_8_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=60 id='tdinfo'><b>Nummer</td>
+				<td width=200 id='tdinfo'><b>Bezeichnung</td>
+				<td width=100 id='tdinfo'><b>Lage</td>
+				<td width=100 id='tdinfo'><b>Fl&auml;che ha</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>					
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$label[$i]</td>
+						<td>$name[$i]</td>
+						<td>$lage[$i]</td>
+						<td>$area[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>	
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+?>
+
+
+
+<!--------Nationalpark----------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.nr,a.name,a.area_ha,
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil  FROM environment.sg_nationalparke as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+	$nummer[$count] = $r[nr];
+	$name[$count] = $r[name];
+	$area[$count] = $r[area_ha];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];	
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+
+	{
+		echo "
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='5'><b><a href=\"#anker\" onclick=\"klappe('eintrag_9_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Nationalparke</a></td></tr>
+			</table>
+			<div id=\"eintrag_9_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=60 id='tdinfo'><b>Nummer</td>
+				<td width=200 id='tdinfo'><b>Bezeichnung</td>
+				<td width=100 id='tdinfo'><b>Fl&auml;che ha</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>					
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$nummer[$i]</td>
+						<td>$name[$i]</td>
+						<td>$area[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>							
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+?>
+
+
+
+<!--------Vogelschutzgebiete----------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.eu_nr,a.nr,a.gebiet_nam, a.ha_etrs as area_ha, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil  FROM environment.sg_spa_fl as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+	$eunummer[$count] = $r[eu_nr];
+	$nummer[$count] = $r[nr];
+	$gebiet[$count] = $r[gebiet_nam];
+	$area[$count] = $r[area_ha];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];		
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+
+	{
+		echo "	
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='6'><b><a href=\"#anker\" onclick=\"klappe('eintrag_10_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Vogelschutzgebiete</a></td></tr>
+			</table>
+			<div id=\"eintrag_10_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=60 id='tdinfo'><b>EU Nummer</td>
+				<td width=200 id='tdinfo'><b>Nummer</td>
+				<td width=100 id='tdinfo'><b>Bezeichnung</td>
+				<td width=100 id='tdinfo'><b>Fl&auml;che ha</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>				
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$eunummer[$i]</td>
+						<td>$nummer[$i]</td>
+						<td>$gebiet[$i]</td>
+						<td>$area[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>							
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+?>
+
+
+
+<!--------Landschaftsschutzgebiet--------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.label,a.name,a.kreis1, a.area_ha,
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM environment.sg_landschaftsschutzgebiete as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+while($r = $fetcharrayp($result))
+  {
+	$label[$count] = $r[label];
+	$name[$count] = $r[name];
+	$kreis1[$count] = $r[kreis1];
+	$area[$count] = $r[area_ha];
+	$schnittflaeche[$count] = $r[schnittflaeche];
+	$anteil[$count] = $r[anteil];		
+	
+    $count++;
+	}
+
+	
+if ($count > 0) 
+
+	{
+		echo "	
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='6'><b><a href=\"#anker\" onclick=\"klappe('eintrag_12_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Landschaftsschutzgebiete</a></td></tr>
+			</table>
+			<div id=\"eintrag_12_1\" style=\"display: block\">	
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=60 id='tdinfo'><b>Nummer</td>
+				<td width=200 id='tdinfo'><b>Bezeichnung</td>
+				<td width=100 id='tdinfo'><b>Kreis</td>
+				<td width=100 id='tdinfo'><b>Fl&auml;che ha</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>					
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$label[$i]</td>
+						<td>$name[$i]</td>
+						<td>$kreis1[$i]</td>
+						<td>$area[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>								
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+?>
+
+
+
+<!--------Fauna-Flora-Habitat Gebiete--------------------------------------------------------------------------------------------------->
+
+<?php
+$query="SELECT a.eu_nr,a.name,a.ha_etrs as area_ha,
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round(st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))::numeric,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as schnittflaeche, 
+CASE 
+	WHEN st_isvalid(a.the_geom) = TRUE
+	THEN (round((st_area(INTERSECTION(st_transform(a.the_geom,25833),b.wkb_geometry))/st_area(b.wkb_geometry))::numeric*100,2))::text 
+	ELSE 'Geometrie fehlerhaft'::text
+END as anteil FROM environment.sg_ffh_fl as a,alkis.ax_flurstueck as b WHERE st_intersects(st_transform(a.the_geom,25833),st_buffer(b.wkb_geometry,-1)) AND b.flurstueckskennzeichen='$flstkennz' AND b.endet IS NULL";
+
+$result = $dbqueryp($connectp,$query);
+$count=0;
+
+
+while($r = $fetcharrayp($result))
+  {
+	$eunummer[$count] = $r[eu_nr];
+	$name[$count] = $r[name];
+	$area[$count] = $r[area_ha];
+	
+    $count++;
+	}
+	
+if ($count > 0) 
+
+	{
+		echo "
+			<table id='tableinfo' border='1'>
+			<tr width=800 height='30'><td id='tkopf' colspan='5'><b><a href=\"#anker\" onclick=\"klappe('eintrag_13_1')\" title=\"aufklappen/zuklappen\" style='text-decoration: none;'>Fauna-Flora-Habitat Gebiete</a></td></tr>
+			</table>
+			<div id=\"eintrag_13_1\" style=\"display: block\">
+			<table id='tableinfo' border='1'>
+			<tr id='trinfo'>
+				<td width=60 id='tdinfo'><b>EU Nummer</td>
+				<td width=200 id='tdinfo'><b>Bezeichnung</td>
+				<td width=100 id='tdinfo'><b>Fl&auml;che ha</td>
+				<td width=100 id='tdinfo'><b>&isin; in m&sup2;</td>
+				<td width=80 id='tdinfo'><b>%</td>							
+			</tr>";
+
+		for ($i = 0; $i < $count; $i++)
+		{	
+			echo "	<tr>
+						<td>$eunummer[$i]</td>
+						<td>$name[$i]</td>
+						<td>$area[$i]</td>
+						<td>$schnittflaeche[$i]</td>
+						<td>$anteil[$i] %</td>						
+					</tr>";
+			
+		}
+	}
+		echo "</table></div></p>";
+	
+?>
+
+
+</center>
+</body>
+</html>

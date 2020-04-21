@@ -1,0 +1,3764 @@
+<?xml version="1.0"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg id="svgmap" zoomAndPan="disable" width="1192" height="824" onload="init();" onmousemove="mouse_move(evt);top.drag(evt);" onmouseup="top.dragstop(evt)"
+  xmlns="http://www.w3.org/2000/svg" version="1.1"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+<title> kvwmap </title><desc> kvwmap - WebGIS application - kvwmap.sourceforge.net </desc>
+ 
+<script type="text/ecmascript"><![CDATA[ 
+
+	try{
+		top.printNode = printNode;
+	}
+	catch(e){
+	} 
+
+  var resx  = 1192;
+  var resy  = 824;
+  var resx_m  = 596;
+  var resy_m  = 412;
+  var pathx = new Array();
+  var pathy = new Array();
+	var pathx_world = new Array();
+  var pathy_world = new Array();
+  var polypathx = new Array();
+  var polypathy = new Array();
+  var boxx  = new Array();
+  var boxy  = new Array();
+  var dragging  = false; 
+  var dragdone  = false; 
+  var measuring  = false;
+  var polydrawing  = false; 
+	var texttyping = false;
+	var arrowdrawing = false;
+	var current_freepolygon;
+	var current_freetext;
+	var current_freearrow;
+  moving  = false;
+  moved  = false;
+  var doing = "recentre";
+	var doing_save;
+	mouse_down = false;
+  var cmd   = ""; 
+  var data="";
+  var x_pos="";
+  var y_pos="";
+	var get_vertices_loop;
+	var gps_follow_cooldown = 0;
+	var root = document.documentElement;
+	var mousewheelloop = 0;
+	var touchx;
+	var touchy;
+	var start_ctm;
+	var pinching = false;
+	var pinch_distance = 0;
+	var last_x = 0;
+	freehand_measuring = false;
+	var measured_distance = 0;
+	var new_distance = 0,
+			dragVectors = [{
+					'x0': 0,
+					'y0': 0,
+					'dx': 0,
+					'dy': 0,
+				}, {
+					'x0': 0,
+					'y0': 0,
+					'dx': 0,
+					'dy': 0,
+				}
+			],
+			touchPanZoomThreshold = 17 // differences of drag vectors, to distinguish between pan and zoom on touch gestures;
+	
+
+function startup(){
+	if(get_measure_path()){
+		redrawPL();
+	}
+	get_polygon_path();	
+	redrawPolygon();
+	if(doing == "polygonquery"){polygonarea()};
+	set_suchkreis();
+	eval(doing+"()");	
+  //document.getElementById(doing+"0").classList.add("active");				// das kann der IE nicht
+	document.getElementById(doing+"0").className.baseVal += " active";	// deswegen dieser workaround
+	pinching = false;
+}
+
+function sendpath(cmd, pathx, pathy){
+	top.sendpath(cmd, pathx, pathy);
+	if(cmd == "polygonquery")deletepolygon();
+}
+
+function prevent1(evt){
+	if(evt.preventDefault){
+		evt.preventDefault();
+	}else{ // IE fix
+		evt.returnValue = false;
+	};
+}
+
+function applyZoom(){
+	var g = document.getElementById("moveGroup");
+	zx = g.getCTM().inverse();
+	pathx[0] = Math.round(zx.e);
+	pathy[0] = Math.round(zx.f);
+	pathx[2] = Math.round(zx.e + resx*zx.a); 
+	pathy[2] = Math.round(zx.f + resy*zx.a);
+	sendpath("zoomin_wheel", pathx, pathy);
+}
+
+function mousewheelchange(evt){
+	if(doing == "polygonquery"){
+		save_polygon_path();
+	}
+	if(doing == "measure"){
+		save_measure_path();
+	}
+	remove_vertices();
+	if(!evt)evt = window.event; // For IE
+	if(top.document.GUI.stopnavigation.value == 0){
+		window.clearTimeout(mousewheelloop);
+		prevent1(evt);
+		if(evt.wheelDelta)
+			delta = evt.wheelDelta / 3600; // Chrome/Safari
+		else if(evt.detail)
+			delta = evt.detail / -90; // Mozilla
+		var z = 1 + delta*5;
+		var p = getEventPoint(evt);
+		if(p.x > 0 && p.y > 0){
+			zoomTransform(p, null, z, null);
+			mousewheelloop = window.setTimeout("applyZoom()", 400);
+		}
+	}
+}
+
+function zoomTransform(p, t, z, ctm) {
+	var g = document.getElementById("moveGroup");
+
+	if (t == null) t = { 'dx': 0, 'dy': 0 }
+
+	if(ctm == null) ctm = g.getCTM();
+
+	p = p.matrixTransform(ctm.inverse());
+	var k = root.createSVGMatrix().translate(p.x, p.y).scale(z).translate(-p.x + t.dx, -p.y + t.dy);
+	setCTM(g, ctm.multiply(k)); 
+}
+
+/*
+* Returns the pinch distance between first and second touch position on page
+* Returns 0 if only one touch exists 
+*/
+function getPinchDistance(evt) {
+	return (evt.touches.length == 2 ? (Math.pow(evt.touches[0].pageX - evt.touches[1].pageX, 2) + Math.pow(evt.touches[0].pageY - evt.touches[1].pageY, 2)) : 0)
+}
+
+function getTouchPositions(evt) {
+	var touchPositions = [{
+			'x': evt.touches[0].pageX,
+			'y': evt.touches[0].pageY
+		}, {
+			'x': evt.touches[1].pageX,
+			'y': evt.touches[1].pageY
+		}
+	]
+	return touchPositions
+}
+
+function startDragVectors(touches) {
+	dragVectors[0].x0 = touches[0].pageX;
+	dragVectors[0].y0 = touches[0].pageY;
+	dragVectors[1].x0 = touches[1].pageX;
+	dragVectors[1].y0 = touches[1].pageY;
+}
+
+function updateDragVectors(touches) {
+	dragVectors[0].dx = touches[0].pageX - dragVectors[0].x0;
+	dragVectors[0].dy = touches[0].pageY - dragVectors[0].y0;
+	dragVectors[1].dx = touches[1].pageX - dragVectors[1].x0;
+	dragVectors[1].dy = touches[1].pageY - dragVectors[1].y0;
+	return dragVectors;
+}
+
+function touchstart(evt){
+	prevent1(evt);
+	if(top.document.GUI.stopnavigation.value == 0){
+		if(evt.touches.length == 1){		// 1 Finger
+			touchx = evt.clientX = evt.touches[0].pageX;
+			touchy = evt.clientY = evt.touches[0].pageY;
+			mousedown(evt);
+		}
+		else if(evt.touches.length == 2){		// 2 Finger
+			var g = document.getElementById("moveGroup");
+			pinching = true;
+			pinch_distance = getPinchDistance(evt);
+			startDragVectors(evt.touches);
+			start_ctm = g.getCTM();
+		}
+	}
+}
+
+function touchmove(evt) {
+	prevent1(evt);
+	if(top.document.GUI.stopnavigation.value == 0){
+		if(pinching == false && evt.touches.length == 1){		// 1 Finger
+			touchx = evt.clientX = evt.touches[0].pageX;
+			touchy = evt.clientY = evt.touches[0].pageY;
+			mousemove(evt);
+		}
+		else if(pinching){
+			z = getPinchDistance(evt) / pinch_distance;
+			var p = getEventPoint(evt);
+			
+			if (evt.touches.length == 2) {
+				var v = updateDragVectors(evt.touches),
+						doing = ((Math.abs((v[1].dx - v[0].dx)) + Math.abs((v[1].dx - v[0].dx))) > touchPanZoomThreshold ? ' zoom' : 'pan');
+
+/*				console.log(
+					'v1(' + v[0].dx + ', ' + v[0].dy + ') ' +
+					'v2(' + v[1].dx + ', ' + v[1].dy + ') ' +
+					'dv(' + (v[1].dx - v[0].dx) + ', ' + (v[1].dy - v[0].dy) + ') ' +
+					's(' + (Math.abs((v[1].dx - v[0].dx)) + Math.abs((v[1].dy - v[0].dy))) + ')' +
+					'doing: ' + doing
+				);
+*/
+			}
+			if(p.x > 0 && p.y > 0){
+				if (doing == 'pan') {
+					t = v[0];
+				}
+				zoomTransform(p, t, z, start_ctm);
+			}
+		}
+	}
+}
+
+function touchend(evt){
+	prevent1(evt);
+	if(pinching == false){		// 1 Finger
+		evt.clientX = touchx;
+		evt.clientY = touchy;
+		mouseup(evt);
+	}
+	else if(evt.touches.length == 0 && pinching){
+		applyZoom();
+		//pinching = false;
+	}
+}
+
+function setCTM(element, matrix) {
+	var s = "matrix(" + matrix.a + "," + matrix.b + "," + matrix.c + "," + matrix.d + "," + matrix.e + "," + matrix.f + ")";
+	element.setAttribute("transform", s);
+}
+
+function getEventPoint(evt) {
+	var p = root.createSVGPoint();
+	if (evt.clientX != undefined) {		// Maus: Mausposition
+		p.x = evt.clientX;
+		p.y = evt.clientY;
+	}
+	else if (evt.touches[0].pageX != undefined){		// Touch: Mitte zwischen beiden Fingern
+		if (evt.touches.length == 2) {
+			p.x = evt.touches[0].pageX - ((evt.touches[0].pageX-evt.touches[1].pageX)/2);
+			p.y = evt.touches[0].pageY - ((evt.touches[0].pageY-evt.touches[1].pageY)/2);
+		}
+		else {
+			p.x = 0;
+			p.y = 0;
+		}
+	}
+	if (top.navigator.userAgent.toLowerCase().indexOf("msie") >= 0){
+		p.x = p.x - (top.document.body.clientWidth - resx)/2;
+    p.y = p.y - 30;
+	}
+	return p;
+}
+
+function init(){
+	startup();
+	if (top.browser == "other"){
+	}
+	else {
+		document.getElementById("mapimg2").addEventListener("load", function(evt) { moveback_ff(evt); }, true);
+	}
+	if (window.addEventListener) {
+			window.addEventListener('mousewheel', mousewheelchange, false); // Chrome/Safari//IE9
+  		window.addEventListener('DOMMouseScroll', mousewheelchange, false);		//Firefox
+			document.getElementById('canvas').addEventListener('touchstart', touchstart, false);		//touchstart
+			document.getElementById('canvas').addEventListener('touchmove', touchmove, false);		//touchmove
+			document.getElementById('canvas').addEventListener('touchend', touchend, false);		//touchend
+			document.getElementById('canvas').addEventListener('touchcancel', prevent, false);		//touchcancel
+  }
+  else {
+		top.document.getElementById("map").onmousewheel = mousewheelchange;		// <=IE8
+	}
+}
+
+top.document.getElementById("map").SVGstartup = startup;		// das ist ein Trick, nur so kann man aus dem html-Dokument eine Javascript-Funktion aus dem SVG-Dokument aufrufen
+
+top.document.getElementById("svghelp").SVGmoveback = moveback;
+
+function moveback_ff(evt){
+	// beim Firefox wird diese Funktion beim onload des Kartenbildes ausgefuehrt
+	document.getElementById("mapimg2").setAttribute("style", "display:block");	
+	window.setTimeout('document.getElementById("moveGroup").setAttribute("transform", "translate(0 0)");document.getElementById("mapimg").setAttribute("xlink:href", document.getElementById("mapimg2").getAttribute("xlink:href"));startup();', 200);
+	// Redlining-Sachen loeschen
+	while(child = document.getElementById("redlining").firstChild){
+  	document.getElementById("redlining").removeChild(child);
+	}
+	// Tooltip refreshen
+	oldmousex = undefined;
+	hidetooltip(evt);
+	// Navigation wieder erlauben
+	top.stopwaiting();
+	window.setTimeout('document.getElementById("mapimg2").setAttribute("xlink:href", "")', 400);
+	window.setTimeout('document.getElementById("mapimg2").setAttribute("style", "display:none")', 400);	
+}
+
+
+
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
+
+
+
+function moveback(evt){
+	// bei allen anderen Browsern gibt es kein onload für das Kartenbild, deswegen wird diese Funktion als erstes ausgefuehrt
+	document.getElementById("mapimg").setAttribute("xlink:href", "/kvwmap/graphics/leer.gif");
+	document.getElementById("moveGroup").setAttribute("transform", "translate(0 0)");
+	// Redlining-Sachen loeschen
+	while(child = document.getElementById("redlining").firstChild){
+  	document.getElementById("redlining").removeChild(child);
+	}
+	// Tooltip refreshen
+	oldmousex = undefined;
+	hidetooltip(evt);
+	// Navigation wieder erlauben
+	top.stopwaiting();
+}
+
+function go_previous(){
+  document.getElementById("canvas").setAttribute("cursor", "wait");
+  cmd="previous";
+  top.document.GUI.go.value = "history_move";
+  top.go_cmd(cmd);
+}
+
+function go_next(){
+  document.getElementById("canvas").setAttribute("cursor", "wait");
+  cmd="next";
+  top.document.GUI.go.value = "history_move";
+  top.go_cmd(cmd);
+}
+
+function zoomall(){
+  document.getElementById("canvas").setAttribute("cursor", "wait");
+  cmd="Full_Extent";
+  top.go_cmd(cmd);
+}
+
+function recentre(){
+	if(doing == "polygonquery"){
+		save_polygon_path();
+	}
+	if(doing == "measure"){
+		save_measure_path();
+	}
+  doing = "recentre";
+	top.document.GUI.last_button.value = doing = "recentre";
+	document.getElementById("canvas").setAttribute("cursor", "move");
+  document.getElementById("canvas").setAttribute("cursor", "grab");
+}
+
+function zoomin(){
+	if(doing == "polygonquery"){
+		save_polygon_path();
+	}
+	if(doing == "measure"){
+		save_measure_path();
+	}
+  doing = "zoomin";
+	top.document.GUI.last_button.value = doing = "zoomin";
+  document.getElementById("canvas").setAttribute("cursor", "crosshair");
+}
+
+function zoomout(){
+	if(doing == "polygonquery"){
+		save_polygon_path();
+	}
+	if(doing == "measure"){
+		save_measure_path();
+	}
+  doing = "zoomout";
+	top.document.GUI.last_button.value = doing = "zoomout";
+  document.getElementById("canvas").setAttribute("cursor", "crosshair");
+}
+
+function showcoords(){
+	doing = "showcoords";
+  document.getElementById("canvas").setAttribute("cursor", "crosshair");
+}
+
+function ppquery(){
+  top.document.GUI.last_button.value = doing = "ppquery";
+  document.getElementById("canvas").setAttribute("cursor", "help");
+}  
+
+function touchquery(){
+	doing = "touchquery";
+	top.document.GUI.last_button.value = doing = "touchquery";
+	document.getElementById("canvas").setAttribute("cursor", "help");
+}
+
+function pquery(){
+  doing = "pquery";
+	top.document.GUI.last_button.value = doing = "pquery";
+  document.getElementById("canvas").setAttribute("cursor", "help");
+}
+
+// in pquery() und pquery_prompt() aufgeteilt, da der Promt sonst auch bei jedem reload erscheint   
+function pquery_prompt(){     
+  top.document.GUI.searchradius.value=prompt("Geben Sie den Suchradius in Meter ein.",top.document.GUI.searchradius.value);
+  set_suchkreis();
+}
+
+function set_suchkreis(){
+  radius = (top.document.GUI.searchradius.value / parseFloat(top.document.GUI.pixelsize.value));
+  document.getElementById("suchkreis").setAttribute("r", radius);
+}
+
+function polygonquery(){
+	if((measuring || polydrawing) && (top.document.GUI.punktfang.checked)){
+		remove_vertices();
+		request_vertices();
+	}
+	doing = "polygonquery";
+	document.getElementById("canvas").setAttribute("cursor", "help");
+	// Wenn im UTM-System gemessen wird, NBH-Datei laden
+	if(2398 == 25833)top.ahah("index.php", "go=getNBH", new Array(""), new Array("execute_function"));
+	if(top.document.GUI.str_polypathx.value != ""){
+		polydrawing = true;
+		top.document.GUI.str_polypathx.value = "";
+		top.document.GUI.str_polypathy.value = "";
+	}
+	else{
+		deletepolygon();
+	}
+}
+
+function drawarrow(){
+	document.getElementById("canvas").setAttribute("cursor", "crosshair");
+	doing = "drawarrow";
+}
+
+function drawpolygon(){
+	document.getElementById("canvas").setAttribute("cursor", "crosshair");
+	doing = "drawpolygon";
+	polydrawing = false;
+	top.document.GUI.str_polypathx.value = "";
+	top.document.GUI.str_polypathy.value = "";
+	deletepolygon();
+}
+
+function addfreetext(){
+	document.getElementById("canvas").setAttribute("cursor", "crosshair");
+	doing = "addtext";
+	texttyping = false;
+}
+		    
+function noMeasuring(){
+  measuring = false;
+  restart();
+}
+
+function measure(){
+	if((measuring || polydrawing) && (top.document.GUI.punktfang.checked || (top.document.GUI.orthofang != undefined && top.document.GUI.orthofang.checked))){
+		remove_vertices();
+		request_vertices();
+	}
+	options1 = top.document.getElementById("options");
+	options1.innerHTML='<input type="checkbox" onclick="toggle_vertices()" name="orthofang">&nbsp;Ortho-Fang';
+	// Wenn im UTM-System gemessen wird, NBH-Datei laden
+	if(2398 == 25833)top.ahah("index.php", "go=getNBH", new Array(""), new Array("execute_function"));
+  doing = "measure";
+	if(top.document.GUI.str_pathx.value != ""){
+		measuring = true;	
+		top.document.GUI.str_pathx.value = "";
+		top.document.GUI.str_pathy.value = "";
+	}
+	else{
+		top.document.GUI.measured_distance.value = 0;
+		measured_distance = 0;
+		new_distance = 0;
+		freehand_measuring = false;
+  	measuring = false;
+  	restart();
+	}
+  document.getElementById("canvas").setAttribute("cursor", "crosshair");
+}
+
+function save_measure_path(){
+	var length = pathx.length;
+	if(length > 0){
+		var str_pathx = pathx_world.join(";");
+		var str_pathy = pathy_world.join(";");
+		top.document.GUI.str_pathx.value = str_pathx;
+		top.document.GUI.str_pathy.value = str_pathy;
+		top.document.GUI.measured_distance.value = measured_distance;
+	}
+}
+
+function get_measure_path(){
+	if(top.document.GUI.str_pathx.value != ""){
+		pathx = new Array();
+		pathy = new Array();
+		document.getElementById(doing+"0").style.setProperty("fill", "ghostwhite","");
+		doing = "measure";
+		measuring = true;
+		var str_pathx = top.document.GUI.str_pathx.value;
+		var str_pathy = top.document.GUI.str_pathy.value;
+		pathx_world = str_pathx.split(";");
+		pathy_world = str_pathy.split(";");  
+		pathx[0] = (pathx_world[0] - parseFloat(top.document.GUI.minx.value))/parseFloat(top.document.GUI.pixelsize.value);
+		pathy[0] = (pathy_world[0] - parseFloat(top.document.GUI.miny.value))/parseFloat(top.document.GUI.pixelsize.value);
+		var length = pathx_world.length; 
+	  for(var i = 1; i < length; i++){
+	    pathx[i] = (pathx_world[i] - parseFloat(top.document.GUI.minx.value))/parseFloat(top.document.GUI.pixelsize.value);
+			pathy[i] = (pathy_world[i] - parseFloat(top.document.GUI.miny.value))/parseFloat(top.document.GUI.pixelsize.value);
+			document.getElementById("moveGroup").removeChild(document.getElementById("section"+i));
+			showSectionMeasurement(i);
+		}
+		measured_distance = parseFloat(top.document.GUI.measured_distance.value);
+		return true;
+	}
+	return false;
+}
+
+function save_polygon_path(){
+	var length = polypathx.length;
+	if(length > 0){
+		str_polypathx = polypathx.join(";");
+		str_polypathy = polypathy.join(";");
+		top.document.GUI.str_polypathx.value = str_polypathx;
+		top.document.GUI.str_polypathy.value = str_polypathy;
+	}
+}
+
+function get_polygon_path(){
+	if(top.document.GUI.str_polypathx.value != ""){
+		highlightbyid("polygonquery0");
+		doing = "polygonquery";
+		var str_polypathx = top.document.GUI.str_polypathx.value;
+		var str_polypathy = top.document.GUI.str_polypathy.value;
+		polypathx = str_polypathx.split(";");
+		polypathy = str_polypathy.split(";");  
+	}
+}
+
+function switch_gps_follow(){
+	if(top.document.GUI.gps_follow.value == "on"){
+		top.document.GUI.gps_follow.value = "off";
+	}
+	else{
+		top.document.GUI.gps_follow.value = "on";
+	}
+	top.document.GUI.submit();
+}
+
+
+function world2pixelsvg(pathWelt){
+	var path  = new Array();
+	pathWelt = pathWelt.replace(/L /g, "");		// neuere Postgis-Versionen haben ein L mit drin
+	explosion = pathWelt.split(" ");
+	for(i = 0; i < explosion.length; i++){
+		if(explosion[i] == "M"){
+			path.push("M");
+			laststartx = Math.round((explosion[i+1] - parseFloat(top.document.GUI.minx.value))/parseFloat(top.document.GUI.pixelsize.value));
+			laststarty = Math.round((-1*explosion[i+2] - top.document.GUI.miny.value)/parseFloat(top.document.GUI.pixelsize.value));
+		}
+		if(explosion[i] != "M" && explosion[i] != "Z" && explosion[i] != ""){
+			path.push(Math.round((explosion[i] - parseFloat(top.document.GUI.minx.value))/parseFloat(top.document.GUI.pixelsize.value)));
+			path.push(Math.round((-1*explosion[i+1] - top.document.GUI.miny.value)/parseFloat(top.document.GUI.pixelsize.value)));
+			i++;
+		}
+		if(explosion[i] == "Z"){			// neuere Postgis-Versionen liefern bei asSVG ein Z zum Schliessen des Rings anstatt der Startkoordinate
+    	path.push(laststartx);
+    	path.push(laststarty);
+    }
+	}
+	pixelpath = "";
+	for(i = 0; i < path.length; i++){
+		pixelpath = pixelpath + path[i] + " ";
+	}
+	return pixelpath;
+}
+
+
+// -------------------------mausinteraktionen auf canvas------------------------------
+
+function mouse_move(evt){
+	top.coords_anzeige(evt, null);
+	if(doing == "ppquery"){
+		hidetooltip(evt);
+	}
+}		
+
+function mousedown(evt){
+	mouse_down = true;
+	tooltipstate = "tooltip_paused";
+	cleartooltip();
+	if(top.document.GUI.stopnavigation.value == 0){
+		if(evt.button == 1){			// mittlere Maustaste -> Pan
+			if(evt.preventDefault)evt.preventDefault();
+			else evt.returnValue = false; // IE fix
+			if(doing == "polygonquery"){
+				save_polygon_path();
+			}
+			if(doing == "measure"){
+				save_measure_path();
+			}
+			doing_save = doing;
+			doing = "recentre";
+		}
+	  switch(doing){
+	   case "previous":
+	   break;
+	   case "next":
+	   break;
+	   case "zoomin":
+			remove_vertices();
+	    startPoint(evt);
+	   break;
+	   case "zoomout":
+			remove_vertices();
+	    selectPoint(evt);
+	   break;
+	   case "recentre":			
+			remove_vertices();
+	    startMove(evt);
+	   break;
+		case "showcoords":
+	    top.show_coords(evt, null);
+	   break;
+	   case "pquery":
+	    startPoint(evt);
+	   break;
+		 case "touchquery":
+	    startPoint(evt);
+	   break;
+	   case "ppquery":
+	    startPoint(evt);
+	   break;
+	   case "polygonquery":
+	 		if (polydrawing){
+	      addpolypoint(evt);
+	    }
+	    else {
+	      startpolydraw(evt);
+	    }
+	   break;
+		 case "drawpolygon":
+	 		if (polydrawing){
+	      addpolypoint(evt);
+	    }
+	    else {
+	      startpolydraw(evt);
+	    }
+	   break;
+		 case "addtext":
+	     addnewtext(evt);
+	   break;
+		 case "drawarrow":
+		   startarrowdraw(evt);
+	   break;
+	   case "measure":
+			freehand_measuring = true;
+	    if (measuring){
+	    	client_x = evt.clientX;
+			  client_y = resy - evt.clientY;
+			  if(client_x == pathx[pathx.length-1] && client_y == pathy[pathy.length-1]){
+					evt.preventDefault();
+			  	recentre();		// Streckenmessung bei Doppelklick beenden
+			  }
+			  else{
+	      	addpoint(evt);
+					showSectionMeasurement(pathx.length-1);
+					measured_distance = new_distance;
+	      }
+	    }
+	    else {
+	      startMeasure(evt);
+	    }
+	   break;
+	   default:
+	    alert("Fehlerhafte Eingabe! \nUebergebene Daten: "+cmd+", "+doing);
+	   break;
+	  }
+	}
+}
+
+function mousemove(evt){
+  switch(doing) {
+	 case "measure":
+	    if (measuring){
+	      add_current_point(evt);
+	    }
+	    else {
+	    show_tooltip('Startpunkt setzen',evt.clientX,evt.clientY)
+	    }
+	 break;
+	 		
+	 case "pquery":
+	 	clientx = evt.clientX;
+		clienty = resy - evt.clientY;
+		document.getElementById("suchkreis").setAttribute("cx", clientx);
+		document.getElementById("suchkreis").setAttribute("cy", clienty);
+	 break;
+	
+	 case "touchquery":
+	 break;
+	
+	 case "drawarrow":
+		 if(arrowdrawing){
+	     dragarrow(evt);
+		 }
+	 break;
+			
+	 default:
+	 	if(Math.abs(last_x - evt.clientX) > 10){
+	  	hide_tooltip();
+	  	last_x = evt.clientX;
+	  }
+	  movePoint(evt);
+	  moveVector(evt);
+	 break;
+  }
+}
+
+function mouseup(evt){
+	mouse_down = false;
+  switch(doing){
+		case "measure":
+		break;
+		case "drawarrow":
+		 finisharrowdraw();
+		break;
+		default:
+		hide_tooltip();
+		endPoint(evt);
+		endMove(evt);
+		if(evt.button == 1){
+			doing = doing_save;
+		}
+   break;
+  }
+}
+
+
+//--------------- Text setzen -----------------------
+
+function addnewtext(evt){
+  texttyping = true;
+  // neues Textelement erzeugen
+	current_freetext = create_new_freetext(evt.clientX, resy - evt.clientY);
+}
+
+function create_new_freetext(x, y){
+	var newtext = document.createElementNS("http://www.w3.org/2000/svg","text");
+  newtext.setAttributeNS(null, "style", "fill:rgb(255,0,0);font-size:16px;font-family:Arial;font-weight:bold;");
+	newtext.setAttributeNS(null, "transform", "scale(1,-1)");
+	newtext.setAttributeNS(null, "x", x);
+	newtext.setAttributeNS(null, "y", -y);
+	newtext.setAttributeNS(null, "id", "free_text");
+	document.documentElement.addEventListener("keypress", texttype, true);
+	document.documentElement.addEventListener("keydown", trigger_keypress, true);
+	tspan1 = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+	tspan1.appendChild(document.createTextNode("Text"));
+	newtext.appendChild(tspan1);
+  document.getElementById("redlining").appendChild(newtext);
+	return newtext;
+}
+
+function trigger_keypress(evt){		// Funktion verhindert in Chrome ein history-back bei backspace
+	if(evt.keyCode == 8){		// backspace
+		texttype(evt);
+	}
+}
+
+function texttype(evt){
+	if(doing == "addtext" && texttyping){
+		var text = current_freetext.lastChild.firstChild.nodeValue;
+		var offsetx = current_freetext.getAttribute("x");
+		var offsety = 20;
+		if(evt.type == "keypress" || evt.type == "keydown"){			
+			if(evt.charCode){
+	      var charCode = evt.charCode;
+			}
+			else{
+				var charCode = evt.keyCode;
+			}
+			if(charCode > 31 && charCode != 127 && charCode < 65535){		//all real characters
+	    	text += String.fromCharCode(charCode);
+			}
+			if(charCode == 8){	//backspace key
+				if(text.length == 0 && current_freetext.childNodes.length > 1){
+					current_freetext.removeChild(current_freetext.lastChild);
+					text = current_freetext.lastChild.firstChild.nodeValue;
+				}
+				else{
+	    		text = text.substring(0,text.length-1);
+				}
+			}
+	    else if(charCode == 10 || charCode == 13){	//enter key
+	    	tspan1 = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+				tspan1.appendChild(document.createTextNode(""));
+				tspan1.setAttribute("x", offsetx);
+				tspan1.setAttribute("dy", offsety);
+				current_freetext.appendChild(tspan1);
+				text = "";
+			}
+		}
+		current_freetext.lastChild.firstChild.nodeValue = text;
+		evt.preventDefault();
+	}
+}
+
+//--------------- Text setzen -----------------------
+
+//--------------- Pfeil zeichnen --------------------
+
+function startarrowdraw(evt){
+  arrowdrawing = true;
+  // neuen punkt abgreifen
+  x = evt.clientX;
+  y = resy - evt.clientY;
+	if(doing == "drawarrow"){
+		current_freearrow = create_new_freearrow(x, y);
+	}
+}
+
+function dragarrow(evt){
+	x = evt.clientX;
+  y = resy - evt.clientY;
+	distance = Math.sqrt(Math.pow(current_freearrow.posy-y, 2) + Math.pow(current_freearrow.posx-x, 2));
+	angle = Math.acos((current_freearrow.posy-y)/distance)*180/Math.PI;
+	if(current_freearrow.posx-x > 0) angle = -1*angle;
+	current_freearrow.setAttribute("transform", current_freearrow.translate+" rotate("+angle+", 0, 0) scale("+distance/40+" "+distance/40+")");  
+}
+
+function finisharrowdraw(evt){
+  arrowdrawing = false;
+}
+
+function create_new_freearrow(x, y){
+	var newarrow = document.getElementById("free_arrow").cloneNode(true);
+	newarrow.setAttribute("transform", "translate("+x+" "+y+") rotate(0, 0, 0) scale(0 0)");
+	newarrow.posx = x;
+	newarrow.posy = y;
+	newarrow.translate = "translate("+x+" "+y+")";
+  document.getElementById("redlining").appendChild(newarrow);
+	return newarrow;
+}
+
+//--------------- Pfeil zeichnen --------------------
+
+//--------------- Polygon zeichnen ------------------
+
+function create_new_freepolygon(){
+	var newpoly = document.createElementNS("http://www.w3.org/2000/svg","polygon");
+	newpoly.setAttributeNS(null, "style", "opacity:0.35;fill:rgb(255,0,0);stroke:rgb(0,0,0);stroke-width:2");
+	newpoly.setAttributeNS(null, "id", "free_polygon");	
+  document.getElementById("redlining").appendChild(newpoly);
+	return newpoly;
+}
+		
+function startpolydraw(evt){
+	restart();
+  polydrawing = true;
+  // neuen punkt abgreifen
+	polypathx[0] = evt.clientX*parseFloat(top.document.GUI.pixelsize.value) + parseFloat(top.document.GUI.minx.value);
+	polypathy[0] = top.document.GUI.maxy.value - evt.clientY*parseFloat(top.document.GUI.pixelsize.value);
+	if(doing == "drawpolygon"){
+		current_freepolygon = create_new_freepolygon();
+	}
+}
+		
+function addpolypoint(evt){
+	// neuen eckpunkt abgreifen	
+	client_x = evt.clientX*parseFloat(top.document.GUI.pixelsize.value) + parseFloat(top.document.GUI.minx.value);
+	client_y = top.document.GUI.maxy.value - evt.clientY*parseFloat(top.document.GUI.pixelsize.value);
+  if(doing == "polygonquery" && client_x == polypathx[polypathx.length-1] && client_y == polypathy[polypathy.length-1]){
+  	sendpath(doing,polypathx,polypathy);
+  }
+  else{
+  	polypathx.push(client_x);
+  	polypathy.push(client_y);
+  }
+  redrawPolygon();
+  if(doing == "polygonquery"){polygonarea()};
+}
+	
+function deletepolygon(){
+	c = polypathx.length;
+	for(i = 0; i < c; i++){
+  	polypathx.pop();
+  	polypathy.pop();
+	}
+	document.getElementById("polygon").setAttribute("points", "");
+	document.getElementById("polygon_label").textContent = "";
+}			
+		
+function redrawPolygon(){
+	// punktepfad erstellen
+  polypath = "";
+	var image_polypathx = new Array();
+	var image_polypathy = new Array();
+	for(var i = 0; i < polypathx.length; i++){		// in Bild-Koordinaten umrechnen
+		image_polypathx[i] = (polypathx[i] - parseFloat(top.document.GUI.minx.value))/parseFloat(top.document.GUI.pixelsize.value);
+		image_polypathy[i] = (polypathy[i] - parseFloat(top.document.GUI.miny.value))/parseFloat(top.document.GUI.pixelsize.value);
+	}
+  for(var i = 0; i < image_polypathx.length; ++i){
+  	polypath = polypath+" "+image_polypathx[i]+","+image_polypathy[i];
+	}	
+	if(image_polypathx.length > 0){
+		polypath = polypath+" "+image_polypathx[0]+","+image_polypathy[0];
+	}
+  // polygon um punktepfad erweitern
+	if(doing == "polygonquery"){
+  	document.getElementById("polygon").setAttribute("points", polypath);
+	}
+	if(doing == "drawpolygon"){
+		if(current_freepolygon == undefined)current_freepolygon = create_new_freepolygon();
+		current_freepolygon.setAttribute("points", polypath);
+	}
+}		
+		
+//--------------- Polygon zeichnen ------------------
+
+//---------------- Flaeche messen --------------------
+
+		
+function polygonarea(){
+  // Flaecheninhalt eines Polygons nach Gauss
+  var area = 0,parts = 0;
+	if(polypathx.length > 2){
+		for(var j = 1; j < polypathx.length-1; ++j){
+	 		parts 	= parts + (polypathx[j]*(polypathy[j+1]-polypathy[j-1]));
+		}
+		parts = parts + (polypathx[polypathx.length-1]*(polypathy[0]-polypathy[polypathx.length-2])) + (polypathx[0]*(polypathy[1]-polypathy[polypathx.length-1]));
+		area	= 0.5 * Math.sqrt(parts*parts);
+		polypathy2 = polypathy.slice(0);		// copy
+		polypathy2.pop();										// remove last vertex
+		k = calculate_reduction(polypathx, polypathy2);
+		area = area / (k * k);	
+		area = top.format_number(area, false, true, false);
+		label = document.getElementById("polygon_label");
+		var bbox = document.getElementById("polygon").getBBox();
+		label.setAttribute("x", Math.floor(bbox.x + bbox.width/2.0) - 50);
+		label.setAttribute("y", -1 * (Math.floor(bbox.y + bbox.height/2.0)));		
+		label.textContent = "Fl"+unescape("%E4")+"cheninhalt: "+area+" m"+unescape("%B2")+" "+unescape("%A0");
+		return;
+	}
+}
+
+//-------------------------------------------------------
+		
+
+// ----------------------------strecke messen---------------------------------
+
+top.document.getElementById("vertices").SVGtoggle_vertices = toggle_vertices;		// das ist ein Trick, nur so kann man aus dem html-Dokument eine Javascript-Funktion aus dem SVG-Dokument aufrufen
+
+top.document.getElementById("vertices").SVGshow_vertices = show_vertices;		// das ist ein Trick, nur so kann man aus dem html-Dokument eine Javascript-Funktion aus dem SVG-Dokument aufrufen
+
+function toggle_vertices(){
+	remove_vertices();
+	if(top.document.GUI.punktfang.checked || (top.document.GUI.orthofang != undefined && top.document.GUI.orthofang.checked)){
+		request_vertices();
+	}
+}
+
+
+function request_vertices(){
+	top.ahah("index.php", "go=getSVG_vertices&scale="+top.document.getElementById("scale").value, new Array(top.document.GUI.vertices, ""), new Array("setvalue", "execute_function"));
+}
+
+function show_vertices(){
+	remove_vertices();
+	if(top.document.GUI.vertices.value != ""){
+		var parent = document.getElementById("vertices");
+		var last_x;
+		var last_y;
+		circle = new Array();
+		circle2 = new Array();
+		line = new Array();
+		var start_vertex = "";
+		image_coords = new Array();
+		kreis1 = document.getElementById("kreis");
+		linie1 = document.getElementById("linie");
+		vertex_string = top.document.GUI.vertices.value+"";
+		top.document.GUI.vertices.value = "";
+		vertices = vertex_string.split("|");
+		for(i = 0; i < vertices.length-1; i++){
+			if(vertices[i] == " "){		// das ist der Trenner zwischen Geometrien
+				start_vertex = "";
+			}
+			else{
+				coords = vertices[i].split(" ");
+				image_coords[0] = Math.round((coords[0] - parseFloat(top.document.GUI.minx.value))/parseFloat(top.document.GUI.pixelsize.value));
+				image_coords[1] = Math.round((coords[1] - top.document.GUI.miny.value)/parseFloat(top.document.GUI.pixelsize.value));
+				if(top.document.GUI.punktfang.checked && start_vertex != vertices[i]){		// damit bei Polygonen der gleiche Anfangs- und Endpunkt nicht zweimal hinzugefuegt wird
+					circ = kreis1.cloneNode(true);
+					circ.setAttribute("x", coords[0]);
+					circ.setAttribute("y", coords[1]);
+					circ.setAttribute("cx", image_coords[0]);
+					circ.setAttribute("cy", image_coords[1]);
+					circ.setAttribute("style","fill: #FF0000");
+					circ.setAttribute("id", "vertex_"+i);
+					circle.push(circ);
+				}
+				if(top.document.GUI.orthofang != undefined && top.document.GUI.orthofang.checked && start_vertex != ""){
+					// Zwischenlinien
+					line[i] = linie1.cloneNode(true);
+					line[i].setAttribute("wx1", coords[0]);
+					line[i].setAttribute("wy1", coords[1]);
+					line[i].setAttribute("wx2", last_x);
+					line[i].setAttribute("wy2", last_y);
+					line[i].setAttribute("x1", image_coords[0]);
+					line[i].setAttribute("y1", image_coords[1]);
+					line[i].setAttribute("x2", last_image_x);
+					line[i].setAttribute("y2", last_image_y);
+					line[i].setAttribute("style","stroke: #FFFFFF");
+					line[i].setAttribute("opacity", "0.01");
+					line[i].setAttribute("id", "line_new_"+i);
+					parent.appendChild(line[i]);
+					// Zwischenpunkte
+					circle2[i] = kreis1.cloneNode(true);
+					circle2[i].setAttribute("cx", -5000);
+					circle2[i].setAttribute("cy", -5000);
+					circle2[i].setAttribute("style","fill: #00FF00");
+					circle2[i].setAttribute("id", "vertex_new_"+i);
+					parent.appendChild(circle2[i]);
+				}
+				last_x = coords[0];
+				last_y = coords[1];
+				last_image_x = image_coords[0];
+				last_image_y = image_coords[1];
+				if(start_vertex == "")start_vertex = vertices[i];
+			}
+		}
+		for(i = 0; i < circle.length; i++){
+			parent.appendChild(circle[i]);		// erst jetzt, damit die Punkte ueber den Linien liegen
+		}
+	}
+}
+
+function remove_vertices(){
+	var parent = document.getElementById("vertices");
+	var count = parent.childNodes.length;
+	for(i = 0; i < count-4; i++){
+		parent.removeChild(parent.lastChild);
+	}
+}
+
+function activate_vertex(evt){
+	vertex = evt.target;
+	vertex.setAttribute("opacity", "1");
+	coordx = vertex.getAttribute("x");
+	coordy = vertex.getAttribute("y");
+	image_coordx = vertex.getAttribute("cx");
+	image_coordy = vertex.getAttribute("cy");
+	if(doing == "measure" && measuring){
+		pathx.push(image_coordx);
+		pathy.push(image_coordy);
+		pathx_world.push(coordx);
+		pathy_world.push(coordy);
+		showMeasurement(evt);
+		redrawPL();
+		deletelast(evt);
+	}
+	if(doing == "pquery"){
+		document.getElementById("suchkreis").setAttribute("cx", image_coordx);
+		document.getElementById("suchkreis").setAttribute("cy", image_coordy);
+	}
+	//if(top.document.GUI.runningcoords != undefined)top.document.GUI.runningcoords.value = top.format_number(coordx, false, false, false) + " / " + top.format_number(coordy, false, false, false); 
+	top.document.GUI.activated_vertex.value = vertex.getAttribute("id");
+	top.coords_anzeige(evt, vertex);
+}
+
+function activate_line(evt){
+	if(doing == "measure"){
+		last_x = pathx_world[pathx_world.length-1];
+		last_y = pathy_world[pathy_world.length-1];
+		if(last_x != undefined){
+			line = evt.target;
+			vertex_id_string = line.getAttribute("id");
+			vertex_id = vertex_id_string.split("_");
+			// Lotfusspunkt berechnen
+			p1x = parseFloat(line.getAttribute("wx1"));
+			p1y = parseFloat(line.getAttribute("wy1"));
+			p2x = parseFloat(line.getAttribute("wx2"));
+			p2y = parseFloat(line.getAttribute("wy2"));
+			ax = p2x - p1x;
+			ay = p2y - p1y;
+			bx = last_x - p1x;
+			by = last_y - p1y;
+			c = ax*ax + ay*ay;
+			d = bx*ax + by*ay;
+			e = d/c;
+			x = p1x + e*ax;
+			y = p1y + e*ay;
+			image_x = Math.round((x - parseFloat(top.document.GUI.minx.value))/parseFloat(top.document.GUI.pixelsize.value));
+			image_y = Math.round((y - top.document.GUI.miny.value)/parseFloat(top.document.GUI.pixelsize.value));
+			// Position des Punktes auf der Linie setzen
+			vertex = document.getElementById("vertex_new_"+vertex_id[2]);
+			vertex.setAttribute("x", x);
+			vertex.setAttribute("y", y);
+			vertex.setAttribute("cx", image_x);
+			vertex.setAttribute("cy", image_y);
+			vertex.setAttribute("opacity", "0.3");
+		}
+	}
+}
+
+function deactivate_vertex(evt){
+	vertex = evt.target;
+	if(vertex.getAttribute("opacity") != "0.8")vertex.setAttribute("opacity", "0.1");
+	top.document.GUI.activated_vertex.value = 0;
+}
+
+function add_vertex(evt){
+	vertex = evt.target;
+	var imgx = vertex.getAttribute("cx");
+	var imgy = vertex.getAttribute("cy");
+	var worldx = vertex.getAttribute("x");
+	var worldy = vertex.getAttribute("y");
+	if(doing == "measure"){
+		if(!measuring){
+			restart();	
+			measuring = true;
+		}
+		if(imgx == pathx[pathx.length-1] && imgy == pathy[pathy.length-1]){
+			evt.preventDefault();
+			recentre();		// Streckenmessung bei Doppelklick beenden
+		}
+		else{
+			pathx.push(imgx);
+			pathy.push(imgy);
+			pathx_world.push(parseFloat(worldx));
+			pathy_world.push(parseFloat(worldy));		
+			if(new_distance > 0){
+				showSectionMeasurement(pathx.length-1);
+				measured_distance = new_distance;
+				showMeasurement(evt);
+			}
+			redrawPL();
+			vertex.setAttribute("opacity", "0.8");
+		}
+	}
+	if(doing == "polygonquery" || doing == "drawpolygon"){
+		if(!polydrawing){
+			restart();
+			polydrawing = true;
+		}
+  	polypathx.push(parseFloat(worldx));
+  	polypathy.push(parseFloat(worldy));
+		redrawPolygon();
+		if(doing == "polygonquery")polygonarea();
+		vertex.setAttribute("opacity", "0.8");
+	}
+	if(doing == "pquery" || doing == "ppquery"){
+		evt.clientX = imgx;
+		evt.clientY = imgy;
+		mousedown(evt);
+		mouseup(evt);
+	}
+	if(doing == "showcoords"){
+		top.show_coords(evt, vertex);
+	}
+}
+
+function startMeasure(evt) {
+  restart();
+  measuring = true;
+  // neuen punkt abgreifen
+	pathx[0] = evt.clientX;
+	pathy[0] = resy - evt.clientY;
+	pathx_world[0] = top.format_number(evt.clientX*parseFloat(top.document.GUI.pixelsize.value) + parseFloat(top.document.GUI.minx.value), false, true, false);
+	pathy_world[0] = top.format_number(top.document.GUI.maxy.value - evt.clientY*parseFloat(top.document.GUI.pixelsize.value), false, true, false);
+}
+
+function add_current_point(evt){
+	addpoint(evt);
+  showMeasurement(evt);
+  deletelast(evt);
+}
+
+function calculate_reduction(pathx, pathy){
+	k = 1;
+	em = 0;
+	hell = 0;
+	r = 6384000;
+	used_nbs = new Array();
+	if(r > 0 && top.nbh.length > 0){
+		for(i = 0; i < pathx.length; i++){
+			x = pathx[i] + "";
+			y = pathy[i] + "";
+			x_1 = x.substring(2,3);
+			x_10 = x.substring(1,2);
+			x_100 = x.substring(0,1);
+			y_1 = y.substring(3,4);
+			y_10 = y.substring(2,3);
+			y_100 = y.substring(1,2);
+			y_1000 = y.substring(0,1);
+			nhn = 33+x_100+y_1000+y_100+x_10+x_1+y_10+y_1;
+			if(top.nbh[nhn] == null)return 1;
+			if(used_nbs[nhn] == null){				// wenn NB nicht schon durch einen anderen Stuetzpunkt verwendet wird
+				used_nbs[nhn] = top.nbh[nhn];
+				hell = hell + top.nbh[nhn];
+			}
+			em = em + parseInt(pathx[i]);
+			em = em / pathx.length;
+			hell = hell / used_nbs.length;
+			k = (1 - (hell / r)) * (1 + (((em - 500000)*(em - 500000))/(2 * r * r))) * 0.9996;
+		}
+	}
+	return k;
+}
+
+function calculate_distance(x1, y1, x2, y2){
+	if(2398 == 4326){
+		distance = 6384000 * Math.acos(Math.sin(y1*Math.PI/180) * Math.sin(y2*Math.PI/180) + Math.cos(y1*Math.PI/180) * Math.cos(y2*Math.PI/180) * Math.cos((x2 - x1)*Math.PI/180))
+	}
+	else{
+		distance = Math.sqrt(((x1-x2)*(x1-x2))+((y1-y2)*(y1-y2)));
+	}
+	var pathx = new Array(x1, x2);
+	var pathy = new Array(y1, y2);
+	k = calculate_reduction(pathx, pathy);
+	distance = distance / k;
+	return distance;
+}
+
+function showSectionMeasurement(j){
+	section_distance = calculate_distance(pathx_world[j-1], pathy_world[j-1], pathx_world[j], pathy_world[j]);
+	section_distance = top.format_number(section_distance, false, freehand_measuring, true);
+  output = section_distance+" m";
+	mittex = pathx[j-1] - ((pathx[j-1] - pathx[j]) / 2);
+	mittey = pathy[j-1] - ((pathy[j-1] - pathy[j]) / 2);	
+  show_tooltip(output, mittex-10, resy-mittey-10);
+	section_box = document.getElementById("tooltip_group").cloneNode(true);
+	section_box.setAttribute("id", "section"+j);
+	section_box.setAttribute("visibility", "visible");
+	section_box.setAttribute("opacity", "0.9");
+	section_rect = section_box.childNodes[1];		// 1, weil zwischen den eigentlichen Nodes noch Text steht (wahrscheinlich die Zeilenumbrueche)
+	section_text = section_box.childNodes[3];		// 3, weil zwischen den eigentlichen Nodes noch Text steht (wahrscheinlich die Zeilenumbrueche)
+	section_rect.setAttribute("id", "");
+	section_text.setAttribute("id", "");
+	document.getElementById("moveGroup").appendChild(section_box);
+}
+
+function showMeasurement(evt){
+  var track = 0, output = "";
+	j = pathx_world.length-1;
+  new_distance = measured_distance + calculate_distance(pathx_world[j-1], pathy_world[j-1], pathx_world[j], pathy_world[j]);
+  track = top.format_number(new_distance, false, freehand_measuring, true);
+  output = "gesamt: "+track+" m";
+  show_tooltip(output, evt.clientX, evt.clientY);
+}
+
+function addpoint(evt){
+  // neuen eckpunkt abgreifen
+  client_x = evt.clientX;
+	client_y = resy - evt.clientY;
+	pathx.push(client_x);
+	pathy.push(client_y);
+	pathx_world.push(top.format_number(evt.clientX*parseFloat(top.document.GUI.pixelsize.value) + parseFloat(top.document.GUI.minx.value), false, true, false));
+	pathy_world.push(top.format_number(top.document.GUI.maxy.value - evt.clientY*parseFloat(top.document.GUI.pixelsize.value), false, true, false));
+  redrawPL();
+}
+
+function deletelast(evt) {
+  pathx.pop();
+  pathy.pop();
+	pathx_world.pop();
+  pathy_world.pop();
+}
+
+function restart(){
+	var alle = pathx.length;
+	for(var i = 0; i < alle; ++i){
+    pathx.pop();
+    pathy.pop();
+		pathx_world.pop();
+  	pathy_world.pop();
+		if(document.getElementById("section"+i) != undefined)document.getElementById("moveGroup").removeChild(document.getElementById("section"+i));
+	}
+	deletepolygon();
+  redrawPL();
+}
+
+function redrawPL(){
+  // punktepfad erstellen
+  path = "";
+  for(var i = 0; i < pathx.length; ++i){
+  	path = path+" "+pathx[i]+","+pathy[i];
+	}
+  // polygon um punktepfad erweitern
+  document.getElementById("polyline").setAttribute("points", path);
+}
+
+// ----------------------------punkt setzen---------------------------------
+function selectPoint(evt) {
+  cmd = doing;
+  // neuen punkt abgreifen
+  pathx[0] = evt.clientX;
+  pathy[0] = evt.clientY;
+  sendpath(cmd,pathx,pathy);
+}
+
+// ----------------------------box aufziehen---------------------------------
+function startPoint(evt) {
+  dragging  = true;
+  var alle = pathx.length;
+  for(var i = 0; i < alle; ++i){
+    pathx.pop();
+    pathy.pop();
+  }
+	alle = boxx.length;
+  for(var i = 0; i < alle; ++i){
+    boxx.pop();
+    boxy.pop();
+  }
+  // neuen punkt abgreifen
+  clientx = evt.clientX;
+  clienty = resy - evt.clientY;
+  pathx.push(clientx);
+  pathy.push(clienty);
+  redraw();
+  
+  clientx = evt.clientX;
+  clienty = evt.clientY;
+  boxx.push(clientx);
+  boxy.push(clienty);
+}
+
+function movePoint(evt) {
+if (!dragging) return;
+  // neuen punkt abgreifen
+  clientx = evt.clientX;
+  clienty = resy - evt.clientY;
+  pathx[1]  = pathx[0];
+  pathy[1]  = clienty;
+  pathx[2]  = clientx;
+  pathy[2]  = clienty;
+  pathx[3]  = clientx;
+  pathy[3]  = pathy[0];
+  redraw();
+  
+  clientx = evt.clientX;
+  clienty = evt.clientY;
+  boxx[1]  = boxx[0];
+  boxy[1]  = clienty;
+  boxx[2]  = clientx;
+  boxy[2]  = clienty;
+  boxx[3]  = clientx;
+  boxy[3]  = boxy[0];
+  dragdone = true;
+}
+
+function endPoint(evt) {
+  if (!dragging) return;
+  cmd = doing;
+  if(!dragdone){ 
+    cmd  = cmd+"_point";
+	}
+  else{
+    cmd  = cmd+"_box";
+    // Reihenfolge pruefen
+    checkOrder(cmd,boxx,boxy);
+  }
+  dragging  = false;
+  dragdone  = false;
+  // hiddenformvars aktualisieren
+  sendpath(cmd,boxx,boxy);
+}
+
+// ----------------------------vektor aufziehen---------------------------------
+function startMove(evt) {
+	document.getElementById("canvas").setAttribute("cursor", "move");
+	document.getElementById("canvas").setAttribute("cursor", "grabbing");
+  moving  = true;
+  var alle = pathx.length;
+  for(var i = 0; i < alle; ++i)
+   {
+    pathx.pop();
+    pathy.pop();
+    boxx.pop();
+    boxy.pop();
+   }
+  // neuen punkt abgreifen
+  pathx[0] = evt.clientX;
+  pathy[0] = evt.clientY;
+}
+
+function moveVector(evt) {
+if (!moving) return;
+  // neuen punkt abgreifen
+  pathx[1] = evt.clientX;
+  pathy[1] = evt.clientY;
+  moveMap();
+  moved = true;
+}
+
+function moveMap(){
+	remove_vertices();
+  //kartenausschnitt verschieben
+  move_x = pathx[1]-pathx[0];
+  move_y = pathy[1]-pathy[0];
+  path = "translate("+move_x+" "+move_y+")";
+  document.getElementById("moveGroup").setAttribute("transform", path);
+}
+
+function endMove(evt) {
+  if (!moving) return;
+	document.getElementById("canvas").setAttribute("cursor", "move");
+	document.getElementById("canvas").setAttribute("cursor", "grab");
+  cmd = doing;
+  if (moved){ 
+    pathx[0]=resx_m-move_x;
+    pathy[0]=resy_m-move_y;
+    // alert("moving="+moving+" pathx="+pathx[0]+" pathy="+pathy[0]);
+  } 
+  moving  = false;
+  moved  = false;
+  // hiddenformvars aktualisieren
+  sendpath(cmd,pathx,pathy);
+}
+
+// -----------------------kl. koordinatenpaar zuerst---------------------------
+function checkOrder(cmd,boxx,boxy) {
+  temp=0;
+  if (boxx[2]<boxx[0]) {temp=boxx[0];boxx[0]=boxx[2];boxx[2]=temp;}
+  if (boxy[2]<boxy[0]) {temp=boxy[0];boxy[0]=boxy[2];boxy[2]=temp;}
+}
+
+function redraw() 
+{
+  // punktepfad erstellen
+  path = "";
+  for(var i = 0; i < pathx.length; ++i)
+   {
+    path = path+" "+pathx[i]+","+pathy[i];
+   }
+  // polygon um punktepfad erweitern
+  document.getElementById("polygon").setAttribute("points", path);
+}
+
+// ----------------------ausgewaehlten button highlighten---------------------------
+function highlightbyid(id){
+	//document.querySelector(".active").classList.remove("active");		// kann der IE nicht
+	document.querySelector(".active").className.baseVal = "navbutton_frame";	// deswegen dieser workaround
+  //document.getElementById(id).classList.add("active");						// kann der IE nicht
+	document.getElementById(id).className.baseVal += " active";				// deswegen dieser workaround
+  document.getElementById("suchkreis").setAttribute("cx", -10000);
+	if(top.document.GUI.orthofang != undefined){
+		options1 = top.document.getElementById("options").innerHTML="";
+	}
+}
+
+
+
+// ----------------------koordinatenausgabe in statuszeile---------------------------
+
+
+// -------------------------tooltip-ausgabe fuer buttons------------------------------
+
+function get_bbox()
+{ 
+	bbox = document.getElementById("tooltip_data").getBBox();
+	if (bbox.width>10) { 
+		// diese abfrage ist nur wegen fehlerhafter darstellung mit dem IE erforderlich!
+		// ebenso in SVG_map.php:  onmousemove="get_bbox();" 
+	  tt_rect = bbox.width+10;
+	  document.getElementById("tt_rect").setAttribute("width", tt_rect);
+	  tt_text = tt_rect/2;
+	  document.getElementById("tooltip_data").setAttribute("x", tt_text);
+	}
+}
+
+function show_tooltip(data,x_pos,y_pos) 
+{
+	x_pos = x_pos + 5; 	// 	Abstand zw. cursor und tooltip
+	y_pos = y_pos + 30; 	// 	Abstand zw. cursor und tooltip
+	document.getElementById("tooltip_group").setAttribute("transform","translate(" + x_pos.toString() + " " + y_pos.toString() + ")") 
+	document.getElementById("tooltip_data").firstChild.data = data;
+	setTimeout("document.getElementById('tooltip_group').setAttribute('visibility','visible')",250);
+	get_bbox();
+} 
+
+function hide_tooltip() 
+{ 
+	var tooltip_group = document.getElementById("tooltip_group");
+	if(tooltip_group != undefined){
+		tooltip_group.setAttribute("visibility","hidden");
+		tooltip_group.setAttribute("opacity","0");
+	}
+	setTimeout("document.getElementById('tooltip_group').setAttribute('opacity','0.9')",255);
+} 
+
+
+// -------------------------querytooltip------------------------------
+
+
+		var layerset = new Array();
+		var layernumber = new Array();layerset[0] = top.document.getElementById("qLayer32185");
+		layernumber[0] = 32185;
+		layerset[1] = top.document.getElementById("qLayer30030");
+		layernumber[1] = 30030;
+		layerset[2] = top.document.getElementById("qLayer10010");
+		layernumber[2] = 10010;
+		layerset[3] = top.document.getElementById("qLayer10004");
+		layernumber[3] = 10004;
+		layerset[4] = top.document.getElementById("qLayer11170");
+		layernumber[4] = 11170;
+		layerset[5] = top.document.getElementById("qLayer10011");
+		layernumber[5] = 10011;
+		layerset[6] = top.document.getElementById("qLayer11167");
+		layernumber[6] = 11167;
+		layerset[7] = top.document.getElementById("qLayer11166");
+		layernumber[7] = 11166;
+		layerset[8] = top.document.getElementById("qLayer11163");
+		layernumber[8] = 11163;
+		layerset[9] = top.document.getElementById("qLayer11164");
+		layernumber[9] = 11164;
+		layerset[10] = top.document.getElementById("qLayer11162");
+		layernumber[10] = 11162;
+		layerset[11] = top.document.getElementById("qLayer11150");
+		layernumber[11] = 11150;
+		layerset[12] = top.document.getElementById("qLayer11151");
+		layernumber[12] = 11151;
+		layerset[13] = top.document.getElementById("qLayer11152");
+		layernumber[13] = 11152;
+		layerset[14] = top.document.getElementById("qLayer11153");
+		layernumber[14] = 11153;
+		layerset[15] = top.document.getElementById("qLayer11154");
+		layernumber[15] = 11154;
+		layerset[16] = top.document.getElementById("qLayer11155");
+		layernumber[16] = 11155;
+		layerset[17] = top.document.getElementById("qLayer11156");
+		layernumber[17] = 11156;
+		layerset[18] = top.document.getElementById("qLayer11157");
+		layernumber[18] = 11157;
+		layerset[19] = top.document.getElementById("qLayer11158");
+		layernumber[19] = 11158;
+		layerset[20] = top.document.getElementById("qLayer11159");
+		layernumber[20] = 11159;
+		layerset[21] = top.document.getElementById("qLayer11160");
+		layernumber[21] = 11160;
+		layerset[22] = top.document.getElementById("qLayer11161");
+		layernumber[22] = 11161;
+		layerset[23] = top.document.getElementById("qLayer11165");
+		layernumber[23] = 11165;
+		layerset[24] = top.document.getElementById("qLayer33976");
+		layernumber[24] = 33976;
+		layerset[25] = top.document.getElementById("qLayer33930");
+		layernumber[25] = 33930;
+		layerset[26] = top.document.getElementById("qLayer33940");
+		layernumber[26] = 33940;
+		layerset[27] = top.document.getElementById("qLayer29015");
+		layernumber[27] = 29015;
+		layerset[28] = top.document.getElementById("qLayer29999");
+		layernumber[28] = 29999;
+		layerset[29] = top.document.getElementById("qLayer29998");
+		layernumber[29] = 29998;
+		layerset[30] = top.document.getElementById("qLayer29997");
+		layernumber[30] = 29997;
+		layerset[31] = top.document.getElementById("qLayer29996");
+		layernumber[31] = 29996;
+		layerset[32] = top.document.getElementById("qLayer29995");
+		layernumber[32] = 29995;
+		layerset[33] = top.document.getElementById("qLayer10006");
+		layernumber[33] = 10006;
+		layerset[34] = top.document.getElementById("qLayer10007");
+		layernumber[34] = 10007;
+		layerset[35] = top.document.getElementById("qLayer11000");
+		layernumber[35] = 11000;
+		layerset[36] = top.document.getElementById("qLayer11002");
+		layernumber[36] = 11002;
+		layerset[37] = top.document.getElementById("qLayer11003");
+		layernumber[37] = 11003;
+		layerset[38] = top.document.getElementById("qLayer11004");
+		layernumber[38] = 11004;
+		layerset[39] = top.document.getElementById("qLayer11005");
+		layernumber[39] = 11005;
+		layerset[40] = top.document.getElementById("qLayer11010");
+		layernumber[40] = 11010;
+		layerset[41] = top.document.getElementById("qLayer11012");
+		layernumber[41] = 11012;
+		layerset[42] = top.document.getElementById("qLayer11013");
+		layernumber[42] = 11013;
+		layerset[43] = top.document.getElementById("qLayer10001");
+		layernumber[43] = 10001;
+		layerset[44] = top.document.getElementById("qLayer500000");
+		layernumber[44] = 500000;
+		layerset[45] = top.document.getElementById("qLayer12202");
+		layernumber[45] = 12202;
+		layerset[46] = top.document.getElementById("qLayer12201");
+		layernumber[46] = 12201;
+		layerset[47] = top.document.getElementById("qLayer12100");
+		layernumber[47] = 12100;
+		layerset[48] = top.document.getElementById("qLayer12101");
+		layernumber[48] = 12101;
+		layerset[49] = top.document.getElementById("qLayer12102");
+		layernumber[49] = 12102;
+		layerset[50] = top.document.getElementById("qLayer12210");
+		layernumber[50] = 12210;
+		layerset[51] = top.document.getElementById("qLayer12220");
+		layernumber[51] = 12220;
+		layerset[52] = top.document.getElementById("qLayer15010");
+		layernumber[52] = 15010;
+		layerset[53] = top.document.getElementById("qLayer15022");
+		layernumber[53] = 15022;
+		layerset[54] = top.document.getElementById("qLayer15023");
+		layernumber[54] = 15023;
+		layerset[55] = top.document.getElementById("qLayer18020");
+		layernumber[55] = 18020;
+		layerset[56] = top.document.getElementById("qLayer18040");
+		layernumber[56] = 18040;
+		layerset[57] = top.document.getElementById("qLayer18030");
+		layernumber[57] = 18030;
+		layerset[58] = top.document.getElementById("qLayer29040");
+		layernumber[58] = 29040;
+		layerset[59] = top.document.getElementById("qLayer29030");
+		layernumber[59] = 29030;
+		layerset[60] = top.document.getElementById("qLayer29240");
+		layernumber[60] = 29240;
+		layerset[61] = top.document.getElementById("qLayer29220");
+		layernumber[61] = 29220;
+		layerset[62] = top.document.getElementById("qLayer29200");
+		layernumber[62] = 29200;
+		layerset[63] = top.document.getElementById("qLayer29241");
+		layernumber[63] = 29241;
+		layerset[64] = top.document.getElementById("qLayer29020");
+		layernumber[64] = 29020;
+		layerset[65] = top.document.getElementById("qLayer29100");
+		layernumber[65] = 29100;
+		layerset[66] = top.document.getElementById("qLayer19990");
+		layernumber[66] = 19990;
+		layerset[67] = top.document.getElementById("qLayer19999");
+		layernumber[67] = 19999;
+		layerset[68] = top.document.getElementById("qLayer20570");
+		layernumber[68] = 20570;
+		layerset[69] = top.document.getElementById("qLayer20575");
+		layernumber[69] = 20575;
+		layerset[70] = top.document.getElementById("qLayer20580");
+		layernumber[70] = 20580;
+		layerset[71] = top.document.getElementById("qLayer20590");
+		layernumber[71] = 20590;
+		layerset[72] = top.document.getElementById("qLayer20000");
+		layernumber[72] = 20000;
+		layerset[73] = top.document.getElementById("qLayer20001");
+		layernumber[73] = 20001;
+		layerset[74] = top.document.getElementById("qLayer20002");
+		layernumber[74] = 20002;
+		layerset[75] = top.document.getElementById("qLayer20003");
+		layernumber[75] = 20003;
+		layerset[76] = top.document.getElementById("qLayer20005");
+		layernumber[76] = 20005;
+		layerset[77] = top.document.getElementById("qLayer24110");
+		layernumber[77] = 24110;
+		layerset[78] = top.document.getElementById("qLayer37100");
+		layernumber[78] = 37100;
+		layerset[79] = top.document.getElementById("qLayer37101");
+		layernumber[79] = 37101;
+		layerset[80] = top.document.getElementById("qLayer32100");
+		layernumber[80] = 32100;
+		layerset[81] = top.document.getElementById("qLayer32101");
+		layernumber[81] = 32101;
+		layerset[82] = top.document.getElementById("qLayer70001");
+		layernumber[82] = 70001;
+		layerset[83] = top.document.getElementById("qLayer70002");
+		layernumber[83] = 70002;
+		layerset[84] = top.document.getElementById("qLayer37102");
+		layernumber[84] = 37102;
+		layerset[85] = top.document.getElementById("qLayer24111");
+		layernumber[85] = 24111;
+		layerset[86] = top.document.getElementById("qLayer24112");
+		layernumber[86] = 24112;
+		layerset[87] = top.document.getElementById("qLayer14001");
+		layernumber[87] = 14001;
+		layerset[88] = top.document.getElementById("qLayer34520");
+		layernumber[88] = 34520;
+		layerset[89] = top.document.getElementById("qLayer20009");
+		layernumber[89] = 20009;
+		layerset[90] = top.document.getElementById("qLayer20010");
+		layernumber[90] = 20010;
+		layerset[91] = top.document.getElementById("qLayer20150");
+		layernumber[91] = 20150;
+		layerset[92] = top.document.getElementById("qLayer20160");
+		layernumber[92] = 20160;
+		layerset[93] = top.document.getElementById("qLayer20170");
+		layernumber[93] = 20170;
+		layerset[94] = top.document.getElementById("qLayer20203");
+		layernumber[94] = 20203;
+		layerset[95] = top.document.getElementById("qLayer20204");
+		layernumber[95] = 20204;
+		layerset[96] = top.document.getElementById("qLayer20200");
+		layernumber[96] = 20200;
+		layerset[97] = top.document.getElementById("qLayer29050");
+		layernumber[97] = 29050;
+		layerset[98] = top.document.getElementById("qLayer20360");
+		layernumber[98] = 20360;
+		layerset[99] = top.document.getElementById("qLayer20400");
+		layernumber[99] = 20400;
+		layerset[100] = top.document.getElementById("qLayer20500");
+		layernumber[100] = 20500;
+		layerset[101] = top.document.getElementById("qLayer20510");
+		layernumber[101] = 20510;
+		layerset[102] = top.document.getElementById("qLayer20520");
+		layernumber[102] = 20520;
+		layerset[103] = top.document.getElementById("qLayer20521");
+		layernumber[103] = 20521;
+		layerset[104] = top.document.getElementById("qLayer20523");
+		layernumber[104] = 20523;
+		layerset[105] = top.document.getElementById("qLayer20525");
+		layernumber[105] = 20525;
+		layerset[106] = top.document.getElementById("qLayer20527");
+		layernumber[106] = 20527;
+		layerset[107] = top.document.getElementById("qLayer20529");
+		layernumber[107] = 20529;
+		layerset[108] = top.document.getElementById("qLayer20531");
+		layernumber[108] = 20531;
+		layerset[109] = top.document.getElementById("qLayer20533");
+		layernumber[109] = 20533;
+		layerset[110] = top.document.getElementById("qLayer20535");
+		layernumber[110] = 20535;
+		layerset[111] = top.document.getElementById("qLayer20537");
+		layernumber[111] = 20537;
+		layerset[112] = top.document.getElementById("qLayer20539");
+		layernumber[112] = 20539;
+		layerset[113] = top.document.getElementById("qLayer20541");
+		layernumber[113] = 20541;
+		layerset[114] = top.document.getElementById("qLayer20543");
+		layernumber[114] = 20543;
+		layerset[115] = top.document.getElementById("qLayer20545");
+		layernumber[115] = 20545;
+		layerset[116] = top.document.getElementById("qLayer20547");
+		layernumber[116] = 20547;
+		layerset[117] = top.document.getElementById("qLayer20555");
+		layernumber[117] = 20555;
+		layerset[118] = top.document.getElementById("qLayer20557");
+		layernumber[118] = 20557;
+		layerset[119] = top.document.getElementById("qLayer20559");
+		layernumber[119] = 20559;
+		layerset[120] = top.document.getElementById("qLayer20561");
+		layernumber[120] = 20561;
+		layerset[121] = top.document.getElementById("qLayer20550");
+		layernumber[121] = 20550;
+		layerset[122] = top.document.getElementById("qLayer23360");
+		layernumber[122] = 23360;
+		layerset[123] = top.document.getElementById("qLayer23361");
+		layernumber[123] = 23361;
+		layerset[124] = top.document.getElementById("qLayer23310");
+		layernumber[124] = 23310;
+		layerset[125] = top.document.getElementById("qLayer23320");
+		layernumber[125] = 23320;
+		layerset[126] = top.document.getElementById("qLayer23370");
+		layernumber[126] = 23370;
+		layerset[127] = top.document.getElementById("qLayer23400");
+		layernumber[127] = 23400;
+		layerset[128] = top.document.getElementById("qLayer23330");
+		layernumber[128] = 23330;
+		layerset[129] = top.document.getElementById("qLayer23331");
+		layernumber[129] = 23331;
+		layerset[130] = top.document.getElementById("qLayer23377");
+		layernumber[130] = 23377;
+		layerset[131] = top.document.getElementById("qLayer23407");
+		layernumber[131] = 23407;
+		layerset[132] = top.document.getElementById("qLayer23350");
+		layernumber[132] = 23350;
+		layerset[133] = top.document.getElementById("qLayer23351");
+		layernumber[133] = 23351;
+		layerset[134] = top.document.getElementById("qLayer23378");
+		layernumber[134] = 23378;
+		layerset[135] = top.document.getElementById("qLayer23408");
+		layernumber[135] = 23408;
+		layerset[136] = top.document.getElementById("qLayer23490");
+		layernumber[136] = 23490;
+		layerset[137] = top.document.getElementById("qLayer23491");
+		layernumber[137] = 23491;
+		layerset[138] = top.document.getElementById("qLayer23492");
+		layernumber[138] = 23492;
+		layerset[139] = top.document.getElementById("qLayer23493");
+		layernumber[139] = 23493;
+		layerset[140] = top.document.getElementById("qLayer23511");
+		layernumber[140] = 23511;
+		layerset[141] = top.document.getElementById("qLayer23411");
+		layernumber[141] = 23411;
+		layerset[142] = top.document.getElementById("qLayer23506");
+		layernumber[142] = 23506;
+		layerset[143] = top.document.getElementById("qLayer23500");
+		layernumber[143] = 23500;
+		layerset[144] = top.document.getElementById("qLayer23505");
+		layernumber[144] = 23505;
+		layerset[145] = top.document.getElementById("qLayer23507");
+		layernumber[145] = 23507;
+		layerset[146] = top.document.getElementById("qLayer23564");
+		layernumber[146] = 23564;
+		layerset[147] = top.document.getElementById("qLayer23509");
+		layernumber[147] = 23509;
+		layerset[148] = top.document.getElementById("qLayer23409");
+		layernumber[148] = 23409;
+		layerset[149] = top.document.getElementById("qLayer23550");
+		layernumber[149] = 23550;
+		layerset[150] = top.document.getElementById("qLayer23495");
+		layernumber[150] = 23495;
+		layerset[151] = top.document.getElementById("qLayer23551");
+		layernumber[151] = 23551;
+		layerset[152] = top.document.getElementById("qLayer23496");
+		layernumber[152] = 23496;
+		layerset[153] = top.document.getElementById("qLayer23552");
+		layernumber[153] = 23552;
+		layerset[154] = top.document.getElementById("qLayer23497");
+		layernumber[154] = 23497;
+		layerset[155] = top.document.getElementById("qLayer23553");
+		layernumber[155] = 23553;
+		layerset[156] = top.document.getElementById("qLayer23498");
+		layernumber[156] = 23498;
+		layerset[157] = top.document.getElementById("qLayer23555");
+		layernumber[157] = 23555;
+		layerset[158] = top.document.getElementById("qLayer23556");
+		layernumber[158] = 23556;
+		layerset[159] = top.document.getElementById("qLayer23990");
+		layernumber[159] = 23990;
+		layerset[160] = top.document.getElementById("qLayer24060");
+		layernumber[160] = 24060;
+		layerset[161] = top.document.getElementById("qLayer24070");
+		layernumber[161] = 24070;
+		layerset[162] = top.document.getElementById("qLayer24285");
+		layernumber[162] = 24285;
+		layerset[163] = top.document.getElementById("qLayer24290");
+		layernumber[163] = 24290;
+		layerset[164] = top.document.getElementById("qLayer25050");
+		layernumber[164] = 25050;
+		layerset[165] = top.document.getElementById("qLayer25060");
+		layernumber[165] = 25060;
+		layerset[166] = top.document.getElementById("qLayer25052");
+		layernumber[166] = 25052;
+		layerset[167] = top.document.getElementById("qLayer25051");
+		layernumber[167] = 25051;
+		layerset[168] = top.document.getElementById("qLayer25059");
+		layernumber[168] = 25059;
+		layerset[169] = top.document.getElementById("qLayer26000");
+		layernumber[169] = 26000;
+		layerset[170] = top.document.getElementById("qLayer26100");
+		layernumber[170] = 26100;
+		layerset[171] = top.document.getElementById("qLayer26200");
+		layernumber[171] = 26200;
+		layerset[172] = top.document.getElementById("qLayer26303");
+		layernumber[172] = 26303;
+		layerset[173] = top.document.getElementById("qLayer126300");
+		layernumber[173] = 126300;
+		layerset[174] = top.document.getElementById("qLayer26304");
+		layernumber[174] = 26304;
+		layerset[175] = top.document.getElementById("qLayer26305");
+		layernumber[175] = 26305;
+		layerset[176] = top.document.getElementById("qLayer26315");
+		layernumber[176] = 26315;
+		layerset[177] = top.document.getElementById("qLayer26301");
+		layernumber[177] = 26301;
+		layerset[178] = top.document.getElementById("qLayer26310");
+		layernumber[178] = 26310;
+		layerset[179] = top.document.getElementById("qLayer26337");
+		layernumber[179] = 26337;
+		layerset[180] = top.document.getElementById("qLayer26338");
+		layernumber[180] = 26338;
+		layerset[181] = top.document.getElementById("qLayer26339");
+		layernumber[181] = 26339;
+		layerset[182] = top.document.getElementById("qLayer26340");
+		layernumber[182] = 26340;
+		layerset[183] = top.document.getElementById("qLayer26341");
+		layernumber[183] = 26341;
+		layerset[184] = top.document.getElementById("qLayer26334");
+		layernumber[184] = 26334;
+		layerset[185] = top.document.getElementById("qLayer26312");
+		layernumber[185] = 26312;
+		layerset[186] = top.document.getElementById("qLayer26330");
+		layernumber[186] = 26330;
+		layerset[187] = top.document.getElementById("qLayer26331");
+		layernumber[187] = 26331;
+		layerset[188] = top.document.getElementById("qLayer26332");
+		layernumber[188] = 26332;
+		layerset[189] = top.document.getElementById("qLayer26333");
+		layernumber[189] = 26333;
+		layerset[190] = top.document.getElementById("qLayer26335");
+		layernumber[190] = 26335;
+		layerset[191] = top.document.getElementById("qLayer26336");
+		layernumber[191] = 26336;
+		layerset[192] = top.document.getElementById("qLayer27000");
+		layernumber[192] = 27000;
+		layerset[193] = top.document.getElementById("qLayer27010");
+		layernumber[193] = 27010;
+		layerset[194] = top.document.getElementById("qLayer27020");
+		layernumber[194] = 27020;
+		layerset[195] = top.document.getElementById("qLayer27105");
+		layernumber[195] = 27105;
+		layerset[196] = top.document.getElementById("qLayer27102");
+		layernumber[196] = 27102;
+		layerset[197] = top.document.getElementById("qLayer300000");
+		layernumber[197] = 300000;
+		layerset[198] = top.document.getElementById("qLayer27110");
+		layernumber[198] = 27110;
+		layerset[199] = top.document.getElementById("qLayer27120");
+		layernumber[199] = 27120;
+		layerset[200] = top.document.getElementById("qLayer27125");
+		layernumber[200] = 27125;
+		layerset[201] = top.document.getElementById("qLayer29025");
+		layernumber[201] = 29025;
+		layerset[202] = top.document.getElementById("qLayer27115");
+		layernumber[202] = 27115;
+		layerset[203] = top.document.getElementById("qLayer27130");
+		layernumber[203] = 27130;
+		layerset[204] = top.document.getElementById("qLayer28000");
+		layernumber[204] = 28000;
+		layerset[205] = top.document.getElementById("qLayer12011");
+		layernumber[205] = 12011;
+		layerset[206] = top.document.getElementById("qLayer12010");
+		layernumber[206] = 12010;
+		layerset[207] = top.document.getElementById("qLayer28010");
+		layernumber[207] = 28010;
+		layerset[208] = top.document.getElementById("qLayer29018");
+		layernumber[208] = 29018;
+		layerset[209] = top.document.getElementById("qLayer18035");
+		layernumber[209] = 18035;
+		layerset[210] = top.document.getElementById("qLayer29010");
+		layernumber[210] = 29010;
+		layerset[211] = top.document.getElementById("qLayer29016");
+		layernumber[211] = 29016;
+		layerset[212] = top.document.getElementById("qLayer29026");
+		layernumber[212] = 29026;
+		layerset[213] = top.document.getElementById("qLayer29900");
+		layernumber[213] = 29900;
+		layerset[214] = top.document.getElementById("qLayer29013");
+		layernumber[214] = 29013;
+		layerset[215] = top.document.getElementById("qLayer29014");
+		layernumber[215] = 29014;
+		layerset[216] = top.document.getElementById("qLayer29019");
+		layernumber[216] = 29019;
+		layerset[217] = top.document.getElementById("qLayer20600");
+		layernumber[217] = 20600;
+		layerset[218] = top.document.getElementById("qLayer29011");
+		layernumber[218] = 29011;
+		layerset[219] = top.document.getElementById("qLayer29024");
+		layernumber[219] = 29024;
+		layerset[220] = top.document.getElementById("qLayer29012");
+		layernumber[220] = 29012;
+		layerset[221] = top.document.getElementById("qLayer29031");
+		layernumber[221] = 29031;
+		layerset[222] = top.document.getElementById("qLayer29032");
+		layernumber[222] = 29032;
+		layerset[223] = top.document.getElementById("qLayer29037");
+		layernumber[223] = 29037;
+		layerset[224] = top.document.getElementById("qLayer29060");
+		layernumber[224] = 29060;
+		layerset[225] = top.document.getElementById("qLayer29070");
+		layernumber[225] = 29070;
+		layerset[226] = top.document.getElementById("qLayer29080");
+		layernumber[226] = 29080;
+		layerset[227] = top.document.getElementById("qLayer29083");
+		layernumber[227] = 29083;
+		layerset[228] = top.document.getElementById("qLayer29088");
+		layernumber[228] = 29088;
+		layerset[229] = top.document.getElementById("qLayer29090");
+		layernumber[229] = 29090;
+		layerset[230] = top.document.getElementById("qLayer29095");
+		layernumber[230] = 29095;
+		layerset[231] = top.document.getElementById("qLayer29096");
+		layernumber[231] = 29096;
+		layerset[232] = top.document.getElementById("qLayer29350");
+		layernumber[232] = 29350;
+		layerset[233] = top.document.getElementById("qLayer31200");
+		layernumber[233] = 31200;
+		layerset[234] = top.document.getElementById("qLayer29901");
+		layernumber[234] = 29901;
+		layerset[235] = top.document.getElementById("qLayer29902");
+		layernumber[235] = 29902;
+		layerset[236] = top.document.getElementById("qLayer30000");
+		layernumber[236] = 30000;
+		layerset[237] = top.document.getElementById("qLayer30005");
+		layernumber[237] = 30005;
+		layerset[238] = top.document.getElementById("qLayer30500");
+		layernumber[238] = 30500;
+		layerset[239] = top.document.getElementById("qLayer30505");
+		layernumber[239] = 30505;
+		layerset[240] = top.document.getElementById("qLayer30800");
+		layernumber[240] = 30800;
+		layerset[241] = top.document.getElementById("qLayer10400");
+		layernumber[241] = 10400;
+		layerset[242] = top.document.getElementById("qLayer30900");
+		layernumber[242] = 30900;
+		layerset[243] = top.document.getElementById("qLayer10300");
+		layernumber[243] = 10300;
+		layerset[244] = top.document.getElementById("qLayer30950");
+		layernumber[244] = 30950;
+		layerset[245] = top.document.getElementById("qLayer10200");
+		layernumber[245] = 10200;
+		layerset[246] = top.document.getElementById("qLayer31000");
+		layernumber[246] = 31000;
+		layerset[247] = top.document.getElementById("qLayer40041");
+		layernumber[247] = 40041;
+		layerset[248] = top.document.getElementById("qLayer40048");
+		layernumber[248] = 40048;
+		layerset[249] = top.document.getElementById("qLayer40039");
+		layernumber[249] = 40039;
+		layerset[250] = top.document.getElementById("qLayer40042");
+		layernumber[250] = 40042;
+		layerset[251] = top.document.getElementById("qLayer31100");
+		layernumber[251] = 31100;
+		layerset[252] = top.document.getElementById("qLayer32000");
+		layernumber[252] = 32000;
+		layerset[253] = top.document.getElementById("qLayer32005");
+		layernumber[253] = 32005;
+		layerset[254] = top.document.getElementById("qLayer31985");
+		layernumber[254] = 31985;
+		layerset[255] = top.document.getElementById("qLayer31980");
+		layernumber[255] = 31980;
+		layerset[256] = top.document.getElementById("qLayer32010");
+		layernumber[256] = 32010;
+		layerset[257] = top.document.getElementById("qLayer32025");
+		layernumber[257] = 32025;
+		layerset[258] = top.document.getElementById("qLayer32285");
+		layernumber[258] = 32285;
+		layerset[259] = top.document.getElementById("qLayer32290");
+		layernumber[259] = 32290;
+		layerset[260] = top.document.getElementById("qLayer32295");
+		layernumber[260] = 32295;
+		layerset[261] = top.document.getElementById("qLayer34305");
+		layernumber[261] = 34305;
+		layerset[262] = top.document.getElementById("qLayer34315");
+		layernumber[262] = 34315;
+		layerset[263] = top.document.getElementById("qLayer37001");
+		layernumber[263] = 37001;
+		layerset[264] = top.document.getElementById("qLayer37002");
+		layernumber[264] = 37002;
+		layerset[265] = top.document.getElementById("qLayer32030");
+		layernumber[265] = 32030;
+		layerset[266] = top.document.getElementById("qLayer32031");
+		layernumber[266] = 32031;
+		layerset[267] = top.document.getElementById("qLayer31990");
+		layernumber[267] = 31990;
+		layerset[268] = top.document.getElementById("qLayer32040");
+		layernumber[268] = 32040;
+		layerset[269] = top.document.getElementById("qLayer32045");
+		layernumber[269] = 32045;
+		layerset[270] = top.document.getElementById("qLayer32055");
+		layernumber[270] = 32055;
+		layerset[271] = top.document.getElementById("qLayer34170");
+		layernumber[271] = 34170;
+		layerset[272] = top.document.getElementById("qLayer33030");
+		layernumber[272] = 33030;
+		layerset[273] = top.document.getElementById("qLayer33060");
+		layernumber[273] = 33060;
+		layerset[274] = top.document.getElementById("qLayer33075");
+		layernumber[274] = 33075;
+		layerset[275] = top.document.getElementById("qLayer33065");
+		layernumber[275] = 33065;
+		layerset[276] = top.document.getElementById("qLayer33090");
+		layernumber[276] = 33090;
+		layerset[277] = top.document.getElementById("qLayer32420");
+		layernumber[277] = 32420;
+		layerset[278] = top.document.getElementById("qLayer32070");
+		layernumber[278] = 32070;
+		layerset[279] = top.document.getElementById("qLayer32310");
+		layernumber[279] = 32310;
+		layerset[280] = top.document.getElementById("qLayer32374");
+		layernumber[280] = 32374;
+		layerset[281] = top.document.getElementById("qLayer32377");
+		layernumber[281] = 32377;
+		layerset[282] = top.document.getElementById("qLayer32435");
+		layernumber[282] = 32435;
+		layerset[283] = top.document.getElementById("qLayer32480");
+		layernumber[283] = 32480;
+		layerset[284] = top.document.getElementById("qLayer32485");
+		layernumber[284] = 32485;
+		layerset[285] = top.document.getElementById("qLayer160800");
+		layernumber[285] = 160800;
+		layerset[286] = top.document.getElementById("qLayer120300");
+		layernumber[286] = 120300;
+		layerset[287] = top.document.getElementById("qLayer32604");
+		layernumber[287] = 32604;
+		layerset[288] = top.document.getElementById("qLayer32080");
+		layernumber[288] = 32080;
+		layerset[289] = top.document.getElementById("qLayer32090");
+		layernumber[289] = 32090;
+		layerset[290] = top.document.getElementById("qLayer32110");
+		layernumber[290] = 32110;
+		layerset[291] = top.document.getElementById("qLayer32120");
+		layernumber[291] = 32120;
+		layerset[292] = top.document.getElementById("qLayer32130");
+		layernumber[292] = 32130;
+		layerset[293] = top.document.getElementById("qLayer32132");
+		layernumber[293] = 32132;
+		layerset[294] = top.document.getElementById("qLayer32150");
+		layernumber[294] = 32150;
+		layerset[295] = top.document.getElementById("qLayer32170");
+		layernumber[295] = 32170;
+		layerset[296] = top.document.getElementById("qLayer32160");
+		layernumber[296] = 32160;
+		layerset[297] = top.document.getElementById("qLayer32180");
+		layernumber[297] = 32180;
+		layerset[298] = top.document.getElementById("qLayer32190");
+		layernumber[298] = 32190;
+		layerset[299] = top.document.getElementById("qLayer32200");
+		layernumber[299] = 32200;
+		layerset[300] = top.document.getElementById("qLayer32199");
+		layernumber[300] = 32199;
+		layerset[301] = top.document.getElementById("qLayer32212");
+		layernumber[301] = 32212;
+		layerset[302] = top.document.getElementById("qLayer32215");
+		layernumber[302] = 32215;
+		layerset[303] = top.document.getElementById("qLayer32216");
+		layernumber[303] = 32216;
+		layerset[304] = top.document.getElementById("qLayer32220");
+		layernumber[304] = 32220;
+		layerset[305] = top.document.getElementById("qLayer32241");
+		layernumber[305] = 32241;
+		layerset[306] = top.document.getElementById("qLayer32250");
+		layernumber[306] = 32250;
+		layerset[307] = top.document.getElementById("qLayer32270");
+		layernumber[307] = 32270;
+		layerset[308] = top.document.getElementById("qLayer32280");
+		layernumber[308] = 32280;
+		layerset[309] = top.document.getElementById("qLayer10000");
+		layernumber[309] = 10000;
+		layerset[310] = top.document.getElementById("qLayer32360");
+		layernumber[310] = 32360;
+		layerset[311] = top.document.getElementById("qLayer34300");
+		layernumber[311] = 34300;
+		layerset[312] = top.document.getElementById("qLayer32381");
+		layernumber[312] = 32381;
+		layerset[313] = top.document.getElementById("qLayer32306");
+		layernumber[313] = 32306;
+		layerset[314] = top.document.getElementById("qLayer32382");
+		layernumber[314] = 32382;
+		layerset[315] = top.document.getElementById("qLayer32302");
+		layernumber[315] = 32302;
+		layerset[316] = top.document.getElementById("qLayer32304");
+		layernumber[316] = 32304;
+		layerset[317] = top.document.getElementById("qLayer32300");
+		layernumber[317] = 32300;
+		layerset[318] = top.document.getElementById("qLayer32383");
+		layernumber[318] = 32383;
+		layerset[319] = top.document.getElementById("qLayer32384");
+		layernumber[319] = 32384;
+		layerset[320] = top.document.getElementById("qLayer32385");
+		layernumber[320] = 32385;
+		layerset[321] = top.document.getElementById("qLayer32387");
+		layernumber[321] = 32387;
+		layerset[322] = top.document.getElementById("qLayer32601");
+		layernumber[322] = 32601;
+		layerset[323] = top.document.getElementById("qLayer32602");
+		layernumber[323] = 32602;
+		layerset[324] = top.document.getElementById("qLayer32603");
+		layernumber[324] = 32603;
+		layerset[325] = top.document.getElementById("qLayer32386");
+		layernumber[325] = 32386;
+		layerset[326] = top.document.getElementById("qLayer32380");
+		layernumber[326] = 32380;
+		layerset[327] = top.document.getElementById("qLayer32350");
+		layernumber[327] = 32350;
+		layerset[328] = top.document.getElementById("qLayer32355");
+		layernumber[328] = 32355;
+		layerset[329] = top.document.getElementById("qLayer32495");
+		layernumber[329] = 32495;
+		layerset[330] = top.document.getElementById("qLayer32500");
+		layernumber[330] = 32500;
+		layerset[331] = top.document.getElementById("qLayer32600");
+		layernumber[331] = 32600;
+		layerset[332] = top.document.getElementById("qLayer33500");
+		layernumber[332] = 33500;
+		layerset[333] = top.document.getElementById("qLayer33520");
+		layernumber[333] = 33520;
+		layerset[334] = top.document.getElementById("qLayer33960");
+		layernumber[334] = 33960;
+		layerset[335] = top.document.getElementById("qLayer33970");
+		layernumber[335] = 33970;
+		layerset[336] = top.document.getElementById("qLayer34000");
+		layernumber[336] = 34000;
+		layerset[337] = top.document.getElementById("qLayer34010");
+		layernumber[337] = 34010;
+		layerset[338] = top.document.getElementById("qLayer34020");
+		layernumber[338] = 34020;
+		layerset[339] = top.document.getElementById("qLayer131385");
+		layernumber[339] = 131385;
+		layerset[340] = top.document.getElementById("qLayer34040");
+		layernumber[340] = 34040;
+		layerset[341] = top.document.getElementById("qLayer121671");
+		layernumber[341] = 121671;
+		layerset[342] = top.document.getElementById("qLayer34050");
+		layernumber[342] = 34050;
+		layerset[343] = top.document.getElementById("qLayer34060");
+		layernumber[343] = 34060;
+		layerset[344] = top.document.getElementById("qLayer34070");
+		layernumber[344] = 34070;
+		layerset[345] = top.document.getElementById("qLayer34080");
+		layernumber[345] = 34080;
+		layerset[346] = top.document.getElementById("qLayer34090");
+		layernumber[346] = 34090;
+		layerset[347] = top.document.getElementById("qLayer34110");
+		layernumber[347] = 34110;
+		layerset[348] = top.document.getElementById("qLayer34130");
+		layernumber[348] = 34130;
+		layerset[349] = top.document.getElementById("qLayer34140");
+		layernumber[349] = 34140;
+		layerset[350] = top.document.getElementById("qLayer34150");
+		layernumber[350] = 34150;
+		layerset[351] = top.document.getElementById("qLayer34160");
+		layernumber[351] = 34160;
+		layerset[352] = top.document.getElementById("qLayer34175");
+		layernumber[352] = 34175;
+		layerset[353] = top.document.getElementById("qLayer34180");
+		layernumber[353] = 34180;
+		layerset[354] = top.document.getElementById("qLayer34190");
+		layernumber[354] = 34190;
+		layerset[355] = top.document.getElementById("qLayer34198");
+		layernumber[355] = 34198;
+		layerset[356] = top.document.getElementById("qLayer34045");
+		layernumber[356] = 34045;
+		layerset[357] = top.document.getElementById("qLayer32075");
+		layernumber[357] = 32075;
+		layerset[358] = top.document.getElementById("qLayer33000");
+		layernumber[358] = 33000;
+		layerset[359] = top.document.getElementById("qLayer33010");
+		layernumber[359] = 33010;
+		layerset[360] = top.document.getElementById("qLayer33020");
+		layernumber[360] = 33020;
+		layerset[361] = top.document.getElementById("qLayer33040");
+		layernumber[361] = 33040;
+		layerset[362] = top.document.getElementById("qLayer33050");
+		layernumber[362] = 33050;
+		layerset[363] = top.document.getElementById("qLayer33070");
+		layernumber[363] = 33070;
+		layerset[364] = top.document.getElementById("qLayer33080");
+		layernumber[364] = 33080;
+		layerset[365] = top.document.getElementById("qLayer33085");
+		layernumber[365] = 33085;
+		layerset[366] = top.document.getElementById("qLayer32425");
+		layernumber[366] = 32425;
+		layerset[367] = top.document.getElementById("qLayer32430");
+		layernumber[367] = 32430;
+		layerset[368] = top.document.getElementById("qLayer32365");
+		layernumber[368] = 32365;
+		layerset[369] = top.document.getElementById("qLayer32370");
+		layernumber[369] = 32370;
+		layerset[370] = top.document.getElementById("qLayer32373");
+		layernumber[370] = 32373;
+		layerset[371] = top.document.getElementById("qLayer32450");
+		layernumber[371] = 32450;
+		layerset[372] = top.document.getElementById("qLayer32460");
+		layernumber[372] = 32460;
+		layerset[373] = top.document.getElementById("qLayer32465");
+		layernumber[373] = 32465;
+		layerset[374] = top.document.getElementById("qLayer32376");
+		layernumber[374] = 32376;
+		layerset[375] = top.document.getElementById("qLayer32455");
+		layernumber[375] = 32455;
+		layerset[376] = top.document.getElementById("qLayer32366");
+		layernumber[376] = 32366;
+		layerset[377] = top.document.getElementById("qLayer34215");
+		layernumber[377] = 34215;
+		layerset[378] = top.document.getElementById("qLayer34220");
+		layernumber[378] = 34220;
+		layerset[379] = top.document.getElementById("qLayer34230");
+		layernumber[379] = 34230;
+		layerset[380] = top.document.getElementById("qLayer34240");
+		layernumber[380] = 34240;
+		layerset[381] = top.document.getElementById("qLayer34165");
+		layernumber[381] = 34165;
+		layerset[382] = top.document.getElementById("qLayer34155");
+		layernumber[382] = 34155;
+		layerset[383] = top.document.getElementById("qLayer34255");
+		layernumber[383] = 34255;
+		layerset[384] = top.document.getElementById("qLayer34265");
+		layernumber[384] = 34265;
+		layerset[385] = top.document.getElementById("qLayer34260");
+		layernumber[385] = 34260;
+		layerset[386] = top.document.getElementById("qLayer34275");
+		layernumber[386] = 34275;
+		layerset[387] = top.document.getElementById("qLayer34285");
+		layernumber[387] = 34285;
+		layerset[388] = top.document.getElementById("qLayer34290");
+		layernumber[388] = 34290;
+		layerset[389] = top.document.getElementById("qLayer32135");
+		layernumber[389] = 32135;
+		layerset[390] = top.document.getElementById("qLayer50225");
+		layernumber[390] = 50225;
+		layerset[391] = top.document.getElementById("qLayer32390");
+		layernumber[391] = 32390;
+		layerset[392] = top.document.getElementById("qLayer34100");
+		layernumber[392] = 34100;
+		layerset[393] = top.document.getElementById("qLayer34270");
+		layernumber[393] = 34270;
+		layerset[394] = top.document.getElementById("qLayer34280");
+		layernumber[394] = 34280;
+		layerset[395] = top.document.getElementById("qLayer34295");
+		layernumber[395] = 34295;
+		layerset[396] = top.document.getElementById("qLayer34310");
+		layernumber[396] = 34310;
+		layerset[397] = top.document.getElementById("qLayer34320");
+		layernumber[397] = 34320;
+		layerset[398] = top.document.getElementById("qLayer34200");
+		layernumber[398] = 34200;
+		layerset[399] = top.document.getElementById("qLayer34550");
+		layernumber[399] = 34550;
+		layerset[400] = top.document.getElementById("qLayer34505");
+		layernumber[400] = 34505;
+		layerset[401] = top.document.getElementById("qLayer34600");
+		layernumber[401] = 34600;
+		layerset[402] = top.document.getElementById("qLayer34700");
+		layernumber[402] = 34700;
+		layerset[403] = top.document.getElementById("qLayer34710");
+		layernumber[403] = 34710;
+		layerset[404] = top.document.getElementById("qLayer34720");
+		layernumber[404] = 34720;
+		layerset[405] = top.document.getElementById("qLayer34730");
+		layernumber[405] = 34730;
+		layerset[406] = top.document.getElementById("qLayer34740");
+		layernumber[406] = 34740;
+		layerset[407] = top.document.getElementById("qLayer34750");
+		layernumber[407] = 34750;
+		layerset[408] = top.document.getElementById("qLayer34770");
+		layernumber[408] = 34770;
+		layerset[409] = top.document.getElementById("qLayer34800");
+		layernumber[409] = 34800;
+		layerset[410] = top.document.getElementById("qLayer35001");
+		layernumber[410] = 35001;
+		layerset[411] = top.document.getElementById("qLayer35010");
+		layernumber[411] = 35010;
+		layerset[412] = top.document.getElementById("qLayer35020");
+		layernumber[412] = 35020;
+		layerset[413] = top.document.getElementById("qLayer33510");
+		layernumber[413] = 33510;
+		layerset[414] = top.document.getElementById("qLayer37050");
+		layernumber[414] = 37050;
+		layerset[415] = top.document.getElementById("qLayer37040");
+		layernumber[415] = 37040;
+		layerset[416] = top.document.getElementById("qLayer37060");
+		layernumber[416] = 37060;
+		layerset[417] = top.document.getElementById("qLayer38600");
+		layernumber[417] = 38600;
+		layerset[418] = top.document.getElementById("qLayer39000");
+		layernumber[418] = 39000;
+		layerset[419] = top.document.getElementById("qLayer39010");
+		layernumber[419] = 39010;
+		layerset[420] = top.document.getElementById("qLayer39020");
+		layernumber[420] = 39020;
+		layerset[421] = top.document.getElementById("qLayer39030");
+		layernumber[421] = 39030;
+		layerset[422] = top.document.getElementById("qLayer39200");
+		layernumber[422] = 39200;
+		layerset[423] = top.document.getElementById("qLayer39310");
+		layernumber[423] = 39310;
+		layerset[424] = top.document.getElementById("qLayer39320");
+		layernumber[424] = 39320;
+		layerset[425] = top.document.getElementById("qLayer32230");
+		layernumber[425] = 32230;
+		layerset[426] = top.document.getElementById("qLayer33900");
+		layernumber[426] = 33900;
+		layerset[427] = top.document.getElementById("qLayer33910");
+		layernumber[427] = 33910;
+		layerset[428] = top.document.getElementById("qLayer33920");
+		layernumber[428] = 33920;
+		layerset[429] = top.document.getElementById("qLayer40000");
+		layernumber[429] = 40000;
+		layerset[430] = top.document.getElementById("qLayer40020");
+		layernumber[430] = 40020;
+		layerset[431] = top.document.getElementById("qLayer40030");
+		layernumber[431] = 40030;
+		layerset[432] = top.document.getElementById("qLayer40033");
+		layernumber[432] = 40033;
+		layerset[433] = top.document.getElementById("qLayer40035");
+		layernumber[433] = 40035;
+		layerset[434] = top.document.getElementById("qLayer40050");
+		layernumber[434] = 40050;
+		layerset[435] = top.document.getElementById("qLayer40060");
+		layernumber[435] = 40060;
+		layerset[436] = top.document.getElementById("qLayer40072");
+		layernumber[436] = 40072;
+		layerset[437] = top.document.getElementById("qLayer40080");
+		layernumber[437] = 40080;
+		layerset[438] = top.document.getElementById("qLayer40110");
+		layernumber[438] = 40110;
+		layerset[439] = top.document.getElementById("qLayer40105");
+		layernumber[439] = 40105;
+		layerset[440] = top.document.getElementById("qLayer40109");
+		layernumber[440] = 40109;
+		layerset[441] = top.document.getElementById("qLayer40120");
+		layernumber[441] = 40120;
+		layerset[442] = top.document.getElementById("qLayer40200");
+		layernumber[442] = 40200;
+		layerset[443] = top.document.getElementById("qLayer40300");
+		layernumber[443] = 40300;
+		layerset[444] = top.document.getElementById("qLayer41015");
+		layernumber[444] = 41015;
+		layerset[445] = top.document.getElementById("qLayer41025");
+		layernumber[445] = 41025;
+		layerset[446] = top.document.getElementById("qLayer41035");
+		layernumber[446] = 41035;
+		layerset[447] = top.document.getElementById("qLayer41040");
+		layernumber[447] = 41040;
+		layerset[448] = top.document.getElementById("qLayer45000");
+		layernumber[448] = 45000;
+		layerset[449] = top.document.getElementById("qLayer50060");
+		layernumber[449] = 50060;
+		layerset[450] = top.document.getElementById("qLayer50190");
+		layernumber[450] = 50190;
+		layerset[451] = top.document.getElementById("qLayer50180");
+		layernumber[451] = 50180;
+		layerset[452] = top.document.getElementById("qLayer50170");
+		layernumber[452] = 50170;
+		layerset[453] = top.document.getElementById("qLayer50200");
+		layernumber[453] = 50200;
+		layerset[454] = top.document.getElementById("qLayer50210");
+		layernumber[454] = 50210;
+		layerset[455] = top.document.getElementById("qLayer50220");
+		layernumber[455] = 50220;
+		layerset[456] = top.document.getElementById("qLayer50230");
+		layernumber[456] = 50230;
+		layerset[457] = top.document.getElementById("qLayer50238");
+		layernumber[457] = 50238;
+		layerset[458] = top.document.getElementById("qLayer50300");
+		layernumber[458] = 50300;
+		layerset[459] = top.document.getElementById("qLayer50305");
+		layernumber[459] = 50305;
+		layerset[460] = top.document.getElementById("qLayer50400");
+		layernumber[460] = 50400;
+		layerset[461] = top.document.getElementById("qLayer50410");
+		layernumber[461] = 50410;
+		layerset[462] = top.document.getElementById("qLayer50401");
+		layernumber[462] = 50401;
+		layerset[463] = top.document.getElementById("qLayer50402");
+		layernumber[463] = 50402;
+		layerset[464] = top.document.getElementById("qLayer50403");
+		layernumber[464] = 50403;
+		layerset[465] = top.document.getElementById("qLayer50404");
+		layernumber[465] = 50404;
+		layerset[466] = top.document.getElementById("qLayer50405");
+		layernumber[466] = 50405;
+		layerset[467] = top.document.getElementById("qLayer50406");
+		layernumber[467] = 50406;
+		layerset[468] = top.document.getElementById("qLayer50412");
+		layernumber[468] = 50412;
+		layerset[469] = top.document.getElementById("qLayer50407");
+		layernumber[469] = 50407;
+		layerset[470] = top.document.getElementById("qLayer50411");
+		layernumber[470] = 50411;
+		layerset[471] = top.document.getElementById("qLayer50415");
+		layernumber[471] = 50415;
+		layerset[472] = top.document.getElementById("qLayer53110");
+		layernumber[472] = 53110;
+		layerset[473] = top.document.getElementById("qLayer53120");
+		layernumber[473] = 53120;
+		layerset[474] = top.document.getElementById("qLayer53130");
+		layernumber[474] = 53130;
+		layerset[475] = top.document.getElementById("qLayer53135");
+		layernumber[475] = 53135;
+		layerset[476] = top.document.getElementById("qLayer53140");
+		layernumber[476] = 53140;
+		layerset[477] = top.document.getElementById("qLayer53150");
+		layernumber[477] = 53150;
+		layerset[478] = top.document.getElementById("qLayer53175");
+		layernumber[478] = 53175;
+		layerset[479] = top.document.getElementById("qLayer53155");
+		layernumber[479] = 53155;
+		layerset[480] = top.document.getElementById("qLayer53160");
+		layernumber[480] = 53160;
+		layerset[481] = top.document.getElementById("qLayer53165");
+		layernumber[481] = 53165;
+		layerset[482] = top.document.getElementById("qLayer53170");
+		layernumber[482] = 53170;
+		layerset[483] = top.document.getElementById("qLayer53180");
+		layernumber[483] = 53180;
+		layerset[484] = top.document.getElementById("qLayer53185");
+		layernumber[484] = 53185;
+		layerset[485] = top.document.getElementById("qLayer53190");
+		layernumber[485] = 53190;
+		layerset[486] = top.document.getElementById("qLayer53195");
+		layernumber[486] = 53195;
+		layerset[487] = top.document.getElementById("qLayer53200");
+		layernumber[487] = 53200;
+		layerset[488] = top.document.getElementById("qLayer53205");
+		layernumber[488] = 53205;
+		layerset[489] = top.document.getElementById("qLayer53210");
+		layernumber[489] = 53210;
+		layerset[490] = top.document.getElementById("qLayer53220");
+		layernumber[490] = 53220;
+		layerset[491] = top.document.getElementById("qLayer53225");
+		layernumber[491] = 53225;
+		layerset[492] = top.document.getElementById("qLayer53230");
+		layernumber[492] = 53230;
+		layerset[493] = top.document.getElementById("qLayer53235");
+		layernumber[493] = 53235;
+		layerset[494] = top.document.getElementById("qLayer53240");
+		layernumber[494] = 53240;
+		layerset[495] = top.document.getElementById("qLayer60020");
+		layernumber[495] = 60020;
+		layerset[496] = top.document.getElementById("qLayer60068");
+		layernumber[496] = 60068;
+		layerset[497] = top.document.getElementById("qLayer60040");
+		layernumber[497] = 60040;
+		layerset[498] = top.document.getElementById("qLayer60081");
+		layernumber[498] = 60081;
+		layerset[499] = top.document.getElementById("qLayer60066");
+		layernumber[499] = 60066;
+		layerset[500] = top.document.getElementById("qLayer60090");
+		layernumber[500] = 60090;
+		layerset[501] = top.document.getElementById("qLayer60100");
+		layernumber[501] = 60100;
+		layerset[502] = top.document.getElementById("qLayer60200");
+		layernumber[502] = 60200;
+		layerset[503] = top.document.getElementById("qLayer70100");
+		layernumber[503] = 70100;
+		layerset[504] = top.document.getElementById("qLayer70600");
+		layernumber[504] = 70600;
+		layerset[505] = top.document.getElementById("qLayer70650");
+		layernumber[505] = 70650;
+		layerset[506] = top.document.getElementById("qLayer70609");
+		layernumber[506] = 70609;
+		layerset[507] = top.document.getElementById("qLayer70090");
+		layernumber[507] = 70090;
+		layerset[508] = top.document.getElementById("qLayer70200");
+		layernumber[508] = 70200;
+		layerset[509] = top.document.getElementById("qLayer70210");
+		layernumber[509] = 70210;
+		layerset[510] = top.document.getElementById("qLayer70320");
+		layernumber[510] = 70320;
+		layerset[511] = top.document.getElementById("qLayer70330");
+		layernumber[511] = 70330;
+		layerset[512] = top.document.getElementById("qLayer70325");
+		layernumber[512] = 70325;
+		layerset[513] = top.document.getElementById("qLayer70400");
+		layernumber[513] = 70400;
+		layerset[514] = top.document.getElementById("qLayer70410");
+		layernumber[514] = 70410;
+		layerset[515] = top.document.getElementById("qLayer70500");
+		layernumber[515] = 70500;
+		layerset[516] = top.document.getElementById("qLayer70610");
+		layernumber[516] = 70610;
+		layerset[517] = top.document.getElementById("qLayer70700");
+		layernumber[517] = 70700;
+		layerset[518] = top.document.getElementById("qLayer75010");
+		layernumber[518] = 75010;
+		layerset[519] = top.document.getElementById("qLayer75030");
+		layernumber[519] = 75030;
+		layerset[520] = top.document.getElementById("qLayer200120");
+		layernumber[520] = 200120;
+		layerset[521] = top.document.getElementById("qLayer75100");
+		layernumber[521] = 75100;
+		layerset[522] = top.document.getElementById("qLayer75040");
+		layernumber[522] = 75040;
+		layerset[523] = top.document.getElementById("qLayer75045");
+		layernumber[523] = 75045;
+		layerset[524] = top.document.getElementById("qLayer75140");
+		layernumber[524] = 75140;
+		layerset[525] = top.document.getElementById("qLayer75080");
+		layernumber[525] = 75080;
+		layerset[526] = top.document.getElementById("qLayer75060");
+		layernumber[526] = 75060;
+		layerset[527] = top.document.getElementById("qLayer75120");
+		layernumber[527] = 75120;
+		layerset[528] = top.document.getElementById("qLayer80000");
+		layernumber[528] = 80000;
+		layerset[529] = top.document.getElementById("qLayer80010");
+		layernumber[529] = 80010;
+		layerset[530] = top.document.getElementById("qLayer80160");
+		layernumber[530] = 80160;
+		layerset[531] = top.document.getElementById("qLayer80170");
+		layernumber[531] = 80170;
+		layerset[532] = top.document.getElementById("qLayer80180");
+		layernumber[532] = 80180;
+		layerset[533] = top.document.getElementById("qLayer80210");
+		layernumber[533] = 80210;
+		layerset[534] = top.document.getElementById("qLayer80200");
+		layernumber[534] = 80200;
+		layerset[535] = top.document.getElementById("qLayer80600");
+		layernumber[535] = 80600;
+		layerset[536] = top.document.getElementById("qLayer80610");
+		layernumber[536] = 80610;
+		layerset[537] = top.document.getElementById("qLayer80620");
+		layernumber[537] = 80620;
+		layerset[538] = top.document.getElementById("qLayer84910");
+		layernumber[538] = 84910;
+		layerset[539] = top.document.getElementById("qLayer90800");
+		layernumber[539] = 90800;
+		layerset[540] = top.document.getElementById("qLayer90810");
+		layernumber[540] = 90810;
+		layerset[541] = top.document.getElementById("qLayer90830");
+		layernumber[541] = 90830;
+		layerset[542] = top.document.getElementById("qLayer90880");
+		layernumber[542] = 90880;
+		layerset[543] = top.document.getElementById("qLayer90840");
+		layernumber[543] = 90840;
+		layerset[544] = top.document.getElementById("qLayer90850");
+		layernumber[544] = 90850;
+		layerset[545] = top.document.getElementById("qLayer90860");
+		layernumber[545] = 90860;
+		layerset[546] = top.document.getElementById("qLayer90870");
+		layernumber[546] = 90870;
+		layerset[547] = top.document.getElementById("qLayer90900");
+		layernumber[547] = 90900;
+		layerset[548] = top.document.getElementById("qLayer90910");
+		layernumber[548] = 90910;
+		layerset[549] = top.document.getElementById("qLayer90920");
+		layernumber[549] = 90920;
+		layerset[550] = top.document.getElementById("qLayer90930");
+		layernumber[550] = 90930;
+		layerset[551] = top.document.getElementById("qLayer90940");
+		layernumber[551] = 90940;
+		layerset[552] = top.document.getElementById("qLayer91020");
+		layernumber[552] = 91020;
+		layerset[553] = top.document.getElementById("qLayer91000");
+		layernumber[553] = 91000;
+		layerset[554] = top.document.getElementById("qLayer91100");
+		layernumber[554] = 91100;
+		layerset[555] = top.document.getElementById("qLayer29300");
+		layernumber[555] = 29300;
+		layerset[556] = top.document.getElementById("qLayer29360");
+		layernumber[556] = 29360;
+		layerset[557] = top.document.getElementById("qLayer29400");
+		layernumber[557] = 29400;
+		layerset[558] = top.document.getElementById("qLayer29410");
+		layernumber[558] = 29410;
+		layerset[559] = top.document.getElementById("qLayer29340");
+		layernumber[559] = 29340;
+		layerset[560] = top.document.getElementById("qLayer29405");
+		layernumber[560] = 29405;
+		layerset[561] = top.document.getElementById("qLayer29346");
+		layernumber[561] = 29346;
+		layerset[562] = top.document.getElementById("qLayer99000");
+		layernumber[562] = 99000;
+		layerset[563] = top.document.getElementById("qLayer99001");
+		layernumber[563] = 99001;
+		layerset[564] = top.document.getElementById("qLayer99002");
+		layernumber[564] = 99002;
+		layerset[565] = top.document.getElementById("qLayer99003");
+		layernumber[565] = 99003;
+		layerset[566] = top.document.getElementById("qLayer99004");
+		layernumber[566] = 99004;
+		layerset[567] = top.document.getElementById("qLayer10002");
+		layernumber[567] = 10002;
+		layerset[568] = top.document.getElementById("qLayer100300");
+		layernumber[568] = 100300;
+		layerset[569] = top.document.getElementById("qLayer10003");
+		layernumber[569] = 10003;
+		layerset[570] = top.document.getElementById("qLayer100100");
+		layernumber[570] = 100100;
+		layerset[571] = top.document.getElementById("qLayer1402320");
+		layernumber[571] = 1402320;
+		layerset[572] = top.document.getElementById("qLayer41010");
+		layernumber[572] = 41010;
+		layerset[573] = top.document.getElementById("qLayer100310");
+		layernumber[573] = 100310;
+		layerset[574] = top.document.getElementById("qLayer100130");
+		layernumber[574] = 100130;
+		layerset[575] = top.document.getElementById("qLayer101010");
+		layernumber[575] = 101010;
+		layerset[576] = top.document.getElementById("qLayer101080");
+		layernumber[576] = 101080;
+		layerset[577] = top.document.getElementById("qLayer101150");
+		layernumber[577] = 101150;
+		layerset[578] = top.document.getElementById("qLayer101220");
+		layernumber[578] = 101220;
+		layerset[579] = top.document.getElementById("qLayer101290");
+		layernumber[579] = 101290;
+		layerset[580] = top.document.getElementById("qLayer101360");
+		layernumber[580] = 101360;
+		layerset[581] = top.document.getElementById("qLayer101020");
+		layernumber[581] = 101020;
+		layerset[582] = top.document.getElementById("qLayer101090");
+		layernumber[582] = 101090;
+		layerset[583] = top.document.getElementById("qLayer101160");
+		layernumber[583] = 101160;
+		layerset[584] = top.document.getElementById("qLayer101230");
+		layernumber[584] = 101230;
+		layerset[585] = top.document.getElementById("qLayer101300");
+		layernumber[585] = 101300;
+		layerset[586] = top.document.getElementById("qLayer101370");
+		layernumber[586] = 101370;
+		layerset[587] = top.document.getElementById("qLayer101030");
+		layernumber[587] = 101030;
+		layerset[588] = top.document.getElementById("qLayer101100");
+		layernumber[588] = 101100;
+		layerset[589] = top.document.getElementById("qLayer101170");
+		layernumber[589] = 101170;
+		layerset[590] = top.document.getElementById("qLayer101240");
+		layernumber[590] = 101240;
+		layerset[591] = top.document.getElementById("qLayer101310");
+		layernumber[591] = 101310;
+		layerset[592] = top.document.getElementById("qLayer101380");
+		layernumber[592] = 101380;
+		layerset[593] = top.document.getElementById("qLayer101040");
+		layernumber[593] = 101040;
+		layerset[594] = top.document.getElementById("qLayer101110");
+		layernumber[594] = 101110;
+		layerset[595] = top.document.getElementById("qLayer101180");
+		layernumber[595] = 101180;
+		layerset[596] = top.document.getElementById("qLayer101250");
+		layernumber[596] = 101250;
+		layerset[597] = top.document.getElementById("qLayer101320");
+		layernumber[597] = 101320;
+		layerset[598] = top.document.getElementById("qLayer101390");
+		layernumber[598] = 101390;
+		layerset[599] = top.document.getElementById("qLayer101050");
+		layernumber[599] = 101050;
+		layerset[600] = top.document.getElementById("qLayer101120");
+		layernumber[600] = 101120;
+		layerset[601] = top.document.getElementById("qLayer101190");
+		layernumber[601] = 101190;
+		layerset[602] = top.document.getElementById("qLayer101260");
+		layernumber[602] = 101260;
+		layerset[603] = top.document.getElementById("qLayer101330");
+		layernumber[603] = 101330;
+		layerset[604] = top.document.getElementById("qLayer101400");
+		layernumber[604] = 101400;
+		layerset[605] = top.document.getElementById("qLayer101060");
+		layernumber[605] = 101060;
+		layerset[606] = top.document.getElementById("qLayer101130");
+		layernumber[606] = 101130;
+		layerset[607] = top.document.getElementById("qLayer101200");
+		layernumber[607] = 101200;
+		layerset[608] = top.document.getElementById("qLayer101270");
+		layernumber[608] = 101270;
+		layerset[609] = top.document.getElementById("qLayer101340");
+		layernumber[609] = 101340;
+		layerset[610] = top.document.getElementById("qLayer101410");
+		layernumber[610] = 101410;
+		layerset[611] = top.document.getElementById("qLayer101070");
+		layernumber[611] = 101070;
+		layerset[612] = top.document.getElementById("qLayer101140");
+		layernumber[612] = 101140;
+		layerset[613] = top.document.getElementById("qLayer101210");
+		layernumber[613] = 101210;
+		layerset[614] = top.document.getElementById("qLayer101280");
+		layernumber[614] = 101280;
+		layerset[615] = top.document.getElementById("qLayer101350");
+		layernumber[615] = 101350;
+		layerset[616] = top.document.getElementById("qLayer101420");
+		layernumber[616] = 101420;
+		layerset[617] = top.document.getElementById("qLayer100200");
+		layernumber[617] = 100200;
+		layerset[618] = top.document.getElementById("qLayer100400");
+		layernumber[618] = 100400;
+		layerset[619] = top.document.getElementById("qLayer100600");
+		layernumber[619] = 100600;
+		layerset[620] = top.document.getElementById("qLayer31305");
+		layernumber[620] = 31305;
+		layerset[621] = top.document.getElementById("qLayer110020");
+		layernumber[621] = 110020;
+		layerset[622] = top.document.getElementById("qLayer31300");
+		layernumber[622] = 31300;
+		layerset[623] = top.document.getElementById("qLayer110030");
+		layernumber[623] = 110030;
+		layerset[624] = top.document.getElementById("qLayer41030");
+		layernumber[624] = 41030;
+		layerset[625] = top.document.getElementById("qLayer110100");
+		layernumber[625] = 110100;
+		layerset[626] = top.document.getElementById("qLayer110120");
+		layernumber[626] = 110120;
+		layerset[627] = top.document.getElementById("qLayer110110");
+		layernumber[627] = 110110;
+		layerset[628] = top.document.getElementById("qLayer110130");
+		layernumber[628] = 110130;
+		layerset[629] = top.document.getElementById("qLayer110140");
+		layernumber[629] = 110140;
+		layerset[630] = top.document.getElementById("qLayer110109");
+		layernumber[630] = 110109;
+		layerset[631] = top.document.getElementById("qLayer110139");
+		layernumber[631] = 110139;
+		layerset[632] = top.document.getElementById("qLayer110149");
+		layernumber[632] = 110149;
+		layerset[633] = top.document.getElementById("qLayer110129");
+		layernumber[633] = 110129;
+		layerset[634] = top.document.getElementById("qLayer110600");
+		layernumber[634] = 110600;
+		layerset[635] = top.document.getElementById("qLayer110610");
+		layernumber[635] = 110610;
+		layerset[636] = top.document.getElementById("qLayer110620");
+		layernumber[636] = 110620;
+		layerset[637] = top.document.getElementById("qLayer110630");
+		layernumber[637] = 110630;
+		layerset[638] = top.document.getElementById("qLayer110640");
+		layernumber[638] = 110640;
+		layerset[639] = top.document.getElementById("qLayer110650");
+		layernumber[639] = 110650;
+		layerset[640] = top.document.getElementById("qLayer110700");
+		layernumber[640] = 110700;
+		layerset[641] = top.document.getElementById("qLayer110710");
+		layernumber[641] = 110710;
+		layerset[642] = top.document.getElementById("qLayer110720");
+		layernumber[642] = 110720;
+		layerset[643] = top.document.getElementById("qLayer110740");
+		layernumber[643] = 110740;
+		layerset[644] = top.document.getElementById("qLayer41020");
+		layernumber[644] = 41020;
+		layerset[645] = top.document.getElementById("qLayer110800");
+		layernumber[645] = 110800;
+		layerset[646] = top.document.getElementById("qLayer120000");
+		layernumber[646] = 120000;
+		layerset[647] = top.document.getElementById("qLayer120020");
+		layernumber[647] = 120020;
+		layerset[648] = top.document.getElementById("qLayer120030");
+		layernumber[648] = 120030;
+		layerset[649] = top.document.getElementById("qLayer120110");
+		layernumber[649] = 120110;
+		layerset[650] = top.document.getElementById("qLayer120120");
+		layernumber[650] = 120120;
+		layerset[651] = top.document.getElementById("qLayer120150");
+		layernumber[651] = 120150;
+		layerset[652] = top.document.getElementById("qLayer120160");
+		layernumber[652] = 120160;
+		layerset[653] = top.document.getElementById("qLayer120170");
+		layernumber[653] = 120170;
+		layerset[654] = top.document.getElementById("qLayer120180");
+		layernumber[654] = 120180;
+		layerset[655] = top.document.getElementById("qLayer120220");
+		layernumber[655] = 120220;
+		layerset[656] = top.document.getElementById("qLayer120210");
+		layernumber[656] = 120210;
+		layerset[657] = top.document.getElementById("qLayer120190");
+		layernumber[657] = 120190;
+		layerset[658] = top.document.getElementById("qLayer121610");
+		layernumber[658] = 121610;
+		layerset[659] = top.document.getElementById("qLayer121620");
+		layernumber[659] = 121620;
+		layerset[660] = top.document.getElementById("qLayer121630");
+		layernumber[660] = 121630;
+		layerset[661] = top.document.getElementById("qLayer121640");
+		layernumber[661] = 121640;
+		layerset[662] = top.document.getElementById("qLayer121650");
+		layernumber[662] = 121650;
+		layerset[663] = top.document.getElementById("qLayer121660");
+		layernumber[663] = 121660;
+		layerset[664] = top.document.getElementById("qLayer121690");
+		layernumber[664] = 121690;
+		layerset[665] = top.document.getElementById("qLayer121700");
+		layernumber[665] = 121700;
+		layerset[666] = top.document.getElementById("qLayer130010");
+		layernumber[666] = 130010;
+		layerset[667] = top.document.getElementById("qLayer130015");
+		layernumber[667] = 130015;
+		layerset[668] = top.document.getElementById("qLayer130020");
+		layernumber[668] = 130020;
+		layerset[669] = top.document.getElementById("qLayer130030");
+		layernumber[669] = 130030;
+		layerset[670] = top.document.getElementById("qLayer130040");
+		layernumber[670] = 130040;
+		layerset[671] = top.document.getElementById("qLayer130050");
+		layernumber[671] = 130050;
+		layerset[672] = top.document.getElementById("qLayer130060");
+		layernumber[672] = 130060;
+		layerset[673] = top.document.getElementById("qLayer130070");
+		layernumber[673] = 130070;
+		layerset[674] = top.document.getElementById("qLayer131000");
+		layernumber[674] = 131000;
+		layerset[675] = top.document.getElementById("qLayer131100");
+		layernumber[675] = 131100;
+		layerset[676] = top.document.getElementById("qLayer131200");
+		layernumber[676] = 131200;
+		layerset[677] = top.document.getElementById("qLayer131110");
+		layernumber[677] = 131110;
+		layerset[678] = top.document.getElementById("qLayer131120");
+		layernumber[678] = 131120;
+		layerset[679] = top.document.getElementById("qLayer131210");
+		layernumber[679] = 131210;
+		layerset[680] = top.document.getElementById("qLayer131300");
+		layernumber[680] = 131300;
+		layerset[681] = top.document.getElementById("qLayer131320");
+		layernumber[681] = 131320;
+		layerset[682] = top.document.getElementById("qLayer131370");
+		layernumber[682] = 131370;
+		layerset[683] = top.document.getElementById("qLayer131380");
+		layernumber[683] = 131380;
+		layerset[684] = top.document.getElementById("qLayer131390");
+		layernumber[684] = 131390;
+		layerset[685] = top.document.getElementById("qLayer133001");
+		layernumber[685] = 133001;
+		layerset[686] = top.document.getElementById("qLayer133003");
+		layernumber[686] = 133003;
+		layerset[687] = top.document.getElementById("qLayer133004");
+		layernumber[687] = 133004;
+		layerset[688] = top.document.getElementById("qLayer133005");
+		layernumber[688] = 133005;
+		layerset[689] = top.document.getElementById("qLayer133006");
+		layernumber[689] = 133006;
+		layerset[690] = top.document.getElementById("qLayer133007");
+		layernumber[690] = 133007;
+		layerset[691] = top.document.getElementById("qLayer133008");
+		layernumber[691] = 133008;
+		layerset[692] = top.document.getElementById("qLayer133010");
+		layernumber[692] = 133010;
+		layerset[693] = top.document.getElementById("qLayer133012");
+		layernumber[693] = 133012;
+		layerset[694] = top.document.getElementById("qLayer133013");
+		layernumber[694] = 133013;
+		layerset[695] = top.document.getElementById("qLayer133014");
+		layernumber[695] = 133014;
+		layerset[696] = top.document.getElementById("qLayer133016");
+		layernumber[696] = 133016;
+		layerset[697] = top.document.getElementById("qLayer133017");
+		layernumber[697] = 133017;
+		layerset[698] = top.document.getElementById("qLayer133018");
+		layernumber[698] = 133018;
+		layerset[699] = top.document.getElementById("qLayer133019");
+		layernumber[699] = 133019;
+		layerset[700] = top.document.getElementById("qLayer133020");
+		layernumber[700] = 133020;
+		layerset[701] = top.document.getElementById("qLayer133022");
+		layernumber[701] = 133022;
+		layerset[702] = top.document.getElementById("qLayer133024");
+		layernumber[702] = 133024;
+		layerset[703] = top.document.getElementById("qLayer133026");
+		layernumber[703] = 133026;
+		layerset[704] = top.document.getElementById("qLayer133027");
+		layernumber[704] = 133027;
+		layerset[705] = top.document.getElementById("qLayer133028");
+		layernumber[705] = 133028;
+		layerset[706] = top.document.getElementById("qLayer133031");
+		layernumber[706] = 133031;
+		layerset[707] = top.document.getElementById("qLayer133032");
+		layernumber[707] = 133032;
+		layerset[708] = top.document.getElementById("qLayer133033");
+		layernumber[708] = 133033;
+		layerset[709] = top.document.getElementById("qLayer133034");
+		layernumber[709] = 133034;
+		layerset[710] = top.document.getElementById("qLayer133035");
+		layernumber[710] = 133035;
+		layerset[711] = top.document.getElementById("qLayer133002");
+		layernumber[711] = 133002;
+		layerset[712] = top.document.getElementById("qLayer133025");
+		layernumber[712] = 133025;
+		layerset[713] = top.document.getElementById("qLayer150010");
+		layernumber[713] = 150010;
+		layerset[714] = top.document.getElementById("qLayer150100");
+		layernumber[714] = 150100;
+		layerset[715] = top.document.getElementById("qLayer150200");
+		layernumber[715] = 150200;
+		layerset[716] = top.document.getElementById("qLayer150220");
+		layernumber[716] = 150220;
+		layerset[717] = top.document.getElementById("qLayer150210");
+		layernumber[717] = 150210;
+		layerset[718] = top.document.getElementById("qLayer150205");
+		layernumber[718] = 150205;
+		layerset[719] = top.document.getElementById("qLayer150300");
+		layernumber[719] = 150300;
+		layerset[720] = top.document.getElementById("qLayer27200");
+		layernumber[720] = 27200;
+		layerset[721] = top.document.getElementById("qLayer150400");
+		layernumber[721] = 150400;
+		layerset[722] = top.document.getElementById("qLayer150500");
+		layernumber[722] = 150500;
+		layerset[723] = top.document.getElementById("qLayer160000");
+		layernumber[723] = 160000;
+		layerset[724] = top.document.getElementById("qLayer160100");
+		layernumber[724] = 160100;
+		layerset[725] = top.document.getElementById("qLayer160200");
+		layernumber[725] = 160200;
+		layerset[726] = top.document.getElementById("qLayer160300");
+		layernumber[726] = 160300;
+		layerset[727] = top.document.getElementById("qLayer160320");
+		layernumber[727] = 160320;
+		layerset[728] = top.document.getElementById("qLayer160340");
+		layernumber[728] = 160340;
+		layerset[729] = top.document.getElementById("qLayer160360");
+		layernumber[729] = 160360;
+		layerset[730] = top.document.getElementById("qLayer160380");
+		layernumber[730] = 160380;
+		layerset[731] = top.document.getElementById("qLayer160400");
+		layernumber[731] = 160400;
+		layerset[732] = top.document.getElementById("qLayer160420");
+		layernumber[732] = 160420;
+		layerset[733] = top.document.getElementById("qLayer160440");
+		layernumber[733] = 160440;
+		layerset[734] = top.document.getElementById("qLayer160460");
+		layernumber[734] = 160460;
+		layerset[735] = top.document.getElementById("qLayer160480");
+		layernumber[735] = 160480;
+		layerset[736] = top.document.getElementById("qLayer160500");
+		layernumber[736] = 160500;
+		layerset[737] = top.document.getElementById("qLayer160520");
+		layernumber[737] = 160520;
+		layerset[738] = top.document.getElementById("qLayer160540");
+		layernumber[738] = 160540;
+		layerset[739] = top.document.getElementById("qLayer160560");
+		layernumber[739] = 160560;
+		layerset[740] = top.document.getElementById("qLayer160580");
+		layernumber[740] = 160580;
+		layerset[741] = top.document.getElementById("qLayer160600");
+		layernumber[741] = 160600;
+		layerset[742] = top.document.getElementById("qLayer160620");
+		layernumber[742] = 160620;
+		layerset[743] = top.document.getElementById("qLayer160640");
+		layernumber[743] = 160640;
+		layerset[744] = top.document.getElementById("qLayer160660");
+		layernumber[744] = 160660;
+		layerset[745] = top.document.getElementById("qLayer160700");
+		layernumber[745] = 160700;
+		layerset[746] = top.document.getElementById("qLayer160680");
+		layernumber[746] = 160680;
+		layerset[747] = top.document.getElementById("qLayer160720");
+		layernumber[747] = 160720;
+		layerset[748] = top.document.getElementById("qLayer160740");
+		layernumber[748] = 160740;
+		layerset[749] = top.document.getElementById("qLayer160760");
+		layernumber[749] = 160760;
+		layerset[750] = top.document.getElementById("qLayer160780");
+		layernumber[750] = 160780;
+		layerset[751] = top.document.getElementById("qLayer170010");
+		layernumber[751] = 170010;
+		layerset[752] = top.document.getElementById("qLayer170020");
+		layernumber[752] = 170020;
+		layerset[753] = top.document.getElementById("qLayer170030");
+		layernumber[753] = 170030;
+		layerset[754] = top.document.getElementById("qLayer170040");
+		layernumber[754] = 170040;
+		layerset[755] = top.document.getElementById("qLayer190010");
+		layernumber[755] = 190010;
+		layerset[756] = top.document.getElementById("qLayer190020");
+		layernumber[756] = 190020;
+		layerset[757] = top.document.getElementById("qLayer190030");
+		layernumber[757] = 190030;
+		layerset[758] = top.document.getElementById("qLayer190040");
+		layernumber[758] = 190040;
+		layerset[759] = top.document.getElementById("qLayer190050");
+		layernumber[759] = 190050;
+		layerset[760] = top.document.getElementById("qLayer190060");
+		layernumber[760] = 190060;
+		layerset[761] = top.document.getElementById("qLayer190070");
+		layernumber[761] = 190070;
+		layerset[762] = top.document.getElementById("qLayer191000");
+		layernumber[762] = 191000;
+		layerset[763] = top.document.getElementById("qLayer11149");
+		layernumber[763] = 11149;
+		layerset[764] = top.document.getElementById("qLayer40400");
+		layernumber[764] = 40400;
+		layerset[765] = top.document.getElementById("qLayer191100");
+		layernumber[765] = 191100;
+		layerset[766] = top.document.getElementById("qLayer191200");
+		layernumber[766] = 191200;
+		layerset[767] = top.document.getElementById("qLayer191410");
+		layernumber[767] = 191410;
+		layerset[768] = top.document.getElementById("qLayer191400");
+		layernumber[768] = 191400;
+		layerset[769] = top.document.getElementById("qLayer200010");
+		layernumber[769] = 200010;
+		layerset[770] = top.document.getElementById("qLayer200020");
+		layernumber[770] = 200020;
+		layerset[771] = top.document.getElementById("qLayer200030");
+		layernumber[771] = 200030;
+		layerset[772] = top.document.getElementById("qLayer200040");
+		layernumber[772] = 200040;
+		layerset[773] = top.document.getElementById("qLayer200050");
+		layernumber[773] = 200050;
+		layerset[774] = top.document.getElementById("qLayer200060");
+		layernumber[774] = 200060;
+		layerset[775] = top.document.getElementById("qLayer200100");
+		layernumber[775] = 200100;
+		layerset[776] = top.document.getElementById("qLayer201000");
+		layernumber[776] = 201000;
+		layerset[777] = top.document.getElementById("qLayer400000");
+		layernumber[777] = 400000;
+		layerset[778] = top.document.getElementById("qLayer1402324");
+		layernumber[778] = 1402324;
+		layerset[779] = top.document.getElementById("qLayer110119");
+		layernumber[779] = 110119;
+		layerset[780] = top.document.getElementById("qLayer88800");
+		layernumber[780] = 88800;
+		layerset[781] = top.document.getElementById("qLayer88750");
+		layernumber[781] = 88750;
+		layerset[782] = top.document.getElementById("qLayer88810");
+		layernumber[782] = 88810;
+		layerset[783] = top.document.getElementById("qLayer88790");
+		layernumber[783] = 88790;
+		layerset[784] = top.document.getElementById("qLayer88780");
+		layernumber[784] = 88780;
+		layerset[785] = top.document.getElementById("qLayer88740");
+		layernumber[785] = 88740;
+		layerset[786] = top.document.getElementById("qLayer88730");
+		layernumber[786] = 88730;
+		layerset[787] = top.document.getElementById("qLayer88630");
+		layernumber[787] = 88630;
+		layerset[788] = top.document.getElementById("qLayer88720");
+		layernumber[788] = 88720;
+		layerset[789] = top.document.getElementById("qLayer88710");
+		layernumber[789] = 88710;
+		layerset[790] = top.document.getElementById("qLayer88700");
+		layernumber[790] = 88700;
+		layerset[791] = top.document.getElementById("qLayer88690");
+		layernumber[791] = 88690;
+		layerset[792] = top.document.getElementById("qLayer88680");
+		layernumber[792] = 88680;
+		layerset[793] = top.document.getElementById("qLayer88670");
+		layernumber[793] = 88670;
+		layerset[794] = top.document.getElementById("qLayer88650");
+		layernumber[794] = 88650;
+		layerset[795] = top.document.getElementById("qLayer88660");
+		layernumber[795] = 88660;
+		layerset[796] = top.document.getElementById("qLayer88640");
+		layernumber[796] = 88640;
+		layerset[797] = top.document.getElementById("qLayer88930");
+		layernumber[797] = 88930;
+		layerset[798] = top.document.getElementById("qLayer88870");
+		layernumber[798] = 88870;
+		layerset[799] = top.document.getElementById("qLayer88990");
+		layernumber[799] = 88990;
+		layerset[800] = top.document.getElementById("qLayer89020");
+		layernumber[800] = 89020;
+		layerset[801] = top.document.getElementById("qLayer88910");
+		layernumber[801] = 88910;
+		layerset[802] = top.document.getElementById("qLayer88880");
+		layernumber[802] = 88880;
+		layerset[803] = top.document.getElementById("qLayer88850");
+		layernumber[803] = 88850;
+		layerset[804] = top.document.getElementById("qLayer88980");
+		layernumber[804] = 88980;
+		layerset[805] = top.document.getElementById("qLayer88970");
+		layernumber[805] = 88970;
+		layerset[806] = top.document.getElementById("qLayer88840");
+		layernumber[806] = 88840;
+		layerset[807] = top.document.getElementById("qLayer88830");
+		layernumber[807] = 88830;
+		layerset[808] = top.document.getElementById("qLayer88960");
+		layernumber[808] = 88960;
+		layerset[809] = top.document.getElementById("qLayer88940");
+		layernumber[809] = 88940;
+		layerset[810] = top.document.getElementById("qLayer88920");
+		layernumber[810] = 88920;
+		layerset[811] = top.document.getElementById("qLayer88950");
+		layernumber[811] = 88950;
+		layerset[812] = top.document.getElementById("qLayer34500");
+		layernumber[812] = 34500;
+		layerset[813] = top.document.getElementById("qLayer200110");
+		layernumber[813] = 200110;
+		layerset[814] = top.document.getElementById("qLayer39510");
+		layernumber[814] = 39510;
+		layerset[815] = top.document.getElementById("qLayer39500");
+		layernumber[815] = 39500;
+		layerset[816] = top.document.getElementById("qLayer32510");
+		layernumber[816] = 32510;
+		layerset[817] = top.document.getElementById("qLayer32515");
+		layernumber[817] = 32515;
+		layerset[818] = top.document.getElementById("qLayer32520");
+		layernumber[818] = 32520;
+		layerset[819] = top.document.getElementById("qLayer32525");
+		layernumber[819] = 32525;
+		layerset[820] = top.document.getElementById("qLayer32530");
+		layernumber[820] = 32530;
+		layerset[821] = top.document.getElementById("qLayer32540");
+		layernumber[821] = 32540;
+		layerset[822] = top.document.getElementById("qLayer75000");
+		layernumber[822] = 75000;
+		
+
+		var oldmousey, oldmousex, mousey, mousex, tooltipstate = "ready_for_request", counter = 0, prevent;
+		var maxwidth = 0;
+		var xpos = 5;
+		var ypos = 0;
+		
+		window.setInterval("tooltip_query()", 100);
+		
+		top.document.getElementById("svghelp").SVGshowtooltip = showtooltip;		// das ist ein Trick, nur so kann man aus dem html-Dokument eine Javascript-Funktion aus dem SVG-Dokument aufrufen
+				
+		function hidetooltip(evt){
+			if(evt == undefined){
+				cleartooltip();
+				return;
+			}
+			mousex = evt.clientX;
+			mousey = evt.clientY;
+			if(mouse_down == false && (oldmousex == undefined || Math.abs(oldmousex-mousex) > 1 || Math.abs(oldmousey-mousey) > 1)){			// Maus bewegen
+				if(prevent != 1 && (oldmousex == undefined || Math.abs(oldmousex-mousex) > 30 || Math.abs(oldmousey-mousey) > 30)){			// Maus bewegen
+					cleartooltip();
+				}
+				tooltipstate = "ready_for_request";
+			}
+		}
+		
+		function cleartooltip(){
+			var tooltipgroup = document.getElementById("tooltipgroup");
+			var tooltipcontent = document.getElementById("tooltipcontent");
+			var obj = document.getElementById("highlight")
+			tooltipgroup.setAttribute('visibility', 'hidden');
+			top.document.GUI.result.value = "";				
+			while(tooltipcontent.childNodes.length > 0){
+				tooltipcontent.removeChild(tooltipcontent.firstChild);
+			}
+			ypos = 0;
+			maxwidth = 0;
+			obj.setAttribute("d", "");
+		}
+			
+		function showtooltip(result, showdata){
+			var box = new Array();																					// array mit den BBoxen der Sachdatentexte
+			var texts = new Array();																				// array mit den Sachdatentexten
+			var pics = new Array;																						// array mit den Bildern	
+			var tooltip = document.getElementById("querytooltip");
+			var tooltipframe = document.getElementById("frame");
+			var tooltipgroup = document.getElementById("tooltipgroup");
+			var tooltipcontent = document.getElementById("tooltipcontent");
+			cleartooltip();
+			var res = result.split("||| ");
+			// Highlighting-Geometrie
+			if(res[1] != "" && res[1] != undefined){
+				geom = res[1];
+				geom = world2pixelsvg(geom);
+				var obj = document.getElementById("highlight")
+				obj.setAttribute("d", geom);
+			}
+			if(showdata){		// Daten nur anzeigen, wenn ueber die Karte abgefragt wurde
+				var objects = res[0].split("|| ");
+				var layername = settext(objects[0], xpos, ypos);									// Layername
+				layername.setAttribute('visibility', 'visible');
+				box[0] = layername.getBBox();																	// BBox berechnen
+				ypos = ypos + box[0].height + 4;
+				if(maxwidth < box[0].width){
+					maxwidth = box[0].width + 6;
+				}
+				for(i = 1; i < objects.length; i++){
+					if(objects[i] != ""){
+						var elements = objects[i].split("| ");
+						texts[i] = settext(elements[0], xpos, ypos);									// Sachdaten
+						texts[i].setAttribute('visibility', 'visible');
+						box[i] = texts[i].getBBox();																	// BBox berechnen
+						ypos = ypos + box[i].height;
+						if(maxwidth < box[i].width){
+							maxwidth = box[i].width + 6;
+						}
+						var anzahl_bilder = elements.length-1;
+						for(j = 1; j < elements.length; j++){
+							pics[i] = new Array();
+							pics[i][j] = document.createElementNS("http://www.w3.org/2000/svg", "image");
+							pics[i][j].setAttributeNS(null, "id", "pic_"+i+j);
+							pics[i][j].setAttributeNS(null, "height", "100");
+							pics[i][j].setAttributeNS(null, "width", "140");
+							pics[i][j].setAttributeNS(null, "preserveAspectRatio" , "xMinYMin meet");
+							pics[i][j].setAttributeNS(null, "x", xpos);
+							pics[i][j].setAttributeNS(null, "y", ypos);
+							pics[i][j].setAttributeNS(null, "opacity", 1);
+							pics[i][j].setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", elements[j]);
+							tooltipcontent.appendChild(pics[i][j]);
+							ypos = ypos + 110;
+							if(maxwidth < 140){
+								maxwidth = 140;
+							}
+						}
+						ypos = ypos + 12;
+					}
+				}
+				tooltipframe.setAttribute("x", xpos-8);
+				tooltipframe.setAttribute("y", -20); 				
+				tooltipframe.setAttribute("width", maxwidth + 8);
+				tooltipframe.setAttribute("height", ypos + 6);
+				updatetooltipposition(tooltipgroup);															// Tooltipposition updaten
+				tooltipgroup.setAttribute('visibility', 'visible');
+			}
+		}				
+		
+		function cleartext(object){
+			while(object.childNodes.length > 0){
+				object.removeChild(object.firstChild);
+			}
+		}
+		
+		function updatetooltipposition(tooltipgroup){
+			var overhead;		
+			var x, y;	
+		 	if(mousex > (resx/2)){
+		 		overhead = mousex - (maxwidth + 16);
+		 		if(overhead < 0){
+		 			x = 5;
+		 		}
+		 		else{
+		 			x = mousex - (maxwidth)-7;
+		 		}
+		 	}
+		 	else{
+		 		overhead = resx - (mousex + maxwidth + 16);
+		 		if(overhead < 0){
+		 			x = mousex + overhead + 10;	
+		 		}
+		 		else{
+		 			x = mousex + 5;
+		 		}
+		 	}
+		 	if(mousey > (resy/2)){
+				overhead = mousey - (ypos + 20);
+		 		if(overhead < 0){
+		 			y = 20;
+		 		}
+		 		else{
+		 			y = mousey - (ypos - 20);
+				}
+		 	}
+		 	else{
+				overhead = resy - (mousey + ypos + 20);
+		 		if(overhead < 0){
+		 			y = resy - (ypos - 14);	
+		 		}
+		 		else{
+		 			y = mousey + 20;
+				}
+		 	}
+			tooltipgroup.setAttribute("transform", "translate("+x+", "+y+")");
+		}						
+
+		function updatetextposition(tooltip){
+		 	tooltip.setAttribute("x", xpos);
+			tooltip.setAttribute("y", ypos+16);
+		 	var tspan = tooltip.firstChild;
+		 	while(tspan != null){ 
+				tspan.setAttribute("x", xpos);
+				tspan = tspan.nextSibling;
+			}
+		}
+						
+		function settext(text, x, y){
+			var tooltipcontent = document.getElementById("tooltipcontent");
+			var newtext = document.getElementById("querytooltip").cloneNode(true);
+			newgroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+			var link = 0;
+			var links = new Array();
+			newtext.setAttribute("id", "newtext"+ypos);
+			newtext.setAttribute("x", x);
+		  newtext.setAttribute("y", y);
+			text = unescape(text);
+			//cleartext(newtext);
+			var tspan1;
+			var offsety = 16;
+			var offsetx = x;
+			var lines = text.split("##");
+			for(l = 0; l < lines.length; l++){
+				if(lines[l].slice(0, 6) == "xlink:"){
+					link = document.getElementById("link0").cloneNode(true);
+					link.setAttribute("onclick", "window.parent.open('"+lines[l].slice(6)+"', '_blank')");
+					var nodText = document.createTextNode(basename(lines[l].slice(6)));
+					link.appendChild(nodText);
+					links.push(link);
+					continue;
+				}
+				tspan1 = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+		    if(l > 0){
+		    	tspan1.setAttribute("dy", offsety);
+		    	tspan1.setAttribute("x", offsetx);
+		    }
+		    tspan1.appendChild(document.createTextNode(lines[l]));
+		    newtext.appendChild(tspan1);
+			}
+			newgroup.appendChild(newtext);
+			for(li = 0; li < links.length; li++){
+				var ypos = y+(l-1-links.length+li)*16;
+				links[li].setAttribute("transform", "translate("+x+" "+ypos+")");
+				newgroup.appendChild(links[li]);
+			}
+			tooltipcontent.appendChild(newgroup);
+			return newgroup;
+		}
+
+		
+		function basename(path) {
+    	return path.replace( /.*\//, "" );
+		}
+		
+		
+		function cleartext(object){
+			while(object.childNodes.length > 0){
+				object.removeChild(object.firstChild);
+			}
+		}
+						
+		function tooltip_query(){
+			var querylayer = "";
+			var querylayer_id;
+			if(doing == "ppquery" && mouse_down == false && tooltipstate == "ready_for_request" && prevent != 1){ 		// wenn bereit fuer Request
+				if(Math.abs(oldmousex-mousex) < 1 && Math.abs(oldmousey-mousey) < 1){		// Maus stillhalten
+					tooltipstate = "request_sent";
+					for(i = 0; i < layerset.length; i++){
+						if(layerset[i] != undefined && layerset[i].checked){
+							querylayer += "&qLayer"+layernumber[i]+"=1";
+						}
+					}
+					counter++;
+					path = mousex+","+mousey+";"+mousex+","+mousey;
+					top.ahah("index.php", "go=tooltip_query&INPUT_COORD="+path+"&CMD=ppquery"+querylayer+"&counter="+counter, new Array(top.document.GUI.result, ''), new Array('setvalue', 'execute_function'));
+				}
+				oldmousex = mousex;
+				oldmousey = mousey;
+			}
+		}	
+
+
+]]></script>
+
+  <defs>
+
+
+	<style type="text/css"><![CDATA[
+		#buttons{
+		}
+		#buttons:hover .navbutton_bg{
+			transition: all 0.15s ease;
+			opacity: 1;
+		}
+		#buttons:hover .navbutton_frame{
+			opacity: 1;
+		}
+		#buttons .navbutton_frame{
+			opacity: 0.0;
+		}		
+		.navbutton_frame{
+			fill: url(#LinearGradient);
+		}
+		.navbutton_frame:hover{
+			filter: url(#innershadow);
+		} 		
+    .navbutton{			
+			fill: #5c88a8;
+			pointer-events: none;
+		}
+    .navbutton_stroke{
+			stroke: #5c88a8;
+		}
+    .navbutton_semifill{
+			fill-opacity: 0.5;
+		}
+		.navbutton_nofill{
+			fill: none;
+		}
+		.navbutton_whitefill{
+			fill: white;
+		}
+		.navbutton_bg{
+			filter: url(#Schatten);
+			fill: url(#LinearGradient);
+			opacity: 0.5;
+			transition: all 1s cubic-bezier(0.09, 0.93, 0.76, 0.84);
+		}                            
+		.active{
+			fill: #b0d4f2 !important;
+			opacity: 1 !important;
+			filter: url(#innershadow);
+		}		
+		.disabled{			
+			fill: #ccc;
+		}
+		.redlining{
+			fill: rgb(180,30,30);
+			stroke:rgb(180,30,30);
+		}
+    ]]></style>
+				
+		<filter id="innershadow">
+			<feOffset dx="-0.5" dy="0"/>
+			<feGaussianBlur stdDeviation="1.3"  result="offset-blur"/>                           <!-- Shadow Blur -->
+			<feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"/> <!-- Invert the drop shadow to create an inner shadow -->
+			<feFlood flood-color="black" flood-opacity="1" result="color"/>                     <!-- Color & Opacity -->
+			<feComposite operator="in" in="color" in2="inverse" result="shadow"/>               <!-- Clip color inside shadow -->
+			<feComponentTransfer in="shadow" result="shadow">                                   <!-- Shadow Opacity -->
+				<feFuncA type="linear" slope=".7"/>
+			</feComponentTransfer>
+			<feComposite operator="over" in="shadow" in2="SourceGraphic"/>                       <!-- Put shadow over original object -->
+		</filter>
+		
+    <filter id="Schatten" width = "150%" height = "150%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+      <feOffset in="blur" dx="4" dy="4" result="offsetBlur"/>
+			<feComponentTransfer>
+				<feFuncA type="linear" slope="0.55"/>
+			</feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+		
+		<linearGradient id="LinearGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+			<stop offset="0%" stop-color="#fdfdfd" stop-opacity="0%" />
+			<stop offset="100%" stop-color="#DAE4EC" stop-opacity="100%" />
+		</linearGradient>
+
+    <g id="1move">
+        <g id="12move" style="stroke:#5c88a8;stroke-width:1.5">
+          <line x1="17" y1="26" x2="29" y2="26"/>
+          <polyline points="17,23 12,26 17,29"/>
+          <polyline points="29,23 34,26 29,29"/>
+        </g>
+        <use xlink:href="#12move" transform="rotate(90,23,26)"/> 
+    </g>
+
+    <g id="jump_coords">
+        <g id="jump_coords0" transform="translate(23 26.5) scale(1.3)">
+					<circle cx="0" cy="0" r="8.5" style="fill:black;fill-opacity:0.15;stroke:black;stroke-width:1.5" />
+					<line x1="2" y1="0" x2="11.5" y2="0" style="fill:black;stroke:black;stroke-width:1.5"/>
+					<line x1="-2" y1="0" x2="-11.5" y2="0" style="fill:black;stroke:black;stroke-width:1.5"/>
+					<line x1="0" y1="2" x2="0" y2="11.5" style="fill:black;stroke:black;stroke-width:1.5"/>
+					<line x1="0" y1="-2" x2="0" y2="-11.5" style="fill:black;stroke:black;stroke-width:1.5"/>
+				</g> 
+    </g>
+    		
+    <g id="crosshair_blue">
+			<circle cx="0" cy="0" r="8.5" style="fill-opacity:0.5;fill:rgb(192,192,255);stroke:blue;stroke-width:1.2" />
+			<line x1="2" y1="0" x2="11.5" y2="0" style="fill-opacity:0.5;fill:rgb(192,192,255);stroke:blue;stroke-width:1.2"/>
+			<line x1="-2" y1="0" x2="-11.5" y2="0" style="fill-opacity:0.5;fill:rgb(192,192,255);stroke:blue;stroke-width:1.2"/>
+			<line x1="0" y1="2" x2="0" y2="11.5" style="fill-opacity:0.5;fill:rgb(192,192,255);stroke:blue;stroke-width:1.2"/>
+			<line x1="0" y1="-2" x2="0" y2="-11.5" style="fill-opacity:0.5;fill:rgb(192,192,255);stroke:blue;stroke-width:1.2"/>
+			<polygon id="point_direction" transform="" visibility="hidden" points="-5 15, 5 15, 5 35, 10 35, 0 50, -10 35, -5 35, -5 15" style="fill-opacity:0.5;fill:rgb(192,192,255);stroke:blue;stroke-width:1.2"/>
+		</g>
+
+		<g id="crosshair_red">
+			<circle cx="0" cy="0" r="8.5" style="fill-opacity:0.5;fill:rgb(192,0,0);stroke:red;stroke-width:1.2" />
+			<line x1="2" y1="0" x2="11.5" y2="0" style="fill-opacity:0.5;fill:rgb(192,0,0);stroke:red;stroke-width:1.2"/>
+			<line x1="-2" y1="0" x2="-11.5" y2="0" style="fill-opacity:0.5;fill:rgb(192,0,0);stroke:red;stroke-width:1.2"/>
+			<line x1="0" y1="2" x2="0" y2="11.5" style="fill-opacity:0.5;fill:rgb(192,0,0);stroke:red;stroke-width:1.2"/>
+			<line x1="0" y1="-2" x2="0" y2="-11.5" style="fill-opacity:0.5;fill:rgb(192,0,0);stroke:red;stroke-width:1.2"/>
+		</g>
+
+	  <cursor id="MyMove" x="13" y="13">
+	    <use xlink:href="#1move" transform="scale(0.6)"/> 
+		</cursor>
+
+		<polygon points="-5 -40, 5 -40, 5 -20, 15 -20, 0 0, -15 -20, -5 -20, -5 -40" id="free_arrow" style="opacity:1;fill:rgb(255,0,0);stroke:rgb(0,0,0);stroke-width:2;"/>
+	
+  </defs> 
+  <rect id="background" style="fill:white" width="100%" height="100%"/>
+  <g id="moveGroup" transform="translate(0 0)">
+    <image id="mapimg" xlink:href="/tmp/66269_132261.jpg" height="100%" width="100%" y="0" x="0"/>
+    <g id="cartesian" transform="translate(0,824) scale(1,-1)">
+      <polygon points="" id="polygon" style="opacity:0.25;fill:yellow;stroke:black;stroke-width:2"/>
+			<text x="-1000" y="-1000" id="polygon_label" transform="scale(1, -1)" style="text-anchor:start;fill:rgb(0,0,0);stroke:none;font-size:12px;font-family:Arial;font-weight:bold"></text>
+			<path d="" id="highlight" style="fill:none;stroke:blue;stroke-width:2"/>
+      <polyline points="" id="polyline" style="fill:none;stroke-dasharray:2,2;stroke:black;stroke-width:4"/>
+      <circle id="suchkreis" cx="-100" cy="-100" r="0" style="fill-opacity:0.25;fill:yellow;stroke:grey;stroke-width:2"/>
+			<g id="redlining">
+			</g>
+    </g>
+  </g>
+	<g id="mapimg2_group">
+  	<image id="mapimg2" xlink:href="" height="100%" width="100%" y="0" x="0" style="display:none"/>
+  </g>
+	
+  <rect id="canvas" cursor="crosshair" onmousedown="mousedown(evt)" onmousemove="mousemove(evt);" onmouseup="mouseup(evt);" width="100%" height="100%" opacity="0"/>
+		<g id="vertices" transform="translate(0,824) scale(1,-1)">
+			<circle id="kreis" cx="-500" cy="-500" r="7" opacity="0.1" onmouseover="activate_vertex(evt)" onmouseout="deactivate_vertex(evt)" onmousedown="add_vertex(evt)" />
+			<line stroke="#111" stroke-width="14" id="linie" x1="-5000" y1="-5000" x2="-5001" y2="-5001" opacity="0.8" onmouseover="activate_line(evt)" onmousemove="activate_line(evt)" />
+		</g>
+    <g id="buttons" onmouseout="hide_tooltip()" onmousemove="get_bbox();" onmousedown="hide_tooltip()" cursor="pointer">
+			<rect x="0" y="0" rx="3" ry="3" width="468" height="36" class="navbutton_bg"/>
+
+      <g id="previous" transform="translate(0 0)">
+				<rect id="previous0" onmouseover="show_tooltip('vorherige Ansicht',evt.clientX,evt.clientY)" onmousedown="hide_tooltip();highlightbyid(this.id);noMeasuring();" onmouseup="go_previous();" x="0" y="0" rx="3" ry="3" width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton " transform="translate(5 5) scale(0.8)">
+					<path d="M6.1,15.7 L18.7,28.3 L18.7,28.3 C18.9,28.5 19.1,28.6 19.4,28.6 C19.7,28.6 19.9,28.5 20.1,28.3 L21.7,26.7 L21.7,26.7 C21.9,26.5 22.0,26.3 22.0,26.0 C22.0,25.7 21.9,25.5 21.7,25.3 L12.1,15.7 L12.1,15.7 C11.9,15.5 11.8,15.3 11.8,15.0 C11.8,14.7 11.9,14.5 12.1,14.3 L21.7,4.7 L21.7,4.7 C21.9,4.5 22.0,4.3 22.0,4.0 C22.0,3.7 21.9,3.5 21.7,3.3 L20.1,1.7 L20.1,1.7 C19.9,1.5 19.7,1.4 19.4,1.4 C19.1,1.4 18.9,1.5 18.7,1.7 L6.1,14.3 L6.1,14.3 C5.9,14.5 5.8,14.7 5.8,15.0 C5.8,15.3 5.9,15.5 6.1,15.7"/>
+				</g>        
+      </g>
+      <g id="next" transform="translate(36 0)">
+				<rect id="next0" onmouseover="show_tooltip('nächste Ansicht',evt.clientX,evt.clientY)" onmousedown="hide_tooltip();highlightbyid(this.id);noMeasuring();" onmouseup="" x="0" y="0" rx="3" ry="3" width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton disabled" transform="translate(5 5) scale(0.8)">
+					<path d="M23.9,14.3 L11.3,1.7 L11.3,1.7 C11.1,1.5 10.9,1.4 10.6,1.4 C10.3,1.4 10.1,1.5 9.9,1.7 L8.3,3.3 L8.3,3.3 C8.1,3.5 8,3.7 8,4 C8,4.3 8.1,4.5 8.3,4.7 L17.9,14.3 L17.9,14.3 C18.1,14.5 18.2,14.7 18.2,15 C18.2,15.3 18.1,15.5 17.9,15.7 L8.3,25.3 L8.3,25.3 C8.1,25.5 8.0,25.7 8.0,26.0 C8.0,26.3 8.1,26.5 8.3,26.7 L9.9,28.3 L9.9,28.3 C10.1,28.5 10.3,28.6 10.6,28.6 C10.9,28.6 11.1,28.5 11.3,28.3 L23.9,15.7 L23.9,15.7 C24.1,15.5 24.2,15.3 24.2,15 C24.2,14.7 24.1,14.5 23.9,14.3"/>
+				</g>
+      </g>
+      <g id="zoomall" transform="translate(72 0)">
+				<rect id="zoomall0" onmouseover="show_tooltip('Gesamtansicht',evt.clientX,evt.clientY)" onmousedown="zoomall();noMeasuring();" x="0" y="0" rx="3" ry="3"   width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(5 5) scale(0.8)">
+					<path d="M1,20 L1,29 L10,29 Z"/>
+					<path d="M20,29 L29,29 L29,20 Z"/>
+					<path d="M29,10 L29,1 L20,1 Z"/>
+					<path d="M10,1 L1,1 L1,10 Z"/>
+				</g>
+      </g>
+      <g id="recentre" transform="translate(108 0)">
+				<rect id="recentre0" onmouseover="show_tooltip('Verschieben / Pan',evt.clientX,evt.clientY)" onmousedown="recentre();highlightbyid(this.id);" x="0" y="0" rx="3" ry="3"   width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(2 4) scale(0.058 0.052)">
+					<path d="M 284.00,21.09
+           C 293.71,25.03 301.73,33.56 306.00,43.00
+             315.94,38.17 321.42,38.95 332.00,39.00
+             345.71,39.07 356.65,45.12 363.74,57.00
+             370.30,67.98 371.00,80.60 371.00,93.00
+             379.30,89.47 384.26,89.90 393.00,90.00
+             397.07,90.05 401.09,90.57 405.00,91.77
+             428.73,99.09 432.97,125.68 433.00,147.00
+             433.00,147.00 433.00,222.00 433.00,222.00
+             433.00,222.00 433.00,273.00 433.00,273.00
+             433.00,273.00 433.00,321.00 433.00,321.00
+             433.00,369.76 430.93,411.85 397.42,451.00
+             390.99,458.52 383.22,465.48 375.00,471.00
+             365.16,477.60 354.36,483.09 343.00,486.57
+             319.41,493.79 300.31,494.28 276.00,494.00
+             276.00,494.00 266.00,493.09 266.00,493.09
+             243.42,491.54 219.20,487.57 199.00,476.69
+             171.59,461.93 154.28,440.42 137.33,415.00
+             121.33,391.00 107.03,365.37 93.31,340.00
+             93.31,340.00 74.75,305.00 74.75,305.00
+             72.08,299.65 68.22,292.67 66.76,287.00
+             62.83,271.76 66.52,253.30 78.09,242.17
+             81.84,238.56 87.18,235.34 92.00,233.35
+             98.48,230.66 105.14,230.92 112.00,231.00
+             135.48,231.28 148.71,250.71 161.00,268.00
+             161.00,268.00 161.00,96.00 161.00,96.00
+             161.01,87.27 162.02,77.66 166.46,70.00
+             176.02,53.50 189.99,48.79 208.00,49.00
+             214.43,49.08 218.27,50.08 224.00,53.00
+             226.55,24.71 259.60,11.19 284.00,21.09 Z
+           M 248.00,66.00
+           C 248.00,66.00 248.00,193.00 248.00,193.00
+             248.00,193.00 247.43,228.00 247.43,228.00
+             245.85,233.52 239.97,238.54 234.00,237.62
+             224.69,236.18 223.01,227.73 223.00,220.00
+             223.00,220.00 223.00,99.00 223.00,99.00
+             222.99,92.26 222.66,85.31 217.79,80.10
+             210.62,72.45 197.23,72.59 190.65,81.10
+             187.13,85.64 187.01,90.56 187.00,96.00
+             187.00,96.00 187.00,301.00 187.00,301.00
+             186.99,305.22 187.13,309.19 184.91,312.98
+             179.82,321.69 170.87,321.32 164.17,314.81
+             164.17,314.81 132.87,274.00 132.87,274.00
+             126.80,265.99 120.90,257.46 110.00,256.34
+             95.35,254.84 88.18,269.62 92.55,282.00
+             92.55,282.00 108.69,313.00 108.69,313.00
+             108.69,313.00 137.00,364.00 137.00,364.00
+             156.28,397.54 177.91,437.15 214.00,454.74
+             229.47,462.28 254.78,467.79 272.00,468.00
+             272.00,468.00 297.00,468.00 297.00,468.00
+             319.80,467.74 344.52,461.25 363.00,447.52
+             391.68,426.22 406.95,386.09 407.00,351.00
+             407.00,351.00 407.00,142.00 407.00,142.00
+             406.99,134.93 405.91,124.62 400.61,119.39
+             394.28,113.14 378.31,112.17 373.36,127.00
+             370.12,136.72 371.00,153.40 371.00,164.00
+             371.00,164.00 371.00,230.00 371.00,230.00
+             370.99,234.47 371.26,238.15 368.49,241.98
+             362.24,250.63 351.42,249.30 347.31,241.00
+             345.82,237.98 346.01,234.29 346.00,231.00
+             346.00,231.00 346.00,96.00 346.00,96.00
+             346.00,96.00 345.16,87.00 345.16,87.00
+             343.98,75.88 342.91,65.06 329.00,64.10
+             314.69,63.10 310.02,72.45 310.00,85.00
+             310.00,85.00 310.00,219.00 310.00,219.00
+             309.99,224.19 310.09,228.66 306.58,232.94
+             300.75,240.08 290.48,238.84 285.93,231.00
+             283.87,227.43 284.01,222.98 284.00,219.00
+             284.00,219.00 284.00,66.00 284.00,66.00
+             283.98,51.30 277.66,42.53 262.00,44.34
+             251.37,47.21 248.12,55.83 248.00,66.00 Z" />
+				</g>        
+      </g>
+      <g id="zoomin" transform="translate(144 0)">
+				<rect id="zoomin0" onmouseover="show_tooltip('Hereinzoomen',evt.clientX,evt.clientY)" onmousedown="zoomin();highlightbyid(this.id);" x="0" y="0" rx="3" ry="3" width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(5 5) scale(0.8)">
+					<path d="M19.5,20 C24.7,20 29,15.7 29.0,10.5 C29,5.3 24.7,1 19.5,1 C14.3,1 10,5.3 10,10.5 C10,15.7 14.3,20 19.5,20 M12.9,10.6 L12.9,10.5 L12.9,10.5 C12.9,10.5 12.9,10.5 12.9,10.4 C12.9,6.8 15.8,3.9 19.4,3.9 C19.5,3.9 19.5,3.9 19.5,3.9 L19.6,3.9 L19.6,3.9 C23.1,4 26,6.9 26,10.4 L26,10.5 C26,14.1 23.0898508737,17 19.5,17 L19.4,17 C15.9,17 13,14.1 12.9,10.6" style="fill-rule: evenodd;"/>
+					<path d="M13.9,18.1 L5.7,26.3 L5.7,26.3 C5.5,26.5 5.3,26.6 5.0,26.6 C4.7,26.6 4.5,26.5 4.3,26.3 L3.7,25.7 L3.7,25.7 C3.5,25.5 3.4,25.3 3.4,25 C3.4,24.7 3.5,24.5 3.7,24.3 L11.9,16.1 Z"/>
+					<path d="M23,12 L16,12 C15.4,12 15,11.6 15,11 L15,10 C15,9.4 15.4,9 16,9 L23,9 C23.6,9 24,9.4 24,10 L24,11 C24,11.6 23.6,12 23,12"/>
+					<path d="M18,14 L18,7 C18,6.4 18.4,6 19,6 L20,6 C20.6,6 21,6.4 21,7 L21,14 C21,14.6 20.6,15 20,15 L19.0,15 C18.4,15 18,14.6 18,14"/>
+				</g>
+      </g>
+      <g id="zoomout" transform="translate(180 0)">
+				<rect id="zoomout0" onmouseover="show_tooltip('Herauszoomen',evt.clientX,evt.clientY)" onmousedown="zoomout();highlightbyid(this.id);" x="0" y="0" rx="3" ry="3" width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(5 5) scale(0.8)">
+					<path d="M19.5,20 C24.7,20 29,15.7 29.0,10.5 C29,5.3 24.7,1 19.5,1 C14.3,1 10,5.3 10,10.5 C10,15.7 14.3,20 19.5,20 M12.9,10.6 L12.9,10.5 L12.9,10.5 C12.9,10.5 12.9,10.5 12.9,10.4 C12.9,6.8 15.8,3.9 19.4,3.9 C19.5,3.9 19.5,3.9 19.5,3.9 L19.6,3.9 L19.6,3.9 C23.1,4 26,6.9 26,10.4 L26,10.5 C26,14.1 23.0898508737,17 19.5,17 L19.4,17 C15.9,17 13,14.1 12.9,10.6" style="fill-rule: evenodd;"/>
+					<path d="M13.9,18.1 L5.7,26.3 L5.7,26.3 C5.5,26.5 5.3,26.6 5.0,26.6 C4.7,26.6 4.5,26.5 4.3,26.3 L3.7,25.7 L3.7,25.7 C3.5,25.5 3.4,25.3 3.4,25 C3.4,24.7 3.5,24.5 3.7,24.3 L11.9,16.1 Z"/>
+					<path d="M23,12 L16,12 C15.4,12 15,11.6 15,11 L15,10 C15,9.4 15.4,9 16,9 L23,9 C23.6,9 24,9.4 24,10 L24,11 C24,11.6 23.6,12 23,12"/>
+				</g>
+      </g>
+      <g id="coords1" transform="translate(216 0)">
+				<rect id="coords0" onmouseover="show_tooltip('Koordinatenzoom',evt.clientX,evt.clientY)" onmousedown="hide_tooltip();highlightbyid(this.id);noMeasuring();" onmouseup="top.coords_input();" x="0" y="0" rx="3" ry="3" width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(5 5) scale(0.8)">
+					<path d="M15,26 C21.8,26 26,21.8 26,15 C26,8.9 21.8,4 15,4 C8.9,4 4,8.9 4,15 C4,21.8 8.9,26 15,26 M15,24 C20,24 24,20 24,15 C24,10.0 20,6 15,6 C10.0,6 6,10.0 6,15 C6,20 10.0,24 15,24" style="fill-rule: evenodd;"/>
+					<path d="M20,16 L20,14 C20,13.4 20.4,13 21,13 L28,13 C28.6,13 29,13.4 29,14 L29,16 C29,16.6 28.6,17 28,17 L21,17 C20.4,17 20,16.6 20,16"/>
+					<path d="M1,16 L1,14 C1,13.4 1.4,13 2,13 L9,13 C9.6,13 10,13.4 10,14 L10,16 C10,16.6 9.6,17 9,17 L2,17 C1.4,17 1,16.6 1,16"/>
+					<path d="M14,10 L16,10 C16.6,10 17,9.6 17,9 L17,2 C17,1.4 16.6,1 16,1 L14,1 C13.4,1 13,1.4 13,2 L13,9 C13,9.6 13.4,10 14,10"/>
+					<path d="M14,29 L16,29 C16.6,29 17,28.6 17,28 L17,21 C17,20.4 16.6,20 16,20 L14,20 C13.4,20 13,20.4 13,21 L13,28 C13,28.6 13.4,29 14,29"/>
+        </g>        
+      </g>
+      <g id="coords2" transform="translate(252 0)">
+				<rect id="coords02" onmouseover="show_tooltip('Koordinatenabfrage',evt.clientX,evt.clientY)" onmousedown="hide_tooltip();highlightbyid(this.id);noMeasuring();" onmouseup="showcoords();" x="0" y="0" rx="3" ry="3" width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(5 5) scale(0.8)">
+					<path d="M2,25 L28,25 C28.6,25 29,24.6 29,24 C29,23.4 28.6,23 28,23 L2,23 C1.4,23 1,23.4 1,24 C1,24.6 1.4,25 2,25"/>
+					<path d="M7,28 L7,2 C7,1.4 6.6,1 6,1 C5.4,1 5,1.4 5,2 L5,28 C5,28.6 5.4,29 6,29 C6.6,29 7,28.6 7,28"/>
+					<path d="M9,12 Z C9.1,11.8 9.4,11.7 9.7,11.7 C10,11.7 10.2,11.8 10.4,12 L13,14.6 L15.6,12 L15.6,12 C15.8,11.8 16,11.7 16.3,11.7 C16.6,11.7 16.8,11.8 17,12 L17,12 L17,12 C17.2,12.2 17.3,12.4 17.3,12.7 C17.3,13 17.2,13.2 17,13.4 L14.4,16 L17,18.6 L17,18.6 C17.2,18.8 17.3,19 17.3,19.34 C17.3,19.6 17.2,19.8 17,20 L17,20 L17,20 C16.8,20.2 16.6,20.34 16.34,20.34 C16,20.34 15.8,20.2 15.6,20 L13,17.4 L10.4,20 L10.4,20 C10.2,20.2 10,20.3 9.7,20.3 C9.4,20.3 9.2,20.2 9,20 L9,20 L9,20 C8.8,19.8 8.7,19.6 8.7,19.34 C8.7,19 8.8,18.8 9,18.6 L11.6,16 L9,13.4 L9,13.4 C8.8,13.2 8.7,13 8.7,12.7 C8.7,12.4 8.8,12.2 9,12"/>
+					<path d="M25,20.7 C24.6,20.7 25.0,20.2 25.0,19.7 L25.0,16.4 L28,13.4 L28,13.4 C28.2,13.2 28.3,13 28.3,12.7 C28.3,12.4 28.2,12.2 28,12 L28,12 L28,12 C27.8,11.8 27.6,11.7 27.3,11.7 C27,11.7 26.8,11.8 26.6,12 L24,14.6 L21.4,12 L21.4,12 C21.2,11.8 21,11.7 20.7,11.7 C20.4,11.7 20.2,11.8 20,12 L20,12 L20,12 C19.8,12.2 19.7,12.4 19.7,12.7 C19.7,13 19.8,13.2 20,13.4 L23.0,16.4 L23.0,19.7 C23.0,20.2 23.4,20.7 25,20.7"/>
+					<path d="M20.0,21.7 C20.6,21.7 21.0,21.2 21.0,20.7 L21.0,18 C21.0,17.4 20.6,17 20.0,17 C19.4,17 19.0,17.4 19.0,18 L19.0,20.7 C19.0,21.2 19.4,21.7 20.0,21.7"/>
+        </g>
+      </g>
+      <g id="ppquery" transform="translate(288 0)">
+        <rect id="ppquery0" onmouseover="show_tooltip('Informationsabfrage',evt.clientX,evt.clientY)" onmousedown="ppquery();hide_tooltip();highlightbyid(this.id);noMeasuring();" x="0" y="0" rx="3" ry="3"   width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(6 5) scale(0.8)">
+					<text transform="scale(1.3 1)" x="11" y="25" style="text-anchor:middle;font-size:27px;font-family:Times;stroke: #5c88a8;">i</text>
+				</g>
+      </g>
+			<g id="touchquery" transform="translate(324 0)">
+				<rect id="touchquery0" onmouseover="show_tooltip('Informationsabfrage auf angrenzende Objekte',evt.clientX,evt.clientY)" onmousedown="touchquery();hide_tooltip();highlightbyid(this.id);noMeasuring();" x="0" y="0" rx="3" ry="3"   width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(5 5) scale(0.8)">
+					<text transform="scale(1.3 1)" x="11" y="22" style="text-anchor:middle;font-size:21px;font-family:Times;stroke: #5c88a8;">i</text>
+					<path d="M1,10 L1,1 L9,1 Z"/>
+					<path d="M21,1 L29,10 L29,1 Z"/>
+					<path d="M29,20 L29,29 L21,29 Z"/>
+					<path d="M9,29 L1,20 L1,29 Z"/>
+        </g>
+      </g>
+      <g id="pquery" transform="translate(360 0)">
+				<rect id="pquery0" onmouseover="show_tooltip('Informationsabfrage mit Suchradius',evt.clientX,evt.clientY)" onmousedown="pquery();pquery_prompt();highlightbyid(this.id);noMeasuring();" x="0" y="0" rx="3" ry="3"   width="36" height="36" class="navbutton_frame"/>
+        <g class="navbutton" style="stroke: #5c88a8;" transform="translate(5 5) scale(0.8)">
+					<text transform="scale(1.3 1)" x="11" y="22" style="text-anchor:middle;font-size:21px;font-family:Times;">i</text>
+					<circle cx="15" cy="16" r="13" style="fill:none;stroke-width: 2px"/>
+				</g>
+      </g>
+			<g id="polygonquery" transform="translate(396 0)">
+				<rect id="polygonquery0" onmouseover="show_tooltip('Informationsabfrage im Polygon',evt.clientX,evt.clientY)" onmousedown="polygonquery();highlightbyid(this.id);hidetooltip(evt);noMeasuring();" x="0" y="0" rx="3" ry="3" width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(5 5) scale(0.8)">
+					<text transform="scale(1.3 1)" x="11" y="22" style="text-anchor:middle;font-size:21px;font-family:Times;stroke: #5c88a8;">i</text>
+					<path d="M16.25,29 C17.5,29 18.5,28 18.5,26.75 C18.5,25.5 17.5,24.5 16.25,24.5 C15.0,24.5 14.0,25.5 14,26.75 C14,28 15.0,29 16.25,29"/>
+					<path d="M14.95,5.5 C16.2,5.5 17.2,4.5 17.2,3.25 C17.2,2.0 16.2,1 14.95,1 C13.7,1 12.7,2.0 12.7,3.2 C12.7,4.5 13.7,5.5 14.95,5.5"/>
+					<path d="M8.3,29 C9.5,29 10.5,28 10.5,26.75 C10.5,25.5 9.5,24.5 8.3,24.5 C7.0,24.5 6,25.5 6,26.7 C6,28 7.0,29 8.25,29"/>
+					<path d="M3.3,23.2 C4.5,23.2 5.5,22.2 5.5,20.95 C5.5,19.7 4.5,18.7 3.2,18.7 C2.0,18.7 1.0,19.7 1.0,20.9 C1,22.2 2.0,23.2 3.3,23.2"/>
+					<path d="M5.3,11.2 C6.5,11.2 7.5,10.2 7.5,8.9 C7.5,7.7 6.5,6.7 5.3,6.7 C4.0,6.7 3,7.7 3,8.9 C3,10.2 4.0,11.2 5.3,11.2"/>
+					<path d="M26.7,9.6 C27.9,9.6 28.9,8.6 28.9,7.4 C28.9,6.1 27.9,5.1 26.7,5.1 C25.4,5.1 24.4,6.1 24.4,7.4 C24.4,8.6 25.4,9.6 26.7,9.6"/>
+					<path d="M24.6,23.9 C25.9,23.9 26.9,22.9 26.9,21.7 C26.9,20.4 25.9,19.4 24.6,19.4 C23.4,19.4 22.4,20.4 22.4,21.7 C22.4,22.9 23.4,23.9 24.6,23.9"/>
+					<path d="M10.3,27.8 L14.2,27.8 L18.5,26.5 L23.4,23.5 L25.9,19.8 L27.3,9.5 L25.1,5.8 L17.2,3 L12.7,3.4 L6.5,7.1 L3.9,10.8 L2.6,18.8 L3.8,23.1 L6.2,25.9 Z M10.3,25.8 L14.2,25.8 L17.4,24.8 L22.4,21.8 L23.9,19.5 L25.4,9.2 L24.4,7.6 L16.5,4.8 L13.7,5.1 L7.5,8.8 L5.9,11.1 L4.6,19.1 L5.3,21.8 L7.7,24.6 Z" style="fill-rule: evenodd;"/>
+					<path d="M10.3,25.8 L14.2,25.8 L17.4,24.8 L22.4,21.8 L23.9,19.5 L25.4,9.2 L24.4,7.6 L16.5,4.8 L13.7,5.1 L7.5,8.8 L5.9,11.1 L4.6,19.1 L5.3,21.8 L7.7,24.6 Z" style="opacity:0.15;"/>
+        </g>
+      </g>
+      <g id="dist" transform="translate(432 0)">
+				<rect id="measure0" onmouseover="show_tooltip('Wegstrecke messen',evt.clientX,evt.clientY)" onmousedown="hide_tooltip();highlightbyid(this.id);measure();" x="0" y="0" rx="3" ry="3"   width="36" height="36" class="navbutton_frame"/>
+				<g class="navbutton" transform="translate(5 5) scale(0.8)">
+					<path d="M9.9,28.5 L28.5,9.9 L28.5,9.9 C28.7,9.8 28.8,9.5 28.8,9.2 C28.8,9 28.7,8.7 28.5,8.5 L21.5,1.5 L21.5,1.5 C21.3,1.3 21.0,1.2 20.8,1.2 C20.5,1.2 20.2,1.3 20.1,1.5 L1.5,20.1 L1.5,20.1 C1.3,20.2 1.2,20.5 1.2,20.8 C1.2,21.0 1.3,21.3 1.5,21.5 L8.5,28.5 L8.5,28.5 C8.7,28.7 9,28.8 9.2,28.8 C9.5,28.8 9.8,28.7 9.9,28.5 M9.2,25.7 L25.7,9.2 L20.8,4.3 L4.3,20.8 Z" style="fill-rule: evenodd;"/>
+					<path d="M6.3,18.7 L8.3,20.7 L9.7,19.3 L7.7,17.3 Z"/>
+					<path d="M11.8,13.2 L13.8,15.2 L15.2,13.8 L13.2,11.8 Z"/>
+					<path d="M17.3,7.7 L19.3,9.7 L20.7,8.3 L18.7,6.3 Z"/>
+					<path d="M9.1,16 L12.4,19.3 L13.8,17.9 L10.5,14.6 Z"/>
+					<path d="M14.6,10.5 L17.9,13.8 L19.3,12.4 L16,9.1 Z"/>
+        </g>        
+      </g>
+    </g>
+		<g id="tooltipgroup" onmouseover="prevent=1;" onmouseout="prevent=0;">
+    	<rect id="frame" width="0" height="20" rx="5" ry="5" style="fill-opacity:0.8;fill:rgb(255, 250, 240);stroke:rgb(140, 140, 140);stroke-width:1.5"/>
+    	<text id="querytooltip" x="100" y="100" style="text-anchor:start;fill:rgb(0,0,0);stroke:none;font-size:10px;font-family:Arial;font-weight:bold"></text>
+    	<text id="link0" cursor="pointer" onmousedown="top.document.body.style.cursor='pointer';" onmousemove="top.document.body.style.cursor='pointer';" style="text-anchor:start;fill:rgb(0,0,200);stroke:none;font-size:10px;font-family:Arial;font-weight:bold"></text>
+			<g id="tooltipcontent">
+			</g>	
+    </g>
+
+
+	<g visibility="hidden" opacity="0.9" id="tooltip_group" onmousemove="hide_tooltip()" transform="translate(0 0)"> 
+		<rect id="tt_rect" x="0" y="0" rx="2" ry="2" width="100" height="25" style="fill:rgb(255,255,235);stroke:rgb(0,0,0);stroke-width:1"/>
+		<text x="50" y="16" id="tooltip_data" style="text-anchor:middle;fill:rgb(0,0,0);stroke:none;font-size:11px;font-family:Arial;font-weight:bold">
+			Text
+		</text>
+	</g>
+
+
+</svg>

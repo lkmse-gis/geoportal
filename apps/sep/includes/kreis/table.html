@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="stylesheet" type="text/css" href="../../css/bootstrap.min.css">
+  
+  <script type="text/javascript" src="../../export_libs/js/jquery-3.1.1.js"></script>
+  <script type="text/javascript" src="../../export_libs/js/FileSaver.min.js"></script>
+  
+  <!-- für Allgemeine Exportfunktionen -->
+  <script type="text/javascript" src="../../export_libs/js/tableExport.js"></script>
+  
+  <!-- für XLSX -->
+  <script type="text/javascript" src="../../export_libs/js/xlsx.core.min.js"></script>
+  
+  <!-- für PDF -->  
+  <script type="text/javascript" src="../../export_libs/js/jspdf.min.js"></script>
+  <script type="text/javascript" src="../../export_libs/js/jspdf.plugin.autotable.js"></script>
+  
+  <!-- für PNG --> 
+  <script type="text/javascript" src="../../export_libs/js/html2canvas.min.js"></script>
+  
+  
+  
+</head>
+<body>
+  <div class="container">
+  <h2>Bordered Table</h2>
+  
+  <button class="btn btn-success" onclick="$('#test').tableExport({type:'excel', worksheetName: 'Schulentwicklungsplanung', excelstyles:['border-bottom', 'border-top', 'border-left', 'border-right']});"><img src='../../export_libs/icons/xls.png' alt="XLSX" style="width:24px">  export als Excel 97 - 2003</button>
+  <button class="btn btn-success" onclick="$('#test').tableExport({type:'xlsx', worksheetName: 'Schulentwicklungsplanung'});"><img src='../../export_libs/icons/xls.png' alt="XLSX" style="width:24px">  export als Excel 07 - 2016</button>
+  
+  <button class="btn btn-default" onclick="$('#test').tableExport({type:'pdf', jspdf: {format: 'bestfit', autotable: {tableWidth: 'wrap'}}});"><img src='../../export_libs/icons/pdf.png' alt="PDF" style="width:24px">  export Seite Quer</button>
+  <button class="btn btn-default" onclick="$('#test').tableExport({type:'pdf', jspdf: {orientation: 'l',
+                          margins: {right: 10, left: 10, top: 40, bottom: 40},
+                          autotable: {styles: {fillColor: 'inherit', textColor: 'inherit', fillStyle: 'DF', lineColor: 200, lineWidth: 0.1}, tableWidth: 'auto'}}});"><img src='../../export_libs/icons/pdf.png' alt="PDF" style="width:24px">  export</button>
+ 
+ <button class="btn btn-success" onclick="$('#test').tableExport({type:'png'});"><img src='../../export_libs/icons/png.png' alt="PNG" style="width:24px">  export als PNG</button>
+ 
+ <button class="btn btn-success" onclick="$('#test').tableExport({type:'txt'});"><img src='../../export_libs/icons/txt.png' alt="TXT" style="width:24px">  export als TXT</button>
+  
+  <button class="btn btn-success" onclick="$('#test').tableExport({type:'csv'});"><img src='../../export_libs/icons/csv.png' alt="CSV" style="width:24px">  export als CSV</button>
+  
+  <button class="btn btn-success" onclick="$('#test').tableExport({type:'doc'});"><img src='../../export_libs/icons/word.png' alt="WORD" style="width:24px">  export als Word</button>
+ 
+  <div style="display: true">
+							
+		<? include("diagramme_r15.php");?><br></br>					   
+	</div>
+  </div>
+
+</body>
+
+</html>

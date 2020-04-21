@@ -1,0 +1,639 @@
+body {
+    margin: 0;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-size: 1em;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    text-align: left;
+    background-color: #fff;
+}
+
+body { font-size: 100%; }
+h1 { font-size: 1.4em; }
+p { font-size: 1em; }
+@media screen and (min-width: 960px){
+    body{ font-size: 125%; }
+}
+
+.megamenu {
+  position: static;
+  
+  
+}
+
+.megamenu .dropdown-menu {
+  background: none;
+  border: none;
+  width: 100%;
+}
+
+
+
+nav {
+  position: relative;
+  background-color: #ffffff;
+  margin-bottom:50px;
+}
+
+
+
+#navbarContent{
+	top:20px;
+	position:relative;
+}
+
+
+.header_standard{
+  position: relative;
+  background-color: #ffffff;
+  height: 25vh;
+  min-height: 20rem;
+  width: 100%;
+  overflow: hidden;
+}
+
+
+
+
+
+@media (pointer: coarse) and (hover: none) {
+  header {
+    background-color:white;
+  }
+  header video {
+    display: cover;
+  }
+}
+
+.btn-outline-success{
+	color:white;
+	border-color:white;
+	border-radius:0px;
+}
+
+
+.kopf{
+	position:relative;
+	margin-top:0px;
+	left:0px;
+    margin-left:0px;
+	height:5px;
+	width:100%;
+	background-color:#75b726;
+	display:block;
+	/*box-shadow: 6px 6px 30px rgba(1,1,1,0.4);*/
+	opacity:1;
+}
+
+.kopf1{
+	position:relative;
+	margin-top:0px;
+	left:0px;
+    margin-left:0px;
+	height:5px;
+	width:100%;
+	background-color:#006085;
+	display:block;
+	/*box-shadow: 6px 6px 30px rgba(1,1,1,0.4);*/
+	opacity:1;
+}
+
+
+#main {
+  transition: margin-right .5s;
+  padding: 0px;
+}
+
+.logo1{
+	max-width:80%;
+	floaft:left;
+	position:absolute;
+	z-index:5;
+	left:0px;
+	top:5px;
+	}
+
+.carousel{
+	
+	z-index:1;
+}
+.carousel-item{
+	height:500px;
+	background-color: #cccccc;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+}
+.hamburger{
+	font-size:36px;
+	font-weight:bold;
+	cursor:pointer;
+	background-color:#ffffff;
+	color:#75b726;
+	border:none;
+	padding: 10px 15px;
+	text-align: center;
+	text-decoration: none;
+	float:right;
+	right:5px;
+	top:5px;
+	position:absolute;
+	z-index:6;
+	}
+	
+.accordion:after {
+  content: '\002B';
+  color: #777;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.card{
+	border-radius:0px;
+	border:1px solid #006085;	
+	color:white;
+	background-color:#006085;
+	margin:0px;
+	 cursor: pointer;
+}
+
+.card-only > h3{
+	font-size:1em;
+}
+
+.card-body{
+	background-color:white;
+	color:black;
+}
+
+.card-header{
+	font-weight:bold;
+}
+
+.card-link{
+	margin:1px !important;
+}
+
+.card-only{
+	background-color:#333;
+	border:1px;
+	height:100%
+}
+
+.img-fluid-rechts {
+    max-width: 100%;
+    height: 400px;
+	margin-left:206px;
+}
+
+.img-fluid-links {
+    max-width: 100%;
+    height: 400px;
+	margin-right:206px;
+}
+
+.card-only-padding{
+	margin:50px;
+}
+
+.card-only hr{
+	background-color:#75b726;
+	height:2px;
+	width:100%;
+}
+
+/*.card-title{
+	text-decoration: underline wavy yellowgreen;
+	text-underline-position:under;
+	text-decoration-skip:ink;
+}*/
+
+
+.jumbotron hr{
+	background-color:#75b726;
+	height:2px;
+}
+
+/*-------------------- Brotkrümel --------------------*/
+
+#breadcrumbs-one{
+  background: #eee;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #f5f5f5 #e5e5e5 #ccc;
+  border-radius: 0px;
+  box-shadow: 0 0 2px rgba(0,0,0,.2);
+  overflow: hidden;
+  width: 100%;
+  list-style-type: none;
+  font-family: Verdana, 'Lucida Sans Unicode', sans-serif; 
+}
+
+#breadcrumbs-one li{
+  float: left;
+}
+
+#breadcrumbs-one a{
+  padding: .7em 1em .7em 2em;
+  float: left;
+  text-decoration: none;
+  color: #444;
+  position: relative;
+  text-shadow: 0 1px 0 rgba(255,255,255,.5);
+  background-color: #eee;
+  /*background-image: linear-gradient(to right, #f5f5f5, #ddd);  */
+}
+
+#breadcrumbs-one li:first-child a{
+  padding-left: 1em;
+  border-radius: 5px 0 0 5px;
+}
+
+#breadcrumbs-one a:hover{
+  background: #fff;
+}
+
+#breadcrumbs-one a::after,
+#breadcrumbs-one a::before{
+  content: "";
+  position: absolute;
+  top: 50%;
+  margin-top: -1.5em;   
+  border-top: 1.5em solid transparent;
+  border-bottom: 1.5em solid transparent;
+  border-left: 1em solid;
+  right: -1em;
+  
+}
+
+#breadcrumbs-one a::after{ 
+  z-index: 2;
+  border-left-color: #eee;  
+}
+
+#breadcrumbs-one a::before{
+  border-left-color: #ccc;  
+  right: -1.1em;
+  z-index: 1; 
+}
+
+#breadcrumbs-one a:hover::after{
+  border-left-color: #fff;
+}
+
+#breadcrumbs-one .current,
+#breadcrumbs-one .current:hover{
+  font-weight: bold;
+  background: none;
+}
+
+#breadcrumbs-one .current::after,
+#breadcrumbs-one .current::before{
+  content: normal;  
+}
+
+/*-------------------- Kacheln Startseite --------------------*/
+
+.teaser-list {
+	display:flex;
+	flex-wrap: wrap;
+	padding:0;
+	text-transform: uppercase; 
+}
+
+.teaser {
+	list-style: none;
+	display:flex;
+	padding:.5em;
+	width: 100%;
+}
+
+@media screen and (min-width: 40em) {
+	.teaser {
+		width:50%;
+	}
+}
+
+@media screen and (min-width: 75em) {
+	.teaser {
+		width:33.333%;
+	}
+}
+
+.teaser > a {
+	background-color:#006085;
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding:1.0em 1em;
+	color:white;
+	text-decoration: none;
+}
+
+
+
+.teaser  h1 {
+	padding:0px 50px;
+}
+
+.teaser > p {
+	color:white;
+
+}
+
+.teaser hr{
+	background-color:#75b726;
+	height:2px;
+}
+
+.teaser > a:hover{
+	opacity:0.7;
+	transition:0.5s;
+}
+/*-------------------- Tags --------------------*/
+.list_tag {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
+  font-size:1.2em;
+}
+
+.item_tag  {
+  -webkit-flex: 1 auto;
+  flex: 1 auto;
+  padding: 0.5rem;
+  text-align: center;
+   z-index:5;
+}
+
+.item_tag a {
+  display: block;
+  background-color: #fff;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  color: #333;
+}
+/*-------------------- Jumotron --------------------*/
+.jumbotron{
+	background-color:#333;
+	margin-top:30px;
+	color:white;
+
+}
+
+.jumbo_abstand{
+		margin-left:10px;
+		margin-right:10px;
+			padding:0px;
+}
+
+.jumbo_abstand img{
+	margin-left:252px;
+}
+
+
+.bg-success{
+	background-color:#75b726!important;
+}
+
+.suche{
+	height:10px;
+	background-color:#f4cd07;
+	
+}
+
+.responsiveContainer {
+  position: relative;
+  padding-bottom: 20%;
+  margin:0px;
+  width:100%;
+  height: 0;
+  overflow: hidden;
+}
+
+.responsiveContainer iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+	/* Dotted  border */
+hr.new3 {
+  border-top: 1px dotted #75b726;
+  margin:0px;
+  width:90%;
+  margin-left:15px;
+}
+
+
+
+
+.nav-item .nav-link{
+        color: #666;
+        padding: 10px 20px !important;
+        margin-left: 10px;
+        margin-right:10px;
+		margin-top:0px;
+        font-size: 20px;
+        font-weight: bold;
+		z-index:99;
+}
+
+.nav-item::after{
+        content: "";
+        display: block;
+        position: relative;
+        left: 50%;
+        width: 0px;
+        border-bottom: 5px solid #75b726; 
+        transition: all ease-in-out .2s; }
+
+.nav-item:hover::after {
+        width: 80%;
+        left: 14px;
+        margin-top: 0px;
+}
+
+
+
+/*////////////////////Footer//////////////////////*/
+
+
+.footer-distributed{
+	background-color: #323131;
+	box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.12);
+	box-sizing: border-box;
+	width: 100%;
+	text-align: left;
+	font: bold 16px sans-serif;
+
+	padding: 55px 50px;
+	margin-top: 50px;
+}
+
+.footer-distributed .footer-left,
+.footer-distributed .footer-center,
+.footer-distributed .footer-right{
+	display: inline-block;
+	vertical-align: top;
+}
+
+/* Footer left */
+
+.footer-distributed .footer-left{
+	width: 40%;
+}
+
+/* The company logo */
+
+.footer-distributed h3{
+	color:  #ffffff;
+	font: normal 36px 'Arial';
+	margin: 0;
+}
+
+.footer-distributed h3 span{
+	color:  #75b726;
+}
+
+/* Footer links */
+
+.footer-distributed .footer-links{
+	color:  #ffffff;
+	margin: 20px 0 12px;
+	padding: 0;
+}
+
+.footer-distributed .footer-links a{
+	display:inline-block;
+	line-height: 1.8;
+	text-decoration: none;
+	color:  inherit;
+}
+
+.footer-distributed .footer-company-name{
+	color:  #8f9296;
+	font-size: 14px;
+	font-weight: normal;
+	margin: 0;
+}
+
+/* Footer Center */
+
+.footer-distributed .footer-center{
+	width: 35%;
+}
+
+.footer-distributed .footer-center i{
+	background-color:  #33383b;
+	color: #ffffff;
+	font-size: 25px;
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	text-align: center;
+	line-height: 42px;
+	margin: 10px 15px;
+	vertical-align: middle;
+}
+
+.footer-distributed .footer-center i.fa-envelope{
+	font-size: 17px;
+	line-height: 38px;
+}
+
+.footer-distributed .footer-center p{
+	display: inline-block;
+	color: #ffffff;
+	vertical-align: middle;
+	margin:0;
+}
+
+.footer-distributed .footer-center p span{
+	display:block;
+	font-weight: normal;
+	font-size:14px;
+	line-height:2;
+}
+
+.footer-distributed .footer-center p a{
+	color:  #75b726;
+	text-decoration: none;;
+}
+
+
+/* Footer Right */
+
+.footer-distributed .footer-right{
+	width: 20%;
+}
+
+.footer-distributed .footer-company-about{
+	line-height: 20px;
+	color:  #92999f;
+	font-size: 13px;
+	font-weight: normal;
+	margin: 0;
+}
+.footer-distributed .footer-company-about  a{
+	color:  #fff;
+	text-decoration: none;;
+}
+.footer-distributed .footer-company-about span{
+	display: block;
+	color:  #ffffff;
+	font-size: 14px;
+	font-weight: bold;
+	margin-bottom: 20px;
+}
+
+.footer-distributed .footer-icons{
+	margin-top: 25px;
+}
+
+.footer-distributed .footer-icons a{
+	display: inline-block;
+	width: 35px;
+	height: 35px;
+	cursor: pointer;
+	background-color:  #33383b;
+	border-radius: 2px;
+
+	font-size: 20px;
+	color: #ffffff;
+	text-align: center;
+	line-height: 35px;
+
+	margin-right: 3px;
+	margin-bottom: 5px;
+}
+
+/* If you don't want the footer to be responsive, remove these media queries */
+
+@media (max-width: 880px) {
+
+	.footer-distributed{
+		font: bold 14px sans-serif;
+	}
+
+	.footer-distributed .footer-left,
+	.footer-distributed .footer-center,
+	.footer-distributed .footer-right{
+		display: block;
+		width: 100%;
+		margin-bottom: 40px;
+		text-align: center;
+	}
+
+	.footer-distributed .footer-center i{
+		margin-left: 0;
+	}
+
+}

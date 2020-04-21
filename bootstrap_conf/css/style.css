@@ -1,0 +1,314 @@
+# Empty CSS file for your own CSS
+
+table {
+    *border-collapse: collapse; /* IE7 and lower */
+    border-spacing: 0;
+    width: 100%;	
+}
+
+.bordered {
+    border: solid #ccc 1px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 1px #ccc;
+    -moz-box-shadow: 0 1px 1px #ccc;
+    box-shadow: 0 1px 1px #ccc;
+	width: 100%;
+	height: 100%;
+	font-size: 11px;
+}
+
+.bordered tr:hover {
+    background: #e7e7e7;
+    -o-transition: all 0.1s ease-in-out;
+    -webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    -ms-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;    
+}    
+   
+.bordered td, .bordered th {
+    border-left: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+    padding: 6px;
+    text-align: left;    
+}
+
+.bordered th {
+    background-color: #e7e7e7;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#e7e7e7));
+    background-image: -webkit-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:    -moz-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:     -ms-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:      -o-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:         linear-gradient(top, #ffffff, #e7e7e7);
+    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+    -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;  
+    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;        
+    border-top: none;
+    text-shadow: 0 1px 0 rgba(255,255,255,.5);
+}
+
+.bordered td:first-child, .bordered th:first-child {
+    border-left: none;
+}
+
+.bordered th:first-child {
+    -moz-border-radius: 6px 0 0 0;
+    -webkit-border-radius: 6px 0 0 0;
+    border-radius: 6px 0 0 0;
+}
+
+.bordered th:last-child {
+    -moz-border-radius: 0 6px 0 0;
+    -webkit-border-radius: 0 6px 0 0;
+    border-radius: 0 6px 0 0;
+}
+
+.bordered th:only-child{
+    -moz-border-radius: 6px 6px 0 0;
+    -webkit-border-radius: 6px 6px 0 0;
+    border-radius: 6px 6px 0 0;
+}
+
+.bordered tr:last-child td:first-child {
+    -moz-border-radius: 0 0 0 6px;
+    -webkit-border-radius: 0 0 0 6px;
+    border-radius: 0 0 0 6px;
+}
+
+.bordered tr:last-child td:last-child {
+    -moz-border-radius: 0 0 6px 0;
+    -webkit-border-radius: 0 0 6px 0;
+    border-radius: 0 0 6px 0;
+}
+
+.ueberschrift {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 1px #ccc;
+    -moz-box-shadow: 0 1px 1px #ccc;
+    box-shadow: 0 1px 1px #ccc;
+	width: 100%;
+	height: 100%;
+	font-size: 11px;
+}
+  
+.ueberschrift th {
+    background-color: #e7e7e7;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#e7e7e7), to(#ffffff));
+    background-image: -webkit-linear-gradient(top, #e7e7e7, #ffffff);
+    background-image:    -moz-linear-gradient(top, #e7e7e7, #ffffff);
+    background-image:     -ms-linear-gradient(top, #e7e7e7, #ffffff);
+    background-image:      -o-linear-gradient(top, #e7e7e7, #ffffff);
+    background-image:         linear-gradient(top, #e7e7e7, #ffffff);
+    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+    -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;  
+    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;        
+    text-shadow: 0 1px 0 rgba(255,255,255,.5);
+    border-top: 1px solid #ccc;
+    padding: 6px;
+	border-left: none;
+	border-right: none;
+	border-bottom: none;
+	text-align: center;
+}
+
+.ueberschrift th:first-child {
+	-moz-border-radius: 6px 0px 0px 0px;
+    -webkit-border-radius: 6px 0px 0px 0px;
+    border-radius: 6px 0px 0px 0px;
+	width: 10%;
+	border-left: 1px solid #ccc;
+	border-right: none;
+	border-bottom: none;
+	text-align: left;
+}
+
+.ueberschrift th:last-child {
+	-moz-border-radius: 0px 6px 0px 0px;
+    -webkit-border-radius: 0px 6px 0px 0px;
+    border-radius: 0px 6px 0px 0px;
+	width: 10%;
+	border-left: none;
+	border-right: 1px solid #ccc;
+	text-align: right;
+}
+
+.export_ueberschrift {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 1px #ccc;
+    -moz-box-shadow: 0 1px 1px #ccc;
+    box-shadow: 0 1px 1px #ccc;
+	width: 100%;
+	height: 100%;
+	font-size: 11px;
+}
+
+.export_ueberschrift th {
+    background-color: #e7e7e7;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#e7e7e7));
+    background-image: -webkit-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:    -moz-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:     -ms-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:      -o-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:         linear-gradient(top, #ffffff, #e7e7e7);
+    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+    -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;  
+    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;        
+    text-shadow: 0 1px 0 rgba(255,255,255,.5);
+    border-top: 1px solid #ccc;
+    padding: 6px;
+	text-align: left;
+}
+
+.export_ueberschrift th:first-child {
+	width: 90%;
+	border-left: 1px solid #ccc;
+	border-right: none;
+	border-top: none;
+}
+
+.export_ueberschrift th:last-child {
+	width: 10%;
+	border-left: none;
+	border-right: 1px solid #ccc;
+	border-top: none;
+	text-align: right;
+}
+
+.export_daten {
+    border: solid #ccc 1px;
+    -webkit-box-shadow: 0 1px 1px #ccc;
+    -moz-box-shadow: 0 1px 1px #ccc;
+    box-shadow: 0 1px 1px #ccc;
+	width: 100%;
+	height: 100%;
+	font-size: 11px;
+}
+
+.export_daten tr:hover {
+    background: #e7e7e7;
+    -o-transition: all 0.1s ease-in-out;
+    -webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    -ms-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;    
+}  
+
+.export_daten th {
+    background-color: #e7e7e7;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#e7e7e7), to(#ffffff));
+    background-image: -webkit-linear-gradient(top, #e7e7e7, #ffffff);
+    background-image:    -moz-linear-gradient(top, #e7e7e7, #ffffff);
+    background-image:     -ms-linear-gradient(top, #e7e7e7, #ffffff);
+    background-image:      -o-linear-gradient(top, #e7e7e7, #ffffff);
+    background-image:         linear-gradient(top, #e7e7e7, #ffffff);
+    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+    -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;  
+    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;        
+    text-shadow: 0 1px 0 rgba(255,255,255,.5);
+    border-top: 1px solid #ccc;
+    padding: 6px;
+	border-left: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+	text-align: left;
+}
+
+.export_daten td {
+    border-left: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+    padding: 6px;
+    text-align: left;
+}
+
+.export_daten tbody tr:last-child th:last-child {
+	-moz-border-radius: 0px 0px 6px 6px;
+    -webkit-border-radius: 0px 0px 6px 6px;
+    border-radius: 0px 0px 6px 6px;
+	border-right: 1px solid #ccc;
+}
+
+.export_bild td {
+    -moz-border-radius: 0px 0px 6px 6px;
+    -webkit-border-radius: 0px 0px 6px 6px;
+    border-radius: 0px 0px 6px 6px;
+	border-right: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+    padding: 0px;
+	width: 100%;
+}
+
+.export_diagramm td {    
+	border-right: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+    border-top: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+    padding: 0px;
+	width: 100%;
+}
+
+.ende {
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 1px #ccc;
+    -moz-box-shadow: 0 1px 1px #ccc;
+    box-shadow: 0 1px 1px #ccc;
+	width: 100%;
+	height: 100%;
+	font-size: 11px;
+}
+  
+.ende th {
+    background-color: #e7e7e7;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#e7e7e7));
+    background-image: -webkit-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:    -moz-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:     -ms-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:      -o-linear-gradient(top, #ffffff, #e7e7e7);
+    background-image:         linear-gradient(top, #ffffff, #e7e7e7);
+    -webkit-box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+    -moz-box-shadow:0 1px 0 rgba(255,255,255,.8) inset;  
+    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;        
+    text-shadow: 0 1px 0 rgba(255,255,255,.5);
+    border-bottom: 1px solid #ccc;
+    padding: 6px;
+	-moz-border-radius: 0px 0px 6px 6px;
+    -webkit-border-radius: 0px 0px 6px 6px;
+    border-radius: 0px 0px 6px 6px;
+	border-right: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	text-align: center;
+}
+
+.blau{
+	color: #0c6184;
+}
+
+.gruen{
+	background: #b7df2d; /* Old browsers */
+	background: -moz-radial-gradient(center, ellipse cover, #b7df2d 0%, #e3f5ab 33%, #f8ffe8 100%); /* FF3.6-15 */
+	background: -webkit-radial-gradient(center, ellipse cover, #b7df2d 0%,#e3f5ab 33%,#f8ffe8 100%); /* Chrome10-25,Safari5.1-6 */
+	background: radial-gradient(ellipse at center, #b7df2d 0%,#e3f5ab 33%,#f8ffe8 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b7df2d', endColorstr='#f8ffe8',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+.map {
+  height: 100%;
+  width: 100%;
+}
+	
+.marginBottom-0 {margin-bottom:0;}
+
+.dropdown-submenu{position:relative;}
+.dropdown-submenu>.dropdown-menu{top:0;left:100%;margin-top:-6px;margin-left:-1px;-webkit-border-radius:0 6px 6px 6px;-moz-border-radius:0 6px 6px 6px;border-radius:0 6px 6px 6px;}
+.dropdown-submenu>a:after{display:block;content:" ";float:right;width:0;height:0;border-color:transparent;border-style:solid;border-width:5px 0 5px 5px;border-left-color:#cccccc;margin-top:5px;margin-right:-10px;}
+.dropdown-submenu:hover>a:after{border-left-color:#555;}
+.dropdown-submenu.pull-left{float:none;}.dropdown-submenu.pull-left>.dropdown-menu{left:-100%;margin-left:10px;-webkit-border-radius:6px 0 6px 6px;-moz-border-radius:6px 0 6px 6px;border-radius:6px 0 6px 6px;}

@@ -1,0 +1,403 @@
+			header{
+				top: 0px;
+				left: 0px;
+				right: 0px;
+				text-align: left;
+				padding-top: 0px;
+				padding-left: 25px;
+				color: white;
+				background-color: #006085;
+				font-family: "Arial";
+				margin-bottom: 0px;
+				margin-top: -10px;
+				border-bottom: rgb(19, 165, 56) 5px solid;
+				border-radius: 10px;
+				line-height: 10%;
+				position: fixed;
+				height: 100px
+			}
+			.wimadamann{
+				width: 55px;
+				height: 53px;
+			}
+			a{
+				text-decoration: none;
+			}
+	
+/*Dropdown*/		
+			
+			.dropbtn {
+				background-color: rgb(19, 165, 56);
+				color: white;
+				padding: 16px;
+				font-family: "Arial";
+				font-weight: bold;
+				font-size: 18px;
+				border: none;
+				cursor: pointer;
+			}
+
+			.dropdown {
+				position: relative;
+				display: inline-block;
+			}
+
+			.dropdown-content {
+				font-family: "Arial";
+				display: none;
+				position: absolute;
+				background-color: #f9f9f9;
+				min-width: 120px;
+				box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+				z-index: 1;
+			}
+
+			.dropdown-content a {
+				color: black;
+				font_family: "Arial";
+				padding: 5px 16px;
+				text-decoration: none;
+				display: block;
+			}
+
+			.dropdown-content a:hover {background-color: #f1f1f1}
+
+			.dropdown:hover .dropdown-content {
+				display: block;
+			}
+
+			.dropdown:hover .dropbtn {
+				background-color: #3e8e41;
+			}
+			
+			
+			
+			
+			
+/*NEUER FOOTER*/
+			footer{
+				background-color: #006085;
+				padding: 3px;
+				position: fixed;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				border-top: rgb(19, 165, 56) 5px solid;
+				border-radius: 10px;
+				vertical-align: middle;
+				height: 95px;
+				width: 99,5%;
+				margin-bottom: -20px;
+			}
+			.tabellen_footer{
+				width:100%
+			}
+			.unten{
+				width:13%;
+			}
+			.kontakt{
+				color:white;
+				font-family: "Arial";
+				vertical-align: top;
+				width:32%;
+			}
+			.impressum{
+				color:white;
+				font-family: "Arial";
+				vertical-align: top;
+				width: 45%;
+				text-align: right;
+				padding-right: 1.5%;
+			}
+			.natuerlich{
+				float:left;
+				width: 200px;
+				height: auto;
+				background: white;
+				border: 1px white solid;
+				border-radius: 5px;
+				margin-top: 5px;
+				}
+			.footer_button{
+				width: 10%;
+			}
+			.kvwmap{
+				color: white;
+				background-color: #006085;
+				border:white 2px solid;
+				margin-top: 0%;
+				text-align: center;
+				font-size: 15px;
+				font-family: "Arial";
+				font-weight: fett;
+				text-decoration: none;
+				background: #006085;
+				padding: 5px;
+				width: 92%
+			}
+			.kvwmap:hover{
+				color: white;
+				border: white 2px solid;
+				font-size: 15px;
+				font-family: "Arial";
+				font-weight: fett;
+				text-decoration: none;
+				background: #0092cc;
+			}
+			.p_timo{
+				font-size: 11px;
+				font-family: "Arial";
+				color: white;
+			}
+/*Überschriften*/
+			h1{
+				font-size: 17px;
+				color: white;
+			}
+			h2{
+				font-size: 17px;
+				color: white;
+				margin: 0%;
+				margin-bottom: -1%;
+			}
+			.kopf1{
+				color: white;
+				font-size: 60px;
+				font-weight: fett;
+				font-family: "Arial";
+				line-height: 20%;
+				padding: 10px;
+				width:50%;
+			}
+			.kopf2{
+				width: 10px;
+				color: white;
+				font-size: 20px;
+				font-weight: fett;
+				font-family: "Arial";
+				border: 1px white solid;
+				padding: 3px;
+				background: #006085;
+				margin-right: 7px;
+			}
+			.kopf2:hover{
+				color: white;
+				font-size: 20px;
+				font-weight: fett;
+				font-family: "Arial";
+				border: 1px white solid;
+				padding: 3px;
+				background: #0092cc;
+				margin-right: 7px;
+			}
+			.kopf3{
+				width: 20%;
+				padding-top: 30px;
+				padding-right: 10px;
+			}
+			.kopf4{
+				width:20%;
+				padding: 10px;
+			}
+
+			
+/*----NORMAN----*/
+
+
+/*-----------------Gesamthintergund---------*/
+
+body{
+background-color: #eee;
+margin-top: 100px;
+margin-bottom: 80px;
+}
+
+/*------------Grundtabelle-----------------*/
+.links{
+width: 6.5%;
+background-color: #eee;
+}
+
+.streifen{
+width: 0.5%;
+background-color: #eee;
+}
+
+.rechts{
+width: 6.5%;
+background-color: #eee;
+}
+
+
+.beschreibungabstand{
+width:36%;
+background-color: #006085;
+}
+
+.darstellungabstand{
+width:50%;
+margin-left: 36%;
+background-color: #006085;
+}
+
+/*----------------Bilder CSS--------------*/
+
+.logo{
+height: 3%;
+width: 3%;
+padding-left:1%;
+}
+
+
+
+.screen{
+margin: 10%;
+margin-left: 20%;
+width: 60%;
+transition: 1s;
+box-shadow: 1px 1px  8px #888888;
+}
+
+.screen:hover{
+transform: scale(2,2); 
+}
+
+.screen1{
+margin: 10%;
+height: auto;
+width: 30%;
+transition: 1s;
+float: left;
+box-shadow: 1px 1px  8px #888888;
+}
+
+.screen1:hover {
+transform: scale(2,2); 
+}
+
+.screen3{
+margin-top: 10%;
+margin-left: 25%;
+height: auto;
+width: 60%;
+transition: 1s;
+box-shadow: 1px 1px  8px #888888;
+}
+
+.screen3:hover {
+transform: scale(2,2); 
+}
+
+.screen4{
+margin-left: 25%;
+margin-top: 5%;
+margin-bottom : 5%;
+height: auto;
+width: 60%;
+transition: 1s;
+box-shadow: 1px 1px  8px #888888;
+
+}
+
+.screen4:hover{
+transform: scale(2,2); 
+}
+
+
+
+
+
+/*-----------Schriften CSS--------------*/
+
+.thema{
+padding-left: 2%;
+padding-right: 2%;
+padding-: 25%;
+font-family: "Arial", Arial, sans-serif;
+font-size:18px;
+color:  black;
+}
+
+.rahmen{
+padding:3%;
+background-color: white;
+box-shadow: 1px 1px  8px #888888;
+}
+
+p{
+font-family: "Arial", Arial, sans-serif;
+font-size:18px;
+color:  black;
+
+}
+
+.beschreibung{
+padding: 2%;
+border-bottom:0px solid #ccc;
+}
+
+.ausschnitt{
+border-bottom:2px solid #ccc;
+}
+
+th{
+font-family: "Arial", Arial, sans-serif;
+font-size:20px;
+color:  white;
+}
+
+td{
+/*border-bottom:10px solid #333;*/
+border-collapse: collapse;
+vertical-align: top;
+}
+
+h3{
+font-family: "Arial", Arial, Verdana, Helvetica, sans-serif;
+font-size:20px;
+color:  black;
+}
+
+
+table{
+border-collapse: collapse;
+
+}
+
+tr{
+height:20%;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

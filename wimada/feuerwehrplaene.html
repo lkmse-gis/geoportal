@@ -1,0 +1,386 @@
+<html>
+	
+	<head>
+		<title>Wie macht man das?</title>
+			<link href="css/wimadastyle.css" rel="stylesheet">
+			<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+	</head>
+	<body>
+		<header>
+			<table class="kopf" border=0>
+				<td class="kopf1">WIMADA&nbsp;<img class="wimadamann" src="wimadamann.png" alt="WIMADAMann"><br><h1>Wie macht man das?</h1></td>
+				<td class="kopf4"></td>
+				<td class="kopf4"></td>
+				<td class="kopf3"><a class="kopf2" href="http://geoport-lk-mse.de/training/norman_budnick/wimada/" target="blank">Startseite</a><a class="kopf2" href="https://geoport-lk-mse.de/kvwmap/index.php" target="blanks">kvwmap</a><a class="kopf2" href="mailto:norman.budnick@lk-seenplatte.de,%20timo.schewe@lk-seenplatte.de?Subject=Feedback%20WIMADA & body=Hallo liebes Wimada-Team.%0D%0A%0D%0AEure Hilfeseite ist wirklich der Hammer!%0D%0AIch kann mir garnicht mehr vorstellen wie das Leben ohne Sie wäre.%0D%0A%0D%0AFür folgendes Thema würde ich mir eine Beschreibung wünschen: [Wunschthema] %0D%0A%0D%0ASpezieller Wunsch/Kommentar: [Kommentar]" target="_top">Themenwunsch</a></td>
+			</table>
+		</header>
+		
+				<table style="width:100%" border=0>
+<!------------------------------------Tabellenüberschrift----------------------------------------------------------------------->			
+				  <tr>
+						<th class="links" rowspan="6"></th>
+						<th class="streifen" rowspan="6"></th>
+						<th class="beschreibungabstand">Beschreibung</th> 
+						<th class="darstellungabstand">Darstellung</th>
+						<th class="streifen" rowspan="6"></th>
+						<th class="rechts"  rowspan="6"></th>
+				  </tr>
+<!------------------------------------------Feuerwehrpläne auswählen----------------------------------------------------------------->				  
+				  <tr>
+					<div class="versuch" id="1"></div>
+						<td class="beschreibung">
+							<div class="rahmen">
+									<h3>1. Feuerwehrpläne Thema auswählen</h3>
+																								<p>
+																									1.1<br> Um das Thema Feuerwehrpläne zu aktivieren öffnen Sie in der Themenleiste (rechter Bilschirmrand) die Rubrik <b>"Sicherheit/Ordnung"</b> durch einen Klick mit der linken Maustaste auf das + Symbol.<br> <br>
+																									1.2<br> In dieser Rubrik befindet sich die Unterrubrik <b>"Rettungsdienste"</b>, die wiederum durch einen Klick mit der linken Maustaste auf das <b>+</b> Symbol geöffnet wird.<br> <br>
+																									1.3<br> In dieser Unterrubrik befindet sich das Thema <b>"Feuerwehrplaene"</b>. Setzen sie das Häkchen in das linke Kästchen um das Thema anzuzeigen und es gleichzeitig abfragebereit zumachen.<br><br>
+																									1.4<br>	Klicken Sie mit der linken Maustaste auf das Abfragesymbol "<b>i</b>" und anschließend auf den gewünschten Feuerwehrplan.
+																								<p>  
+							</div>															
+						</td>
+						<td class="ausschnitt">
+						<!---Slideshow für die Bebilderung---->
+							<div class="slideshow-container">
+
+									<div class="mySlides fade">
+									  <div class="numbertext">1 / 1</div>
+										<div class="screen">
+											<img src="bilder/themaauswaelen1.png" style="width:100%">
+										</div>
+									  <div class="text">Caption Two</div>
+									</div>
+
+
+								<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides(1)">&#10095;</a>
+
+							</div>
+							<br>
+
+							<div style="text-align:center">
+							  <span class="dot" onclick="currentSlide(1)"></span> 
+						 
+							</div>
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<script>
+								var slideIndex = 1;
+								showSlides(slideIndex);
+
+								function plusSlides(n) {
+								  showSlides(slideIndex += n);
+								}
+
+								function currentSlide(n) {
+								  showSlides(slideIndex = n);
+								}
+
+								function showSlides(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("mySlides");
+								  var dots = document.getElementsByClassName("dot");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+						</td>
+				  </tr>
+<!-------------------------------------------Feuerwehrpläne suchen------------------------------------------------------------->
+				  <tr>			
+						<td class="beschreibung">
+							<div class="rahmen">
+								<div class="versuch" id="2"></div>
+									<h3>2. Feuerwehrpläne Suchen</h3>
+																						<p>
+																							2.1<br> Um einen vorhandenen Feuerwehrplan zu suchen, wählen Sie linken Menübereich den Reiter <b>"Themensuche"</b> und dort den
+																							Unterpunkt Feuerwehrplan.<br> 
+																							Es öffnet sich die Layersuche. Die Auswahl im Feld <b>"Gruppen"</b> und <b>"Themen"</b> sind schon voreingestellt.<br> <br>
+																							2.2<br> Wählen Sie nun einen <b>"Operator"</b> und einen Wert nach dem Sie suchen wollen. <br> <br>
+																							2.3<br>Wie hier als Beispiel dargestellt.<br><br>
+																							2.4<br>Klicken Sie anschließend auf <b>"Suchen"</b><br><br>
+																							Zur nicht exakten suche verwenden Sie den Operator <b>"ähnlich"</b> und den Platzhalter <b>%</b>.<br> 
+																							Für Datumsangaben verwenden sie bitte das  Format TT.MM.JJJJ.
+																						</p>
+							</div>
+						</td>
+						<td class="ausschnitt">
+							
+							<!---Slideshow für die Bebilderung---->
+							<div class="slideshow-container">
+									<div class="hundekuchen fade">
+										  <div class="numbertext1">1 / 2</div>
+											<div class="screen">
+											<img src="bilder/fwp_suchen.png" style="width:100%">
+											</div>
+										  <div class="text">Caption Text</div>
+									</div>
+
+									<div class="hundekuchen fade">
+										  <div class="numbertext1">2 / 2</div>
+											<div class="screen">
+											<img src="bilder/fwp_suchen2.png" style="width:100%">
+											</div>
+										  <div class="text">Caption Two</div>
+									</div>
+								
+								
+
+
+								<a class="prev" onclick="plusSlides1(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides1(1)">&#10095;</a>
+
+							</div>
+							<br>
+
+							<div style="text-align:center">
+							  <span class="dota" onclick="currentSlide1(1)"></span> 
+							  <span class="dota" onclick="currentSlide1(2)"></span>  
+							</div>
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							<script>
+							var slideIndex = 1;
+							showSlides1(slideIndex);
+
+							function plusSlides1(h) {
+							  showSlides1(slideIndex += h);
+							}
+
+							function currentSlide1(h) {
+							  showSlides1(slideIndex = h);
+							}
+
+							function showSlides1(h) {
+							  var g;
+							  var slides = document.getElementsByClassName("hundekuchen");
+							  var dots = document.getElementsByClassName("dota");
+							  if (h > slides.length) {slideIndex = 1}    
+							  if (h < 1) {slideIndex = slides.length}
+							  for (g = 0; g < slides.length; g++) {
+								  slides[g].style.display = "none";  
+							  }
+							  for (g = 0; g < dots.length; g++) {
+								  dots[g].className = dots[g].className.replace(" active", "");
+							  }
+							  slides[slideIndex-1].style.display = "block";  
+							  dots[slideIndex-1].className += " active";
+							}
+							</script>
+							
+						</td>
+					</tr>
+<!----------------------------------Ferwehrpläne einfügen------------------------------------------------------------------->
+					<tr id="fwp3" style="padding-top:110px;">
+						<td class="beschreibung">
+							<div class="rahmen">
+									<h3 id="3" class="versuch">position h3 unterhalb</h3>
+									<h3>3. Feuerwehrpläne einfügen</h3>
+																						<p>
+																							3.1<br> Um weitere Feuerwehrpläne einzufügen, öffnen Sie in der linken Menüleiste den Reiter <b>"Datenerfassung"</b> und wählen <b>"Feuerwehrpläne"</b> aus.<br> <br>
+																							3.2<br> Nun öffnet sich das Eingabefeld für die Erfassung eines neuen Datensatzes. 
+																							Tragen Sie hier optional den <a href="adressschlussel.html"> <b>"Adressschlüssel"</b></a> und eine <b>"Bezeichnung"</b> ein. Im Feld <b>"Detail"</b> tragen Sie bitte eine Beschreibung des Datensatzes ein.<br> <br>
+																							3.3<br> Unter dem Punkt Plan können sie nun die hochzuladende Datei einfügen.<br>
+																							Dazu drücken Sie <b>"Durchsuchen"</b> und wählen die hochzuladende Datei aus.<br> <br>
+																							3.4<br>Wählen Sie in der Werkzeugleiste die Funktion <b>"Position setzen"</b>.<br> <br>
+																							3.5<br>Setzen Sie einen Punkt auf das entsprechende Gebäude<br> <br>
+																							3.6<br>Anschließend klicken Sie auf <b>"Speichern"</b>
+																						</p>
+							</div>															
+						 </td>
+						 <!---Slideshow für die Bebilderung---->
+						 <td class="ausschnitt">
+							
+							
+							<div class="slideshow-container">
+								<div class="einfuegen fade">
+									  <div class="numbertext">1 / 2</div>
+										<div class="screen">
+										<img src="bilder/erfassenfeuerplan.png" style="width:100%">
+										</div>
+									  <div class="text">Caption Text</div>
+								</div>
+
+								<div class="einfuegen fade">
+									  <div class="numbertext">2 / 2</div>
+										<div class="screen">
+										<img src="bilder/einfuegenbsp.png" style="width:100%">
+										</div>
+									  <div class="text">Caption Two</div>
+								</div>
+								
+
+
+								<a class="prev" onclick="plusSlides2(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides2(1)">&#10095;</a>
+
+							</div>
+							<br>
+
+							<div style="text-align:center">
+								  <span class="dot2" onclick="currentSlide2(1)"></span> 
+								  <span class="dot2" onclick="currentSlide2(2)"></span> 
+							</div>
+
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides2(slideIndex);
+
+								function plusSlides2(n) {
+								  showSlides2(slideIndex += n);
+								}
+
+								function currentSlide2(n) {
+								  showSlides2(slideIndex = n);
+								}
+
+								function showSlides2(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("einfuegen");
+								  var dots = document.getElementsByClassName("dot2");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						<td class="ausschnitt">
+										<img class="screen4" src="bilder/erfassenfeuerplan.png" alt="feuerplaneinfügen">
+										<img class="screen4" src="bilder/einfuegenbsp.png" alt="feuerplaneinfügen">
+						</td>
+					</tr>
+<!--------------------------------Feurwehrplan ändern aktualisieren-------------------------------------------------------------------->
+				  <tr id="fwp4" style="padding-top:110px;">
+						<td class="beschreibung">
+							<div class="rahmen">
+										<h3 id="4" class="versuch">position h3 unterhalb</h3>
+										<h3>4. Feuerwehrpläne ändern / aktualisieren</h3>
+																						<p>
+																							4.1<br> Um Feuerwehrpläne zu ändern oder zu aktualisieren suchen Sie den betreffenden Eintrag, beispielsweise wie im Punkt<br><a href="#2"> <b>"Feuerwehrpläne suchen"</b></a> beschrieben. <br> <br>
+																							4.2<br> Klicken sie im zu aktualisierenden Datensatz auf <b>"Durchsuchen"</b> und wählen den neuen Feuerwehrplan aus und laden diesen. <br> <br>
+																							4.3<br> Danach klicken sie auf <b>"Dokument löschen"</b> rechts neben dem veralteten oder zu ändernden Feuerwehrplan.
+																						</p>
+							</div>														
+						</td>
+						
+						<td class="ausschnitt">
+							<!---Slideshow für die Bebilderung---->
+							
+							<div class="slideshow-container">
+								<div class="fwp_aendern fade">
+									  <div class="numbertext">1 / 2</div>
+										<div class="screen">
+										<img src="bilder/fwp_aendern.png" style="width:100%">
+										</div>
+									  <div class="text">Caption Text</div>
+								</div>
+
+								
+
+								<a class="prev" onclick="plusSlides3(-1)">&#10094;</a>
+								<a class="next" onclick="plusSlides3(1)">&#10095;</a>
+
+							</div>
+							<br>
+
+							<div style="text-align:center">
+								<span class="dot3" onclick="currentSlide3(1)"></span> 
+							  
+							</div>
+
+							<!---JavaScript für die Slideshow---->
+							<!---Zum einfuegen weiterer slideshows funktion nr abändern und neue dot class in css erstellen---->
+							
+							<script>
+								var slideIndex = 1;
+								showSlides3(slideIndex);
+
+								function plusSlides3(n) {
+								  showSlides3(slideIndex += n);
+								}
+
+								function currentSlide3(n) {
+								  showSlides3(slideIndex = n);
+								}
+
+								function showSlides3(n) {
+								  var i;
+								  var slides = document.getElementsByClassName("fwp_aendern");
+								  var dots = document.getElementsByClassName("dot3");
+								  if (n > slides.length) {slideIndex = 1}    
+								  if (n < 1) {slideIndex = slides.length}
+								  for (i = 0; i < slides.length; i++) {
+									  slides[i].style.display = "none";  
+								  }
+								  for (i = 0; i < dots.length; i++) {
+									  dots[i].className = dots[i].className.replace(" active", "");
+								  }
+								  slides[slideIndex-1].style.display = "block";  
+								  dots[slideIndex-1].className += " active";
+								}
+							</script>
+							
+						</td>
+						
+				  </tr>
+			</table>
+		
+		
+		
+	</body>
+		
+		
+		<footer>
+			<table class="tabellen_footer" border=0>
+<!--LK Logo-->
+							<td class="unten">
+								<a href="https://www.lk-mecklenburgische-seenplatte.de/" target="blank"><img class="natuerlich" src="landkreis_logoneu.png" alt="LK MSE Logo"></a>
+							</td>
+<!--Adresse-->
+							<td class="kontakt">
+								<h2>Adresse</h2>
+									<p class="p_timo">
+									Regionalstandort Neubrandenburg<br>
+									Kataster- und Vermessungsamt<br>
+									Platanenstraße 43<br>
+									17033 Neubrandenburg<br>
+									</p>
+							</td>
+<!--Button zu kvwmap-->
+							<td class="footer_button">
+								<a href="https://geoport-lk-mse.de/kvwmap/index.php" target="blanks"><div class="kvwmap">Ausprobieren auf kvwmap</div></a>
+							</td>
+<!--Impressum-->
+							<td class="impressum">
+								<h2>Impressum</h2>
+									<p class="p_timo">
+									©2018 Norman Budnick<br>
+									©2018 Timo Schewe<br>
+									Geomatiker 2.Lehrjahr<br>
+									KVA MSE<br>
+									</p>
+							</td>
+			</table>
+		</footer>
+	
+</html>	
+	
