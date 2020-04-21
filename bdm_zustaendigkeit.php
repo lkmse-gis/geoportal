@@ -1,11 +1,11 @@
 <?php
 include ("includes/connect_geobasis.php");
 include ("includes/portal_functions.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 
 $layerid=160100;
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 $gemeinde_id=$_GET["gemeinde"];
 
@@ -28,22 +28,22 @@ if ($gemeinde_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemeindename = $r[name];
-	  $gemeindeumring=$r[gemeindeumring];
-	  $bm = $r[bm];
-	  $vorwahl = $r[vorwahl];
-	  $einw = $r[einw];
-	  $einw_km = $r[einw_km];
-	  $wappen = $r[wappen];
-	  $vsitzid = $r[vsitzid];
-	  $area=$r[area];	  
-	  $zentrum = $r[center];
+	  $gemeindename = $r["name"];
+	  $gemeindeumring=$r["gemeindeumring"];
+	  $bm = $r["bm"];
+	  $vorwahl = $r["vorwahl"];
+	  $einw = $r["einw"];
+	  $einw_km = $r["einw_km"];
+	  $wappen = $r["wappen"];
+	  $vsitzid = $r["vsitzid"];
+	  $area=$r["area"];	  
+	  $zentrum = $r["center"];
 	  $zentrum2 = trim($zentrum,"POINT(");
 	  $zentrum3 = trim($zentrum2,")");
 	  $zentrum4 = explode(" ",$zentrum3);
-	  $utm = $r[utm];
-	  $geo = $r[geo];
-	  $umfang = $r[umfang];
+	  $utm = $r["utm"];
+	  $geo = $r["geo"];
+	  $umfang = $r["umfang"];
 	  $umfang2 = explode(".",$umfang);
 	  $umfang3 = $umfang2[0];
 	  $rcenter = $zentrum4[0];
@@ -52,7 +52,7 @@ if ($gemeinde_id > 0)
 	  $hcenter = $zentrum4[1];
 	  $hcenter1 = explode(".",$hcenter);
 	  $hcenter2 = $hcenter1[0];
-	  $boxstring = $r[box];
+	  $boxstring = $r["box"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -255,12 +255,12 @@ if ($gemeinde_id > 0)
 												Gemeinde:&nbsp;
 												<select name="gemeinde" onchange="document.gemeinde.submit();">
 													<?php
-														$query="SELECT * FROM gemeinden WHERE kreis_id = '13071' AND gem_schl != '13071107' ORDER BY gemeinde";
+														$query="SELECT * FROM gemeinden WHERE kreis_id = '13071' ORDER BY gemeinde";
 														$result = $dbqueryp($connectp,$query);
 
 														while($rx = $fetcharrayp($result))
 														{
-														 echo "<option";if ($gemeinde_id == $rx[gem_schl]) echo " selected"; echo " value=\"$rx[gem_schl]\">$rx[gemeinde]</option>\n";
+														 echo "<option";if ($gemeinde_id == $rx["gem_schl"]) echo " selected"; echo ' value="',$rx["gem_schl"],'">',$rx["gemeinde"],'</option>\n';
 														}
 													?>
 												</select>
@@ -274,70 +274,70 @@ if ($gemeinde_id > 0)
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Name:</td>
-										<td><b><? echo $r[mitarbeiter_titel],' ',$r[mitarbeiter_vorname],' ',$r[mitarbeiter_name]; ?></td>
+										<td><b><? echo $r["mitarbeiter_titel"],' ',$r["mitarbeiter_vorname"],' ',$r["mitarbeiter_name"]; ?></td>
 									</tr>									
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Telefon:</td>
-										<td><? echo $r[mitarbeiter_telefon] ?></td>
+										<td><? echo $r["mitarbeiter_telefon"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Fax:</td>
-										<td><? echo $r[mitarbeiter_fax] ?></td>
+										<td><? echo $r["mitarbeiter_fax"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>E-Mail:</td>
-										<td><a href="mailto:<? echo $r[mitarbeiter_mail];?>"><? echo $r[mitarbeiter_mail];?></a></td>
+										<td><a href="mailto:<? echo $r["mitarbeiter_mail"];?>"><? echo $r["mitarbeiter_mail"];?></a></td>
 									</tr>
 									<tr>
 										<td colspan="2" align="center" height=15 bgcolor=<? echo $header_farbe ;?>><? echo $font_farbe ;?>Vertretung<? echo $font_farbe_end ;?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Name:</td>
-										<td><b><? echo $r[v_mitarbeiter_titel],' ',$r[v_mitarbeiter_vorname],' ',$r[v_mitarbeiter_name]; ?></td>
+										<td><b><? echo $r["v_mitarbeiter_titel"],' ',$r["v_mitarbeiter_vorname"],' ',$r["v_mitarbeiter_name"]; ?></td>
 									</tr>									
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Telefon:</td>
-										<td><? echo $r[v_mitarbeiter_telefon] ?></td>
+										<td><? echo $r["v_mitarbeiter_telefon"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Fax:</td>
-										<td><? echo $r[v_mitarbeiter_fax] ?></td>
+										<td><? echo $r["v_mitarbeiter_fax"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>E-Mail:</td>
-										<td><a href="mailto:<? echo $r[v_mitarbeiter_mail];?>"><? echo $r[v_mitarbeiter_mail];?></a></td>
+										<td><a href="mailto:<? echo $r["v_mitarbeiter_mail"];?>"><? echo $r["v_mitarbeiter_mail"];?></a></td>
 									</tr>
 									<tr>
-										<td colspan="2" align="center" height=15 bgcolor=<? echo $header_farbe ;?>><? echo $font_farbe ;?>Sachgebiet: <? echo $r[sg_name] ?> <? echo $font_farbe_end ;?></td>
+										<td colspan="2" align="center" height=15 bgcolor=<? echo $header_farbe ;?>><? echo $font_farbe ;?>Sachgebiet: <? echo $r["sg_name"] ?> <? echo $font_farbe_end ;?></td>
 									</tr>
 									
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Sachgebietsleiter</td>
-										<td><? echo $r[sg_leiter_vorname],' ',$r[sg_leiter_name]; ?></td>
+										<td><? echo $r["sg_leiter_vorname"],' ',$r["sg_leiter_name"]; ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Telefon:</td>
-										<td><? echo $r[sg_leiter_telefon] ?></td>
+										<td><? echo $r["sg_leiter_telefon"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>E-Mail:</td>
-										<td><a href="mailto:<? echo $r[sg_leiter_mail];?>"><? echo $r[sg_leiter_mail];?></a></td>
+										<td><a href="mailto:<? echo $r["sg_leiter_mail"];?>"><? echo $r["sg_leiter_mail"];?></a></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Fachamt</td>
-										<td><? echo $r[fachamt_name] ?></td>
+										<td><? echo $r["fachamt_name"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Amtsleiter</td>
-										<td><? echo $r[fachamt_leiter]; ?></td>
+										<td><? echo $r["fachamt_leiter"]; ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>Telefon:</td>
-										<td><? echo $r[fachamt_leiter_telefon] ?></td>
+										<td><? echo $r["fachamt_leiter_telefon"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=15><small>E-Mail:</td>
-										<td><a href="mailto:<? echo $r[fachamt_leiter_mail];?>"><? echo $r[fachamt_leiter_mail];?></a></td>
+										<td><a href="mailto:<? echo $r["fachamt_leiter_mail"];?>"><? echo $r["fachamt_leiter_mail"];?></a></td>
 									</tr>
 									
 									
@@ -614,7 +614,7 @@ if ($gemeinde_id < '0'		)
 						</td>
 					</tr>
 					<!--Zeile 4 letzte Aktualisierung -->
-					<tr><td align=center colspan=2>letzte Aktualisierung: <b><i><? echo get_aktualitaet($dbname,'160100'); ?></i></b></td></tr>
+					<tr><td align=center colspan=2>letzte Aktualisierung: <b><i><? echo get_i_aktualitaet($db_link,'160100'); ?></i></b></td></tr>
 					<!--Zeile 5 Kartenhilfe/Legende -->
 					<tr>
 									<td valign=bottom align=center>
@@ -643,7 +643,7 @@ if ($gemeinde_id < '0'		)
 										<a href="metadaten/metadaten.php?Layer_ID=160100" target="_blank" onclick="return meta_popup(this.href)"><img src="images/info_button.gif" title="Metadaten" border=0></a>
 									</td>
 									<td align=right>
-										<a href="gemeinden_msp.php"><img src="images/reload.png" title="Kartenausschnitt neu laden"></a>
+										<a href="bdm_zustaendigkeit.php"><img src="images/reload.png" title="Kartenausschnitt neu laden"></a>
 									</td>
 								</tr>
 							</table>
