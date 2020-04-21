@@ -29,22 +29,22 @@ if ($gemeinde_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemeindename = $r[name];
-	  $gemeindeumring=$r[gemeindeumring];
-	  $bm = $r[bm];
-	  $vorwahl = $r[vorwahl];
-	  $einw = $r[einw];
-	  $einw_km = $r[einw_km];
-	  $wappen = $r[wappen];
-	  $vsitzid = $r[vsitzid];
-	  $area=$r[area];	  
-	  $zentrum = $r[center];
+	  $gemeindename = $r["name"];
+	  $gemeindeumring=$r["gemeindeumring"];
+	  $bm = $r["bm"];
+	  $vorwahl = $r["vorwahl"];
+	  $einw = $r["einw"];
+	  $einw_km = $r["einw_km"];
+	  $wappen = $r["wappen"];
+	  $vsitzid = $r["vsitzid"];
+	  $area=$r["area"];	  
+	  $zentrum = $r["center"];
 	  $zentrum2 = trim($zentrum,"POINT(");
 	  $zentrum3 = trim($zentrum2,")");
 	  $zentrum4 = explode(" ",$zentrum3);
-	  $utm = $r[utm];
-	  $geo = $r[geo];
-	  $umfang = $r[umfang];
+	  $utm = $r["utm"];
+	  $geo = $r["geo"];
+	  $umfang = $r["umfang"];
 	  $umfang2 = explode(".",$umfang);
 	  $umfang3 = $umfang2[0];
 	  $rcenter = $zentrum4[0];
@@ -53,7 +53,7 @@ if ($gemeinde_id > 0)
 	  $hcenter = $zentrum4[1];
 	  $hcenter1 = explode(".",$hcenter);
 	  $hcenter2 = $hcenter1[0];
-	  $boxstring = $r[box];
+	  $boxstring = $r["box"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -259,7 +259,7 @@ if ($gemeinde_id > 0)
 
 														while($rx = $fetcharrayp($result))
 														{
-														 echo "<option";if ($gemeinde_id == $rx[gem_schl]) echo " selected"; echo " value=\"$rx[gem_schl]\">$rx[gemeinde]</option>\n";
+														 echo "<option";if ($gemeinde_id == $rx["gem_schl"]) echo " selected"; echo ' value="',$rx["gem_schl"],'">',$rx["gemeinde"],'</option>\n';
 														}
 													?>
 												</select>
@@ -276,19 +276,19 @@ if ($gemeinde_id > 0)
 									   </tr>
 									   <tr bgcolor=$element_farbe ;>
 										<td height=20><small>Name:</td>
-										<td><b>",$ma[$i][mitarbeiter_titel],' ',$ma[$i][mitarbeiter_vorname],' ',$ma[$i][mitarbeiter_name],"</td>
+										<td><b>",$ma[$i]["mitarbeiter_titel"],' ',$ma[$i]["mitarbeiter_vorname"],' ',$ma[$i]["mitarbeiter_name"],"</td>
 									</tr>									
 									<tr bgcolor=$element_farbe >
 										<td height=20><small>Telefon:</td>
-										<td>",$ma[$i][mitarbeiter_telefon],"</td>
+										<td>",$ma[$i]["mitarbeiter_telefon"],"</td>
 									</tr>
 									<tr bgcolor=$element_farbe >
 										<td height=20><small>Fax:</td>
-										<td>",$ma[$i][mitarbeiter_fax]," </td>
+										<td>",$ma[$i]["mitarbeiter_fax"]," </td>
 									</tr>
 									<tr bgcolor=$element_farbe >
 										<td height=20><small>E-Mail:</td>
-										<td><a href=\"mailto:",$ma[$i][mitarbeiter_mail],"\">",$ma[$i][mitarbeiter_mail],"</a></td>
+										<td><a href=\"mailto:",$ma[$i]["mitarbeiter_mail"],"\">",$ma[$i]["mitarbeiter_mail"],"</a></td>
 									</tr>";
 									}
 									?>
@@ -296,35 +296,35 @@ if ($gemeinde_id > 0)
 										<td colspan=2 align=center height=5 bgcolor=<?echo $header_farbe; ?> ></td>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=20><small>Sachgebiet</td>
-										<td><? echo $ma[1][sg_name] ?></td>
+										<td><? echo $ma[1]["sg_name"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=20><small>Sachgebietsleiter</td>
-										<td><? echo $ma[1][sg_leiter_vorname],' ',$ma[1][sg_leiter_name]; ?></td>
+										<td><? echo $ma[1]["sg_leiter_vorname"],' ',$ma[1]["sg_leiter_name"]; ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=20><small>Telefon:</td>
-										<td><? echo $ma[1][sg_leiter_telefon] ?></td>
+										<td><? echo $ma[1]["sg_leiter_telefon"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=20><small>E-Mail:</td>
-										<td><a href="mailto:<? echo $ma[1][sg_leiter_mail];?>"><? echo $ma[1][sg_leiter_mail];?></a></td>
+										<td><a href="mailto:<? echo $ma[1]["sg_leiter_mail"];?>"><? echo $ma[1]["sg_leiter_mail"];?></a></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=20><small>Fachamt</td>
-										<td><? echo $ma[1][fachamt_name] ?></td>
+										<td><? echo $ma[1]["fachamt_name"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=20><small>Amtsleiter</td>
-										<td><? echo $ma[1][fachamt_leiter]; ?></td>
+										<td><? echo $ma[1]["fachamt_leiter"]; ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=20><small>Telefon:</td>
-										<td><? echo $ma[1][fachamt_leiter_telefon] ?></td>
+										<td><? echo $ma[1]["fachamt_leiter_telefon"] ?></td>
 									</tr>
 									<tr bgcolor=<? echo $element_farbe ;?>>
 										<td height=20><small>E-Mail:</td>
-										<td><a href="mailto:<? echo $ma[1][fachamt_leiter_mail];?>"><? echo $ma[1][fachamt_leiter_mail];?></a></td>
+										<td><a href="mailto:<? echo $ma[1]["fachamt_leiter_mail"];?>"><? echo $ma[1]["fachamt_leiter_mail"];?></a></td>
 									</tr>
 									
 									
