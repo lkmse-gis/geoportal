@@ -1,9 +1,9 @@
 <?php
 include ("includes/connect_geobasis.php");
 include ("includes/portal_functions.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 require_once ("classes/karte_1.class.php");
-// require_once ("classes/karte_plz_ort.class.php");
+
 require_once ("classes/legende_geo.class.php");
 
 //globale Varibalen
@@ -44,15 +44,12 @@ $layerid=91020;
 
 $gemeinde_id=$_GET["$kuerzel"];
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 // Ebene 1
 if ($plz_id < 1 AND $stu_id < 1)
     { 
-		$query="SELECT COUNT(*) AS anzahl FROM fd_plz";
-		$result = $dbqueryp($connectp,$query);
-		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		
 
 		$lon=367630;
 		$lat=5939535;
@@ -97,12 +94,12 @@ if ($plz_id < 1 AND $stu_id < 1)
 								
 								<option>Bitte auswählen</option>
 								<?php
-									$query="SELECT plz, gid FROM fd_plz ORDER BY plz";
+									$query="SELECT DISTINCT a.plz FROM osm.plz as a,health.pflege_gebiete as b WHERE st_intersects(st_centroid(a.geom),b.the_geom) ORDER BY plz";
 									$result = $dbqueryp($connectp,$query);
 
 									while($r = $fetcharrayp($result))
 										{
-											echo "<option value=\"$r[gid]\">$r[plz]</option>\n";
+											echo "<option value=\"$r[0]\">$r[0]</option>\n";
 										}
 								?>
 								
@@ -110,7 +107,7 @@ if ($plz_id < 1 AND $stu_id < 1)
 							</form>
 						</td>
 					</tr>
-					<? include ("includes/meta_aktualitaet.php"); ?>
+					<? include ("includes/meta_i_aktualitaet.php"); ?>
 					<!-- Tabelle für Legende -->
                     <td valign=bottom align=right>
                         <table  width="100%" border="1" cellpadding="0" cellspacing="0" align="left">
@@ -139,18 +136,19 @@ if ($plz_id < 1 AND $stu_id < 1)
   // Ebene 2
   if ($plz_id > 0)
    {     
-	  $query="SELECT box(a.the_geom) as box, area(a.the_geom) as area, st_astext(st_centroid(a.the_geom)) as center, st_astext(st_centroid(st_transform(a.the_geom, 25833))) as utm, st_astext(st_centroid(st_transform(a.the_geom, 4326))) as geo, st_astext(st_centroid(st_transform(a.the_geom, 31468))) as rd83, st_astext(st_transform(a.the_geom, 2398)) as koordinaten, st_perimeter(a.the_geom) as umfang, a.stuetzpunkte_id FROM $schema.$tabelle as a,fd_plz as b WHERE b.gid='$plz_id' AND st_within(st_buffer(st_transform(b.the_geom,25833),-20),a.the_geom)";	  
+	  $query="SELECT box(a.the_geom) as box, area(a.the_geom) as area, st_astext(st_centroid(a.the_geom)) as center, st_astext(st_centroid(st_transform(a.the_geom, 25833))) as utm, st_astext(st_centroid(st_transform(a.the_geom, 4326))) as geo, st_astext(st_centroid(st_transform(a.the_geom, 31468))) as rd83, st_astext(st_transform(a.the_geom, 2398)) as koordinaten, st_perimeter(a.the_geom) as umfang, a.stuetzpunkte_id FROM $schema.$tabelle as a,osm.plz as b WHERE b.plz='$plz_id' AND st_intersects(st_centroid(b.geom),a.the_geom)";	 
+      #echo $query;	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-      $stuetzpunkt=$r[stuetzpunkte_id];	 
-	  $area=$r[area];
-	  $s4283 = $r[koordinaten];
-	  $rd83 = $r[rd83];
-	  $utm = $r[utm];
-	  $geo = $r[geo];
-	  $box=$r[box];
-	  $umfang = $r[umfang];
-	  $boxstring = $r[box];
+      $stuetzpunkt=$r["stuetzpunkte_id"];	 
+	  $area=$r["area"];
+	  $s4283 = $r["koordinaten"];
+	  $rd83 = $r["rd83"];
+	  $utm = $r["utm"];
+	  $geo = $r["geo"];
+	  $box=$r["box"];
+	  $umfang = $r["umfang"];
+	  $boxstring = $r["box"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -161,16 +159,16 @@ if ($plz_id < 1 AND $stu_id < 1)
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 	
-	  $plz=$r[plz];
-	  $ort=$r[ort];
-	  $strasse=$r[strasse];
-	  $tel_s=$r[tel_s];
-	  $tel_p=$r[tel_p];
-	  $fax=$r[fax];
-	  $e_mail=$r[e_mail];
-	  $hompage=$r[hompage];
-	  $oeffnungszeiten_2=$r[oeffnungszeiten_2];
-	  $oeffnungszeiten_4=$r[oeffnungszeiten_4];	
+	  $plz=$r["plz"];
+	  $ort=$r["ort"];
+	  $strasse=$r["strasse"];
+	  $tel_s=$r["tel_s"];
+	  $tel_p=$r["tel_p"];
+	  $fax=$r["fax"];
+	  $e_mail=$r["e_mail"];
+	  $hompage=$r["hompage"];
+	  $oeffnungszeiten_2=$r["oeffnungszeiten_2"];
+	  $oeffnungszeiten_4=$r["oeffnungszeiten_4"];	
 	  
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -223,12 +221,12 @@ if ($plz_id < 1 AND $stu_id < 1)
 											<form action="<? echo $_SERVER["PHP_SELF"];?>" method="get" name="<? echo $kuerzel;?>">												
 												<select name="<? echo $kuerzel;?>" onchange="document.<? echo $kuerzel;?>.submit();">
 													<?php														
-															$query="SELECT plz, gid FROM fd_plz ORDER BY plz";
+															$query="SELECT DISTINCT a.plz FROM osm.plz as a,health.pflege_gebiete as b WHERE st_intersects(st_centroid(a.geom),b.the_geom) ORDER BY plz";
 															$result = $dbqueryp($connectp,$query);
 
 															while($e = $fetcharrayp($result))
 														{
-														 echo "<option";if ($plz_id == $e[gid]) echo " selected"; echo " value=\"$e[gid]\">$e[plz]</option>\n";
+														 echo "<option";if ($plz_id == $e["plz"]) echo " selected"; echo ' value="',$e["plz"],'">',$e["plz"],'</option>\n';
 														}
 													?>
 												</select>
@@ -270,42 +268,42 @@ if ($plz_id < 1 AND $stu_id < 1)
 									</tr>
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> height=30>Ort:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[plz];?>&nbsp;&nbsp;<? echo $r[ort];?> </b></td>													
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["plz"];?>&nbsp;&nbsp;<? echo $r["ort"];?> </b></td>													
 									</tr>
 									<tr>
 									    <td height=30>Stra&szlig;e:</td>
-										<td><b><? echo $r[strasse] ;?></b></td>													
+										<td><b><? echo $r["strasse"] ;?></b></td>													
 									</tr>
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> valign=top height=30>Tel. Sozialberater:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[tel_s] ;?><b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["tel_s"] ;?><b></td>
 									</tr>									
 									<tr>
 										<td valign=top height=30>Tel. Pflegeberater:</td>
-										<td><b><? echo $r[tel_p] ;?><b></td>
+										<td><b><? echo $r["tel_p"] ;?><b></td>
 									</tr>									
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> valign=top height=30>Fax:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[fax] ;?><b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["fax"] ;?><b></td>
 									</tr>
 									<tr>
 										<td valign=top height=30>E-Mail:</td>
-										<td><b><a href="mailto: <? echo $r[e_mail] ;?> ?subject=Anfrage an Pflegest&uuml;tzpunkt <? echo $r[ort] ;?>"</a><? echo $r[e_mail] ;?><b></td>		
+										<td><b><a href="mailto: <? echo $r["e_mail"] ;?> ?subject=Anfrage an Pflegest&uuml;tzpunkt <? echo $r["ort"] ;?>"</a><? echo $r["e_mail"] ;?><b></td>		
 										
 									</tr>																		
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> valign=top height=30>Internet:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><a href=" <? echo $r[hompage] ;?> "</a><? echo $r[hompage] ;?> <b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><a href=" <? echo $r["hompage"] ;?> "</a><? echo $r["hompage"] ;?> <b></td>
 																	
 										
 									</tr>																	
 									<tr>
 										<td valign=top height=30>&Ouml;ffnungszeiten:</td>
-										<td><b><? echo $r[oeffnungszeiten_2] ;?><b></td>
+										<td><b><? echo $r["oeffnungszeiten_2"] ;?><b></td>
 									</tr>																	
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> valign=top height=30></td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[oeffnungszeiten_4] ;?><b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["oeffnungszeiten_4"] ;?><b></td>
 									</tr>																										
 								</table>
 								<td valign=top align=center width="250">
@@ -332,15 +330,15 @@ if ($stu_id > 0 )
       $query="SELECT box(a.the_geom) as box, area(a.the_geom) as area, st_astext(st_centroid(a.the_geom)) as center, st_astext(st_centroid(st_transform(a.the_geom, 25833))) as utm, st_astext(st_centroid(st_transform(a.the_geom, 4326))) as geo, st_astext(st_centroid(st_transform(a.the_geom, 31468))) as rd83, st_astext(st_transform(a.the_geom, 2398)) as koordinaten, st_perimeter(a.the_geom) as umfang, a.gid FROM $schema.$tabelle2 as a WHERE a.gid='$stu_id' ";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $stuetzpunkt=$r[stuetzpunkte_id];	 
-	  $area=$r[area];
-	  $s4283 = $r[koordinaten];
-	  $rd83 = $r[rd83];
-	  $utm = $r[utm];
-	  $geo = $r[geo];
-	  $box=$r[box];
-	  $umfang = $r[umfang];
-	  $boxstring = $r[box];
+	  $stuetzpunkt=$r["stuetzpunkte_id"];	 
+	  $area=$r["area"];
+	  $s4283 = $r["koordinaten"];
+	  $rd83 = $r["rd83"];
+	  $utm = $r["utm"];
+	  $geo = $r["geo"];
+	  $box=$r["box"];
+	  $umfang = $r["umfang"];
+	  $boxstring = $r["box"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -352,16 +350,16 @@ if ($stu_id > 0 )
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 	
-	  $plz=$r[plz];
-	  $ort=$r[ort];
-	  $strasse=$r[strasse];
-	  $tel_s=$r[tel_s];
-	  $tel_p=$r[tel_p];
-	  $fax=$r[fax];
-	  $e_mail=$r[e_mail];
-	  $hompage=$r[hompage];
-	  $oeffnungszeiten_2=$r[oeffnungszeiten_2];
-	  $oeffnungszeiten_4=$r[oeffnungszeiten_4];	
+	  $plz=$r["plz"];
+	  $ort=$r["ort"];
+	  $strasse=$r["strasse"];
+	  $tel_s=$r["tel_s"];
+	  $tel_p=$r["tel_p"];
+	  $fax=$r["fax"];
+	  $e_mail=$r["e_mail"];
+	  $hompage=$r["hompage"];
+	  $oeffnungszeiten_2=$r["oeffnungszeiten_2"];
+	  $oeffnungszeiten_4=$r["oeffnungszeiten_4"];	
 					
 		$lon=$rechts;
 		$lat=$hoch;
@@ -413,16 +411,16 @@ if ($stu_id > 0 )
 										<td align="center" height="25" colspan="2">Einen weiteren Postleitzahlbereich ausw&auml;hlen:</td>										
 									</tr>
 									<tr>
-										<td align="center" height="25" colspan="2">
-											<form action="<? echo $_SERVER["PHP_SELF"];?>" method="get" name="plz">												
-												<select name="plz" onchange="document.plz.submit();">
+										<td align="center" height="40" valign="center" colspan="2">
+											<form action="<? echo $_SERVER["PHP_SELF"];?>" method="get" name="<? echo $kuerzel;?>">												
+												<select name="<? echo $kuerzel;?>" onchange="document.<? echo $kuerzel;?>.submit();">
 													<?php														
-															$query="SELECT plz, gid FROM fd_plz ORDER BY plz";
+															$query="SELECT DISTINCT a.plz FROM osm.plz as a,health.pflege_gebiete as b WHERE st_intersects(st_centroid(a.geom),b.the_geom) ORDER BY plz";
 															$result = $dbqueryp($connectp,$query);
 
 															while($e = $fetcharrayp($result))
 														{
-														 echo "<option";if ($plz_id == $e[gid]) echo " selected"; echo " value=\"$e[gid]\">$e[plz]</option>\n";
+														 echo "<option";if ($plz_id == $e["plz"]) echo " selected"; echo ' value="',$e["plz"],'">',$e["plz"],'</option>\n';
 														}
 													?>
 												</select>
@@ -451,38 +449,38 @@ if ($stu_id > 0 )
 									</tr>
 									<tr>
 									    <td height=30>Stra&szlig;e:</td>
-										<td><b><? echo $r[strasse] ;?></b></td>													
+										<td><b><? echo $r["strasse"] ;?></b></td>													
 									</tr>
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> valign=top height=30>Tel. Sozialberater:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[tel_s] ;?><b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["tel_s"] ;?><b></td>
 									</tr>									
 									<tr>
 										<td valign=top height=30>Tel. Pflegeberater:</td>
-										<td><b><? echo $r[tel_p] ;?><b></td>
+										<td><b><? echo $r["tel_p"] ;?><b></td>
 									</tr>									
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> valign=top height=30>Fax:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[fax] ;?><b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["fax"] ;?><b></td>
 									</tr>
 									<tr>
 										<td valign=top height=30>E-Mail:</td>
-										<td><b><a href="mailto: <? echo $r[e_mail] ;?> ?subject=Anfrage an Pflegest&uuml;tzpunkt <? echo $r[ort] ;?>"</a><? echo $r[e_mail] ;?><b></td>		
+										<td><b><a href="mailto: <? echo $r["e_mail"] ;?> ?subject=Anfrage an Pflegest&uuml;tzpunkt <? echo $r["ort"] ;?>"</a><? echo $r["e_mail"] ;?><b></td>		
 										
 									</tr>																		
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> valign=top height=30>Internet:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><a href=" <? echo $r[hompage] ;?> "</a><? echo $r[hompage] ;?> <b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><a href=" <? echo $r["hompage"] ;?> "</a><? echo $r["hompage"] ;?> <b></td>
 																	
 										
 									</tr>																	
 									<tr>
 										<td valign=top height=30>&Ouml;ffnungszeiten:</td>
-										<td><b><? echo $r[oeffnungszeiten_2] ;?><b></td>
+										<td><b><? echo $r["oeffnungszeiten_2"] ;?><b></td>
 									</tr>																	
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> valign=top height=30></td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[oeffnungszeiten_4] ;?><b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["oeffnungszeiten_4"] ;?><b></td>
 									</tr>																										
 								</table>
 								<td valign=top align=center width="250">
