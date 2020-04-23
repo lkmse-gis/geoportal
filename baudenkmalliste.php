@@ -12,19 +12,7 @@ if ($_SESSION['angemeldet'] === true AND $ip == '82.193.248.86'){
 	$status='angemeldet';
 	}
 
-$datum = getdate(time());
-$year=$datum[year];
-$month=$datum[mon];
-$day=$datum[mday];
-$hour=$datum[hours];
-$minute=$datum[minutes];
-$second=$datum[seconds];
-if (strlen($month) == 1) $month='0'.$month;
-if (strlen($day) == 1) $day='0'.$day;
-if (strlen($hour) == 1) $hour='0'.$hour;
-if (strlen($minute) == 1) $minute='0'.$minute;
-if (strlen($second) == 1) $second='0'.$second;
-$heute=$day.'.'.$month.'.'.$year;
+$heute=date('d.m.Y');
 $modus=$_GET["modus"];
 $ortslage_id=$_GET["ortslage"];
 if ($ortslage_id >= 1)
@@ -33,7 +21,7 @@ if ($ortslage_id >= 1)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $ortslage=$r[ortslage];
+	  $ortslage=$r["ortslage"];
 	  
 	$query="SELECT a.oid,a.gid, a.kuerzel, a.typ, a.nr, a.lfdnr, a.ort, a.bemerk, a.strasse, a.obj, a.bild, 
        a.oeffentlich, a.copyright, a.datum, a.aender, a.datum_ueberarbeitet, a.flurstuecke, 
@@ -98,11 +86,10 @@ if ($ortslage_id >= 1)
 		{
   		echo "<option ";
 		#if ($r[typ] == 'Gemeinde') echo "class=bld";
-		echo" value=\"$r[gid]\"";
-		if ($r[gid] == $ortslage_id) echo "selected";
+		echo' value="',$r["gid"],'"';
+		if ($r["gid"] == $ortslage_id) echo "selected";
 		echo ">";
-		if ($r[typ] == 'Gemeinde') ;
-		echo "$r[ortslage]</option>\n";
+		echo $r["ortslage"],'</option>\n';
 		}
 		echo "</select></form>";
 	}
@@ -145,13 +132,13 @@ if ($status == 'angemeldet') echo "<tr><td colspan=8><hr></td></tr>";
 	    if ($v % 2 == 0) echo "bgcolor=$element_farbe";
 		echo ">";
 		if ($status == 'angemeldet') echo '<td><a href="https://geoport-lk-mse.de/kvwmap/index.php?go=zoomtoPolygon&oid=',$bd[$v][oid],'&layer_tablename=baudenkmale&layer_columnname=the_geom&layer_id=40110&selektieren=false"><img src="kvwmap/graphics/zoom_highlight.png" width=20 title="Zoom auf Objekt und Obhekt hervorheben" border=0></a> <a href="https://geoport-lk-mse.de/kvwmap/index.php?go=zoomtoPolygon&oid=',$bd[$v][oid],'&layer_tablename=baudenkmale&layer_columnname=the_geom&layer_id=40110&selektieren=zoomonly"><img src="kvwmap/graphics/zoom_normal.png" width=20 title="Zoom auf Objekt" border=0></a> <a href="https://geoport-lk-mse.de/kvwmap/index.php?go=zoomtoPolygon&oid=',$bd[$v][oid],'&layer_tablename=baudenkmale&layer_columnname=the_geom&layer_id=40110&selektieren=true"><img src="kvwmap/graphics/zoom_select.png" width=20 title="Zoom auf Objekt" border=0></a> <a href="https://geoport-lk-mse.de/kvwmap/index.php?Stelle_ID=322&go=Layer-Suche_Suchen&operator_gid==&selected_layer_id=40110&value_gid=',$bd[$v][gid],'"><img src="kvwmap/graphics/button_ansicht.png" width=20 title="Objekt bearbeiten" border=0></a></td>';
-	    echo "<td align=center>",$bd[$v][kuerzel],"</td>";
-		echo '<td align=center>',$bd[$v][nr],'</td>';
-		echo "<td align=center>",$bd[$v][lfdnr],"</td>
-	    <td align=center>",$bd[$v][obj],"</td>
-	    <td align=center>",$bd[$v][ort],"</td>
-	    <td align=center>",$bd[$v][strasse],"</td>
-	    <td align=center>",$bd[$v][typ],"</td>
+	    echo "<td align=center>",$bd[$v]["kuerzel"],"</td>";
+		echo '<td align=center>',$bd[$v]["nr"],'</td>';
+		echo "<td align=center>",$bd[$v]["lfdnr"],"</td>
+	    <td align=center>",$bd[$v]["obj"],"</td>
+	    <td align=center>",$bd[$v]["ort"],"</td>
+	    <td align=center>",$bd[$v]["strasse"],"</td>
+	    <td align=center>",$bd[$v]["typ"],"</td>
 	     </td></tr>";
 	}
 	

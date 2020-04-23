@@ -1,6 +1,6 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 require_once ("classes/karte.class.php");
 require_once ("classes/legende_geo.class.php");
@@ -39,7 +39,7 @@ $layerid="40110";
 $ortslage_id=$_GET["ortslage"];
 $themen_id=$_GET["$get_themenname"];
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 // Ebene 1
 if ($themen_id < 1 AND $ortslage_id < 1)
@@ -48,7 +48,7 @@ if ($themen_id < 1 AND $ortslage_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	?>
 		<?php
@@ -114,9 +114,7 @@ if ($themen_id < 1 AND $ortslage_id < 1)
 										while($r = $fetcharrayp($result))
 											{
 												echo "<option ";
-												#if ($r[typ] == 'Gemeinde') echo "class=bld ";
 												echo" value=\"$r[gid]\">";
-												if ($r[typ] == 'Gemeinde') ;
 												echo "$r[ortslage]</option>\n";
 											}
 									?>
@@ -145,7 +143,7 @@ if ($themen_id < 1 AND $ortslage_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
+						<? include ("includes/meta_i_aktualitaet.php"); ?>
 						<!-- Tabelle für Legende -->
 						<td valign=bottom align=left >
 							<table class="table_legende" >
@@ -192,8 +190,8 @@ if ($ortslage_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $ortslage = $r[gem_name].', '.$r[ortsteil];
-	  $boxstring = $r[etrsbox];
+	  $ortslage = $r["gem_name"].', '.$r["ortsteil"];
+	  $boxstring = $r["etrsbox"];
 	  ?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" /> <!--   FEHLER CSS , IE7 emuliert, IE7 unterstützt CSS nicht-->
@@ -246,8 +244,8 @@ if ($ortslage_id > 0)
 									<tr>
 									<td height="auto" align="center" valign=top width=270>
 									<?
-									 echo "<h3>",$r[ortsteil],"</h3>";
-											 if ($r[typ] != 'Gemeinde') echo "Gemeinde: ",$r[gem_name];
+									 echo "<h3>",$r["ortsteil"],"</h3>";
+											 if ($r["typ"] != 'Gemeinde') echo "Gemeinde: ",$r["gem_name"];
 											 echo '<br><br><hr>','<a href="#liste">';
 											 if ($count > 0) echo $count;
 											   else echo "kein";
@@ -271,12 +269,10 @@ if ($ortslage_id > 0)
 										while($r = $fetcharrayp($result))
 											{
 												echo "<option ";
-												#if ($r[typ] == 'Gemeinde') echo "class=bld";
-												echo" value=\"$r[gid]\"";
-												if ($r[gid] == $ortslage_id) echo "selected";
-												echo ">";
-												if ($r[typ] == 'Gemeinde') ;
-												echo "$r[ortslage]</option>\n";
+												
+												echo ' value="',$r["gid"],'"';
+												if ($r["gid"] == $ortslage_id) echo "selected";
+												echo '>',$r["ortslage"],'</option>\n';
 											}
 									?>
 								</select>
@@ -339,13 +335,13 @@ if ($ortslage_id > 0)
 													    if ($v % 2 == 0) echo "bgcolor=$element_farbe";
 														echo ">";
 														
-													    echo "<td align=center>",$bd[$v][kuerzel],"</td>";
-														echo '<td align=center><a href=',$_SERVER["PHP_SELF"],'?',$get_themenname,'=',$bd[$v][gid],'>',$bd[$v][nr],'</a></td>';
-														echo "<td align=center>",$bd[$v][lfdnr],"</td>
-														       <td align=center>",$bd[$v][obj],"</td>
-															   <td align=center>",$bd[$v][ort],"</td>
-															   <td align=center>",$bd[$v][strasse],"</td>
-															   <td align=center>",$bd[$v][typ],"</td>
+													    echo "<td align=center>",$bd[$v]["kuerzel"],"</td>";
+														echo '<td align=center><a href=',$_SERVER["PHP_SELF"],'?',$get_themenname,'=',$bd[$v]["gid"],'>',$bd[$v]["nr"],'</a></td>';
+														echo "<td align=center>",$bd[$v]["lfdnr"],"</td>
+														       <td align=center>",$bd[$v]["obj"],"</td>
+															   <td align=center>",$bd[$v]["ort"],"</td>
+															   <td align=center>",$bd[$v]["strasse"],"</td>
+															   <td align=center>",$bd[$v]["typ"],"</td>
 														       </td></tr>";
 													}
 												?>																																				
@@ -378,24 +374,24 @@ if ($ortslage_id > 0)
 	    $ortslagen[$ortslagen_count]=$r;
 		$ortslagen_count++;
 	  }
-	  $ortslage_id=$ortslagen[1][gid];
-      $ortslage_name=$ortslagen[1][ortsteil];	  
+	  $ortslage_id=$ortslagen[1]["gid"];
+      $ortslage_name=$ortslagen[1]["ortsteil"];	  
 	   
       $query="SELECT box(a.the_geom) as etrsbox, st_astext(st_centroid(a.the_geom)) as utm,astext(st_transform(st_centroid(a.the_geom),4326)) as geo, astext(st_transform(st_centroid(a.the_geom),2398)) as s4283, astext(st_transform(st_centroid(a.the_geom),31468)) as rd83,st_perimeter(a.the_geom) as umfang, area(the_geom) as flaeche,a.gid,a.kuerzel,a.nr,a.lfdnr,a.ort,a.strasse,a.obj,a.bild,a.typ,a.oeffentlich FROM $schema.$tabelle as a WHERE a.gid='$themen_id'";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 	  
-	  $label=$r[kuerzel].'-'.$r[nr].'-'.$r[lfdnr];
-	  $bildname=$r[bild];
-	  $oeffentlich=$r[oeffentlich];
-	  $utm=$r[utm];
-	  $s4283=$r[s4283];
-	  $rd83=$r[rd83];
-	  $geo=$r[geo];
-	  $umfang=$r[umfang];
-	  $area=$r[flaeche];
-	  $boxstring = $r[etrsbox];
+	  $label=$r["kuerzel"].'-'.$r["nr"].'-'.$r["lfdnr"];
+	  $bildname=$r["bild"];
+	  $oeffentlich=$r["oeffentlich"];
+	  $utm=$r["utm"];
+	  $s4283=$r["s4283"];
+	  $rd83=$r["rd83"];
+	  $geo=$r["geo"];
+	  $umfang=$r["umfang"];
+	  $area=$r["flaeche"];
+	  $boxstring = $r["etrsbox"];
 	  
 	  $query="SELECT c.gid,a.label,a.mitarbeiter_telefon,a.mitarbeiter_fax,a.mitarbeiter_mail,a.sg_name,d.label as v_label,d.mitarbeiter_telefon as v_telefon,d.mitarbeiter_fax as v_fax,d.mitarbeiter_mail as v_mail,d.sg_name as v_sg_name FROM organisation.ma_gesamt as a, organisation.ma_gesamt as d, organisation.zustaendigkeiten as b,construction.baudenkmale as c WHERE st_within(c.the_geom,b.the_geom) AND a.mitarbeiter_id=CAST(b.mitarbeiter_id AS INTEGER) AND d.mitarbeiter_id=CAST(b.vertretung_mitarbeiter_id AS INTEGER) AND a.mitarbeiter_sg='60.1' AND d.mitarbeiter_sg='60.1' AND c.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
@@ -455,10 +451,10 @@ if ($ortslage_id > 0)
 											 for ($i=1;$i<=$ortslagen_count-1;$i++)
 											    {
 												 echo "<table border=0>
-												       <tr><td colspan=2 align=center><b>",$ortslagen[$i][ortsteil],"</td></tr>
-													   <tr><td>Gemarkung::</td><td><b>",$ortslagen[$i][gemkg],"</td></tr>
-													   <tr><td>Gemeinde:</td><td><b>",$ortslagen[$i][gemeinde],"</td></tr>
-												       <tr><td>Amt:</td><td><b>",$ortslagen[$i][amt],"</td></tr>
+												       <tr><td colspan=2 align=center><b>",$ortslagen[$i]["ortsteil"],"</td></tr>
+													   <tr><td>Gemarkung::</td><td><b>",$ortslagen[$i]["gemkg"],"</td></tr>
+													   <tr><td>Gemeinde:</td><td><b>",$ortslagen[$i]["gemeinde"],"</td></tr>
+												       <tr><td>Amt:</td><td><b>",$ortslagen[$i]["amt"],"</td></tr>
 													   
 													   
 													   
@@ -480,12 +476,11 @@ if ($ortslage_id > 0)
 										while($rx = $fetcharrayp($result))
 											{
 												echo "<option ";
-												#if ($rx[typ] == 'Gemeinde') echo "class=bld";
-												echo" value=\"$rx[gid]\"";
-												if ($rx[gid] == $ortslage_id) echo " selected";
+												
+												echo ' value="',$rx["gid"],'"';
+												if ($rx["gid"] == $ortslage_id) echo " selected";
 												echo ">";
-												if ($rx[typ] == 'Gemeinde');
-												echo "$rx[ortslage]</option>\n";
+												echo $rx["ortslage"],'</option>\n';
 											}
 									?>
 								</select>
@@ -532,7 +527,7 @@ if ($ortslage_id > 0)
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Ort:</td>
-											<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r[ort] ;?></b></td>												
+											<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r["ort"] ;?></b></td>												
 											<?											
 												$bildname1 = explode("&",$bildname);
 												$bildname2 = $bildname1[0];
@@ -550,33 +545,33 @@ if ($ortslage_id > 0)
 										</tr>
 										<tr>
 											<td>Straße:</td>
-											<td><b><? echo $r[strasse] ;?></b></td>																									
+											<td><b><? echo $r["strasse"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Objekt:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[obj] ;?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["obj"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td>Typ:</td>
-											<td><b><? echo $r[typ] ;?></b></td>																									
+											<td><b><? echo $r["typ"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Region:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[kuerzel] ;?></b></td>																										
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["kuerzel"] ;?></b></td>																										
 										</tr>
 										<tr>
 											<td>Nummer:</td>
-											<td><b><? echo $r[nr] ;?></b></td>																									
+											<td><b><? echo $r["nr"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>laufende Nummer:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[lfdnr] ;?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["lfdnr"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td valign=top>Kontakt:</td>
-											<td><b><? echo $ma[label],"<br>",$ma[sg_name],"<br>Telefon: ",$ma[mitarbeiter_telefon],"<br>Fax: ",$ma[mitarbeiter_fax],"<br>E-Mail: <a href=mailto:",$ma[mitarbeiter_mail],">",$ma[mitarbeiter_mail];?></a>
+											<td><b><? echo $ma["label"],"<br>",$ma["sg_name"],"<br>Telefon: ",$ma["mitarbeiter_telefon"],"<br>Fax: ",$ma["mitarbeiter_fax"],"<br>E-Mail: <a href=mailto:",$ma["mitarbeiter_mail"],">",$ma["mitarbeiter_mail"];?></a>
 											<br><br><small>Vertretung:</small><br>
-											<? echo $ma[v_label],"<br>",$ma[v_sg_name],"<br>Telefon: ",$ma[v_telefon],"<br>Fax: ",$ma[v_fax],"<br>E-Mail: <a href=mailto:",$ma[v_mail],">",$ma[v_mail];?></a></b></td>																									
+											<? echo $ma["v_label"],"<br>",$ma["v_sg_name"],"<br>Telefon: ",$ma["v_telefon"],"<br>Fax: ",$ma["v_fax"],"<br>E-Mail: <a href=mailto:",$ma["v_mail"],">",$ma["v_mail"];?></a></b></td>																									
 										</tr>										
 									</table>
 							</td>									
