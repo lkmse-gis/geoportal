@@ -1,6 +1,6 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 
 //globale Varibalen
@@ -16,7 +16,7 @@ $leg_bild="bibo.gif";
 $gemeinde_id=$_GET["gemeinde"];
 $themen_id=$_GET["$get_themenname"];
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 if ($themen_id < 1)
     { 
@@ -24,7 +24,7 @@ if ($themen_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	
 	?>
@@ -60,9 +60,19 @@ if ($themen_id < 1)
 			</div>
 			<div id="wrapper">
 				<div id="content">
-					<table width="100%" border=0 cellpadding="0" align="center" cellspacing="0">
-						<? include ("includes/count_map.php"); ?>		
-						<tr>
+				<table width="100%" border=0 cellpadding="0" align="center" cellspacing="0">
+				<tr>							
+		          <td width="30%" align="center" valign="top" height=30><br>
+			   <h3><?php echo $titel,'*';?></h3>
+				Zu diesem Thema befinden sich<br>
+				<b><?php echo $count; ?> </b> Datens&auml;tze in der Datenbank.
+		          </td>
+		          <td rowspan=8 width="5%"></td>
+		         <td width="75%" border=0 valign=top rowspan=7 colspan=3>
+			    	<div style="margin:1px" id="map"></div>
+		         </td>
+	           </tr> 		
+			   <tr>
 							<td align="center" height=50 colspan=2>
 								<? echo $titel; ?> ausw&auml;hlen:
 							</td>
@@ -84,7 +94,7 @@ if ($themen_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
+						<? include ("includes/meta_i_aktualitaet.php"); ?>
 						<? include ("includes/block_1_1_legende.php"); ?>
 						<? include ("includes/block_1_1_uk.php"); ?>							
 					</table>
@@ -108,25 +118,25 @@ if ($themen_id > 0)
 	  $query="SELECT a.amt, a.amt_id, a.gemeinde, a.gem_schl as gemeindeid, b.bezeichnung, b.gid FROM gemeinden as a, $schema.$tabelle as b WHERE ST_WITHIN(st_transform(b.wkb_geometry,2398), a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $amtname=$r[amt];
-	  $amt=$r[amt_id];
-	  $gem_id=$r[gemeindeid];
-	  $gemeindename=$r[gemeinde];
+	  $amtname=$r["amt"];
+	  $amt=$r["amt_id"];
+	  $gem_id=$r["gemeindeid"];
+	  $gemeindename=$r["gemeinde"];
 	  
 	  $query="SELECT astext(wkb_geometry) as utm, astext(st_transform(wkb_geometry,2398)) as gk4283,astext(st_transform(wkb_geometry, 4326)) as geo,astext(st_transform(wkb_geometry, 31468)) as rd83, * FROM $schema.$tabelle WHERE gid='$themen_id'";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $bildname=$r[bild];
-	  $oeffentlich=$r[oeffentlich];
-	  $adresse=$r[geoportal_anschrift];
+	  $bildname=$r["bild"];
+	  $oeffentlich=$r["oeffentlich"];
+	  $adresse=$r["geoportal_anschrift"];
 	  $adresse1 = explode(";",$adresse);
 	  $anschrift = $adresse1[0]."<br>".$adresse1[1]."<br>".$adresse1[2];
 	 
-	  $s4283 = $r[gk4283];
-	  $geo=$r[geo];
-	  $rd83=$r[rd83];
-	  $utm=$r[utm];
+	  $s4283 = $r["gk4283"];
+	  $geo=$r["geo"];
+	  $rd83=$r["rd83"];
+	  $utm=$r["utm"];
 	  $lon = get_utmcoordinates_lon($utm);
 	  $lat=get_utmcoordinates_lat($utm);
 	  
@@ -168,7 +178,7 @@ if ($themen_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=270 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[bezeichnung]; ?><? echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?><? echo $r["bezeichnung"]; ?><? echo $font_farbe_end ;?>
 										</td>
 										<td width=10 rowspan="6"></td>
 										<td border=0 valign=top align=left rowspan="5" colspan=3>
@@ -183,7 +193,7 @@ if ($themen_id > 0)
 									<tr>
 										<td align="center" height="35" colspan="2">
 											<form action="<? echo $scriptname;?>" method="get" name="<? echo $get_themenname;?>">
-												Stadt:&nbsp;
+												andere Bibliothek auswählen:&nbsp;
 												<select name="<? echo $get_themenname;?>" onchange="document.<? echo $get_themenname;?>.submit();">
 													<?php
 														$query="SELECT a.bezeichnung, a.gid FROM $schema.$tabelle as a ORDER BY a.bezeichnung";
@@ -191,7 +201,7 @@ if ($themen_id > 0)
 													
 														while($e = $fetcharrayp($result))
 															{
-																echo "<option";if ($themen_id == $e[gid]) echo " selected"; echo " value=\"$e[gid]\"  title=\"$e[bezeichnung]\">$e[bezeichnung]</option>\n";															}
+																echo "<option";if ($themen_id == $e["gid"]) echo " selected"; echo ' value="',$e["gid"],'"  title="',$e["bezeichnung"],'">',$e["bezeichnung"],'</option>\n';															}
 													?>
 												</select>
 											</form>
@@ -211,7 +221,7 @@ if ($themen_id > 0)
 								<td valign=top>											
 									<table border=0 valign=top>
 										<tr height="35">
-											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[bezeichnung] ;?><? echo $font_farbe_end ;?></td>													
+											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r["bezeichnung"] ;?><? echo $font_farbe_end ;?></td>													
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Anschrift:</td>
@@ -235,20 +245,20 @@ if ($themen_id > 0)
 											<td>Telefon:</td>
 											<td><b>
 											<? 
-												if ($r[telefon] == "") echo "<font color=red>keine Telefonnummer vorhanden</font>";
-												else echo $r[telefon];
+												if ($r["telefon"] == "") echo "<font color=red>keine Telefonnummer vorhanden</font>";
+												else echo $r["telefon"];
 											?></b></td>
 										</tr>	
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Fax:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[fax] ;?></b></td>												
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["fax"] ;?></b></td>												
 										</tr>									
 										<tr>
 											<td>E-Mail:</td>
 											<td><b>
 												<? 
-													if ($r[e_mail] == "") echo "<font color=red>keine E-Mail Adresse vorhanden</font>";
-													else echo "<a href='mailto:$r[e_mail]'>$r[e_mail]</a>";
+													if ($r["e_mail"] == "") echo "<font color=red>keine E-Mail Adresse vorhanden</font>";
+													else echo '<a href="mailto:',$r["e_mail"],'">',$r["e_mail"],'</a>';
 												?></b>
 											</td>												
 										</tr>
@@ -256,8 +266,8 @@ if ($themen_id > 0)
 											<td bgcolor=<? echo $element_farbe ?>>Homepage:</td>
 											<td bgcolor=<? echo $element_farbe ?>><b>
 												<? 
-													if ($r[homepage] == "") echo "<font color=red>keine Homepage vorhanden</font>";
-													else echo "<a href='$r[homepage]' target=_blank>Homepage</a>";
+													if ($r["homepage"] == "") echo "<font color=red>keine Homepage vorhanden</font>";
+													else echo '<a href="',$r["homepage"],'" target=_blank>Homepage</a>';
 												?></b>
 											</td>												
 										</tr>																											
