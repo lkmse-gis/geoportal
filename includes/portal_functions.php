@@ -323,8 +323,8 @@ function get_ortsteil_name($ortsteil_id,$connectp,$dbqueryp,$fetcharrayp)
  $query="SELECT ortsteil,gem_name FROM management.ot_lt_rka WHERE gid='$ortsteil_id'";
  $result = $dbqueryp($connectp,$query);
  $r = $fetcharrayp($result);
- $ortsteilname=$r[ortsteil];
- if (strlen($r[gem_name]) > 0) $ortsteilname=$ortsteilname."(".$r[gem_name].")";
+ $ortsteilname=$r["ortsteil"];
+ if (strlen($r["gem_name"]) > 0) $ortsteilname=$ortsteilname."(".$r["gem_name"].")";
  return $ortsteilname;
  }
 
@@ -338,19 +338,6 @@ function get_bild_name($bildname)
    return $bild;
   }
    
-function write_log($db_link,$log_thema_id)
- {
-  $ip=getenv('REMOTE_ADDR');
-  $uri=getenv('REQUEST_URI');
-  $browser_name=$_SERVER['HTTP_USER_AGENT'];
-  
-  $query="INSERT INTO u_consume_geoportal (time_id,log_ip,log_thema_id,request_uri,browser_name) VALUES (now(),'$ip','$log_thema_id','$uri','$browser_name')";
-    
-  mysql_query($query) OR DIE ("Der Eintrag konnte nicht angelegt werden...");
-    
-    
-  return true;
- }
 
 
 function write_i_log($db_link,$log_thema_id)
@@ -544,7 +531,7 @@ function div_navigation()
 						<table border="0" align="left">
 							<tr>
 								<td>
-									<script type="text/javascript" language="JavaScript1.2" src="menu_msp_i.js"></script>
+									<script type="text/javascript" language="JavaScript1.2" src="menu_mse_geoportal.js"></script>
 								</td>
 							</tr>
 						</table>

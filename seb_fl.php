@@ -3,7 +3,7 @@
 // Datum: 2017-04-12
 //
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 //           ("includes/karte_seb.php")
 require_once ("classes/legende_geo.class.php");
@@ -44,7 +44,7 @@ $ortsteil_id=$_GET["ortsteil"];
 $ortsteil_notiz=$_GET["ot"];
 $anzahl_bereiche=$_GET["cb"];
 $themen_id=$_GET["$get_themenname"];
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 // Ebene 1
 if (!isset($ortsteil_id) AND !isset($themen_id))
@@ -52,7 +52,7 @@ if (!isset($ortsteil_id) AND !isset($themen_id))
         $query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle WHERE schultyp='$v_schultyp' AND stichtag='$v_stichtag'";
         $result = $dbqueryp($connectp,$query);
         $r = $fetcharrayp($result);
-        $count = $r[anzahl];
+        $count = $r["anzahl"];
 		$box=$box_mse_gesamt;
 ?>
    
@@ -109,7 +109,7 @@ if (!isset($ortsteil_id) AND !isset($themen_id))
                                 </form>
                             </td>
                         </tr>                            
-                        <? include ("includes/meta_aktualitaet.php"); ?>
+                        <? include ("includes/meta_i_aktualitaet.php"); ?>
                         <tr>
 									<!-- Tabelle für Legende -->
 										<td valign=bottom align=right>
@@ -147,24 +147,24 @@ if ($ortsteil_id > 0)
         $result=$dbqueryp($connectp,$query);
         $count=0;
         
-        while($r=$fetcharrayp($result))
+       while($r=$fetcharrayp($result))
          {
-           $seb[$count][v_gid]=$r[gid];
-           $seb[$count][bereich]=$r[bereich];
-           $seb[$count][ortsteil]=$r[ortsteil];
-           $seb[$count][schul_id]=$r[schul_id];
-           $seb[$count][gemschl]=$r[gemschl];
-           $seb[$count][gem_name]=$r[gem_name];
-           $seb[$count][gemkg]=$r[gemkg];
-           $seb[$count][gemkg_schl]=$r[gemkg_schl];   
+           $seb[$count]["v_gid"]=$r["gid"];
+           $seb[$count]["bereich"]=$r["bereich"];
+           $seb[$count]["ortsteil"]=$r["ortsteil"];
+           $seb[$count]["schul_id"]=$r["schul_id"];
+           $seb[$count]["gemschl"]=$r["gemschl"];
+           $seb[$count]["gem_name"]=$r["gem_name"];
+           $seb[$count]["gemkg"]=$r["gemkg"];
+           $seb[$count]["gemkg_schl"]=$r["gemkg_schl"];   
            $count++;
           }
       
-      $v_ortsteil = $seb[0][gemkg];
-      $v_gem_name = $seb[0][gem_name];
-      $v_gemkg = $seb[0][gemkg];
-      $v_gemkg_schl = $seb[0][gemkg_schl];
-      
+      $v_ortsteil = $seb[0]["gemkg"];
+      $v_gem_name = $seb[0]["gem_name"];
+      $v_gemkg = $seb[0]["gemkg"];
+      $v_gemkg_schl = $seb[0]["gemkg_schl"];
+       
        
     if ($count > 1)
         {
@@ -174,12 +174,12 @@ if ($ortsteil_id > 0)
       $result = $dbqueryp($connectp,$query);
       
       $r = $fetcharrayp($result);
-      $v_ortsteil = $r[ortsteil];
-      $v_gem_name = $r[gem_name];
-      $v_gemkg = $r[gemkg];
-      $v_gemkg_schl = $r[gemkg_schl];
+      $v_ortsteil = $r["ortsteil"];
+      $v_gem_name = $r["gem_name"];
+      $v_gemkg = $r["gemkg"];
+      $v_gemkg_schl = $r["gemkg_schl"];
 
-      $box=$r[box];
+      $box=$r["box"];
       
         ?>
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -276,8 +276,8 @@ if ($ortsteil_id > 0)
                                     <?php for ($i=0;$i<$count;$i++)
                                         {
                                         echo '<tr bgcolor=',get_farbe($i+1),'>
-                                          <td align=center height=30><a href="',$_SERVER["PHP_SELF"],'?',$get_themenname,'=',$seb[$i][v_gid],'&ot=',$ortsteil_id,'&cb=',$count,'">',$seb[$i][bereich],'</a></td>
-                                          <td align=center>',$seb[$i][ortsteil],'</td>
+                                          <td align=center height=30><a href="',$_SERVER["PHP_SELF"],'?',$get_themenname,'=',$seb[$i]["v_gid"],'&ot=',$ortsteil_id,'&cb=',$count,'">',$seb[$i]["bereich"],'</a></td>
+                                          <td align=center>',$seb[$i]["ortsteil"],'</td>
                                         </tr>';
                                         
                                         }
@@ -303,7 +303,7 @@ if ($ortsteil_id > 0)
         }
     else
         {
-            $v_gid = $seb[0][v_gid];
+            $v_gid = $seb[0]["v_gid"];
             echo "<head> <meta http-equiv=\"refresh\" content=\"0; URL=",$_SERVER["PHP_SELF"],"?bereich=$v_gid&ot=$ortsteil_id&cb=1\">
             </head>";
         }
@@ -312,26 +312,26 @@ if ($ortsteil_id > 0)
 // Ebene 3
 if ($themen_id > 0)
    { 
-$query="SELECT astext(b.wkb_geometry) as utm, astext(st_transform(b.wkb_geometry,2398)) as gk4283,astext(st_transform(b.wkb_geometry, 4326)) as geo,astext(st_transform(b.wkb_geometry, 31468)) as  rd83, b.oid, b.gid, b.gml_id, b.stichtag, b.schul_id, b.kvwmap_anschrift, b.bezeichnung, b.ortsteil, b.schularten, b.gkz, b.tel, b.fax, b.mail, b.internet, b.profile, b.schulleiter, b.schultraeger, b.adressschluessel AS fa_adressschluessel, b.klassifizierung_schulen, b.schultyp, b.isced_level, b.bild, b.geoportal_anschrift, b.kreis_name, b.kreisschluessel, b.gem_schl, b.gemeinde_name, a.bereich, b.wkb_geometry FROM $schema.$tabelle as a, geoportal.geoportal_schulen_2016 as b WHERE ST_WITHIN(b.wkb_geometry,a.the_geom) AND a.gid = '$themen_id' AND schularten LIKE '%FöL%'";
+$query="SELECT astext(b.wkb_geometry) as utm, astext(st_transform(b.wkb_geometry,2398)) as gk4283,astext(st_transform(b.wkb_geometry, 4326)) as geo,astext(st_transform(b.wkb_geometry, 31468)) as  rd83, b.oid, b.gid, b.gml_id, b.stichtag, b.schul_id, b.kvwmap_anschrift, b.bezeichnung, b.ortsteil, b.schularten, b.gkz, b.tel, b.fax, b.mail, b.internet, b.profile, b.schulleiter, b.schultraeger, b.adressschluessel AS fa_adressschluessel, b.klassifizierung_schulen, b.schultyp, b.isced_level, b.bild, b.geoportal_anschrift, b.kreis_name, b.kreisschluessel, b.gem_schl, b.gemeinde_name, a.bereich, b.wkb_geometry FROM $schema.$tabelle as a, geoportal.geoportal_schulen_aktuell as b WHERE ST_WITHIN(b.wkb_geometry,a.the_geom) AND a.gid = '$themen_id' AND schularten LIKE '%FöL%'";
 
     $result = $dbqueryp($connectp,$query);
     $r = $fetcharrayp($result);
  // var_dump($r);     
  
-    $bildname=$r[bild];
-    $oeffentlich=$r[oeffentlich];
-    $ortsteil = $r[ortsteil];
-    $gem_schl = $r[gem_schl];
-    $v_ortsteil = $r[ortsteil];
-    $v_bereich = $r[bereich];
-    $v_bezeichnung = $r[bezeichnung];
-    $v_gem_name = $r[gemeinde_name];
-    $v_gemkg = $r[gemkg];
+    $bildname=$r["bild"];
+    $oeffentlich=$r["oeffentlich"];
+    $ortsteil = $r["ortsteil"];
+    $gem_schl = $r["gem_schl"];
+    $v_ortsteil = $r["ortsteil"];
+    $v_bereich = $r["bereich"];
+    $v_bezeichnung = $r["bezeichnung"];
+    $v_gem_name = $r["gemeinde_name"];
+    $v_gemkg = $r["gemkg"];
 
-    $s4283 = $r[gk4283];
-    $geo=$r[geo];
-    $rd83=$r[rd83];
-    $utm=$r[utm];
+    $s4283 = $r["gk4283"];
+    $geo=$r["geo"];
+    $rd83=$r["rd83"];
+    $utm=$r["utm"];
  
  
  
@@ -339,33 +339,23 @@ $query="SELECT astext(b.wkb_geometry) as utm, astext(st_transform(b.wkb_geometry
     $result = $dbqueryp($connectp,$query);
     while($r=$fetcharrayp($result))
     {
-       $seb[$count3][gid]=$r[gid];
-       $seb[$count3][anschrift]=$r[geoportal_anschrift];
-       $seb[$count3][bezeichnung]=$r[bezeichnung];
-       $seb[$count3][schultraeger]=$r[schultraeger];
-       $seb[$count3][tel]=$r[tel];
-       $seb[$count3][fax]=$r[fax];
-       $seb[$count3][mail]=$r[mail];
-       $seb[$count3][schulleiter]=$r[schulleiter];
+       $seb[$count3]["gid"]=$r["gid"];
+       $seb[$count3]["anschrift"]=$r["geoportal_anschrift"];
+       $seb[$count3]["bezeichnung"]=$r["bezeichnung"];
+       $seb[$count3]["schultraeger"]=$r["schultraeger"];
+       $seb[$count3]["tel"]=$r["tel"];
+       $seb[$count3]["fax"]=$r["fax"];
+       $seb[$count3]["mail"]=$r["mail"];
+       $seb[$count3]["schulleiter"]=$r["schulleiter"];
        
        $count3++;
     }          
-    if ($count3 < 2)
-    {
-       $gid = $seb[0][gid];
-       $anschrift = $seb[0][anschrift];
-       $schultraeger = $seb[0][schultraeger];
-       $tel = $seb[0][tel];
-       $fax = $seb[0][fax];
-       $mail = $seb[0][mail];
-       $schulleiter = $seb[0][schulleiter];
-    }
      
      $query="SELECT box(the_geom) as etrsbox, st_astext(st_centroid(the_geom)) as etrscenter, box(the_geom) as box, area(the_geom) as area, st_astext(st_centroid(the_geom)) as center, gid, bereich FROM $schema.$tabelle WHERE gid='$themen_id'";
       $result = $dbqueryp($connectp,$query);
       $r = $fetcharrayp($result);
 
-      $box=$r[box];
+      $box=$r["box"];
 
 	  ?>
  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -452,93 +442,6 @@ $query="SELECT astext(b.wkb_geometry) as utm, astext(st_transform(b.wkb_geometry
                     <table width="100%" border="0" cellpadding="0" align="center" cellspacing="0">
                         <tr>
                             <td border=0 valign=top>
-                            <?
-                            if ($count3 < 2)
-								{
-								?>
-                                <table  height="35" border=0 valign=top>
-                                    <?
-                                      $bildname1 = explode("&",$bildname);
-                                      $bildname2 = $bildname1[0];
-                                      $bildname3 = explode("/",$bildname2);
-                                      $bild="pictures/".$bildname3[5]."/".$bildname3[6];
-                                    ?>
-                                    <? if (file_exists($bild) AND strlen($bildname3[6]) > 1)
-                                        {
-                                        $spaltenanzahl=3;
-                                        }
-                                        else
-                                    {
-                                        $spaltenanzahl=2;
-                                    }
-                                    ?>
-                                    <tr height="35">
-                                        <td colspan=<? echo $spaltenanzahl ?> width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo 'zuständige Schule: ',$v_bezeichnung; echo $font_farbe_end ;?></td>
-                                    </tr> 
-                                    <!-- Zähler für Farben! -->
-                                    <?
-                                     $i=0;
-                                    ?>   
-                                    <tr height="35" bgcolor="<? echo get_farbe($i)?>">
-                                        <td>Anschrift:</td>
-                                        <td width="100%"><b><?echo $anschrift ;?></b></td>
-                                        <?  if ($spaltenanzahl == 3 OR $oeffentlich == 'ja')
-                                            {
-                                            echo "<td valign=top align=right rowspan=9 width=420><a href=$bild target='_blank' onclick='return popup(this.href);'><img height='235' src=$bild </a></td>";
-                                            }
-                                        $i++;
-                                        ?>    
-                                    </tr>
-                                    <? if ($mail <> ''){?>
-                                        <tr height="35" bgcolor=<? echo get_farbe($i)?>>
-                                            <td>Schulleiter:</td>
-                                            <td><b><?echo $schulleiter ;?></b></td>
-                                        </tr> 
-                                        <?
-                                        }
-                                        $i++;
-                                        ?>     
-                                    <? if ($mail <> ''){ ?>
-                                        <tr height="35" bgcolor=<? echo get_farbe($i)?>>
-                                            <td>Telefon:</td>
-                                            <td><b><?echo $tel ;?></b></td>
-                                        </tr>
-                                        <?
-                                        }
-                                        $i++;
-                                        ?>                                                                                                                        
-                                    <? if ($fax <> '') { ?>
-                                        <tr height="35" bgcolor=<? echo get_farbe($i)?>>
-                                            <td>Faxnummer:</td>
-                                            <td><b><? echo $fax ;?></b></td>
-                                        </tr>
-                                        <?
-                                        }
-                                        $i++;
-                                        ?>
-                                    <? if ($mail <> '') { ?>
-                                        <tr height="35" bgcolor=<?echo get_farbe($i)?>>
-                                            <td>E-Mail:</td>
-                                            <td><b><a href="mailto:<?echo $mail ;?>" target=blank><?echo $mail ;?></a></b></td>
-                                        </tr>
-                                        <?
-                                        }
-                                        $i++;
-                                        ?>
-                                    <? if ($schultraeger <> ''){ ?>
-                                        <tr height="35" bgcolor=<?echo get_farbe($i)?>>
-                                            <td>Schulträger:</td>
-                                            <td><b><?echo $schultraeger ;?></b></td>
-                                        </tr>
-                                        <?
-                                        }
-                                        ?>
-                                </table>
-                              <?
-                                } 
-                            else
-                                {
-								?>
 								<table border=0 valign=top>
 									<tr height="35">
 										<td colspan=6 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><?php echo $count3; ?> Schulstandorte im Schuleinzugsbereich: <? echo $v_bereich; echo $font_farbe_end ;?></td>
@@ -554,27 +457,19 @@ $query="SELECT astext(b.wkb_geometry) as utm, astext(st_transform(b.wkb_geometry
 									<?php for ($i=0;$i<$count3;$i++)
 									{
 									echo "<tr bgcolor=",get_farbe($i+1),">
-										<td height='30'><a href=\"schulen_2016.php?schule=",$seb[$i][gid],"\">",$seb[$i][bezeichnung],"</a></td>","
-										<td>",$seb[$i][schultraeger],"</td>
-										<td>",$seb[$i][anschrift],"</td>
-										<td>",$seb[$i][schulleiter],"</td>
-										<td>",$seb[$i][tel],"</td>
-										<td>",$seb[$i][mail],"</td>
+										<td height='30'><a href=\"schulen.php?schule=",$seb[$i]["gid"],"\">",$seb[$i]["bezeichnung"],"</a></td>","
+										<td>",$seb[$i]["schultraeger"],"</td>
+										<td>",$seb[$i]["anschrift"],"</td>
+										<td>",$seb[$i]["schulleiter"],"</td>
+										<td>",$seb[$i]["tel"],"</td>
+										<td>",$seb[$i]["mail"],"</td>
 									</tr>";
 									}
 									?>
 								</table>
-								<?
-								}
-								?>
+								
 							</td>
-							<?
-							if ($count3 < 2)
-                              {
-								?><td valign=top align=center width="250">
-								<? include("includes/geo_point_25833.php"); ?>    
-							 	</td>
-							<?} ?>
+							
                         </tr>
                     </table>
                 </div>
