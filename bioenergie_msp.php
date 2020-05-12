@@ -1,6 +1,6 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 
 //globale Varibalen
@@ -12,7 +12,7 @@ $tabelle="geoportal_bioenergieanlagen";
 $kuerzel="bioenergieanlage";
 $layerid="32220";
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 $gemeinde_id=$_GET["gemeinde"];
 $bioenergieanlagen_id=$_GET["$kuerzel"];
@@ -24,7 +24,7 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	
 	?>
@@ -84,7 +84,7 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
+						<? include ("includes/meta_i_aktualitaet.php"); ?>
 								<tr>
 									<td valign=bottom align=right>
 										<!-- Tabelle für Legende -->											
@@ -138,14 +138,14 @@ if ($gemeinde_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemeindename = $r[name];
-	  $zentrum = $r[etrscenter];
+	  $gemeindename = $r["name"];
+	  $zentrum = $r["etrscenter"];
 	  $zentrum2 = trim($zentrum,"POINT(");
 	  $zentrum3 = trim($zentrum2,")");
 	  $zentrum4 = explode(" ",$zentrum3);
 	  $rcenter = $zentrum4[0];
 	  $hcenter = $zentrum4[1];
-	  $boxstring = $r[etrsbox];
+	  $boxstring = $r["etrsbox"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -221,7 +221,7 @@ if ($gemeinde_id > 0)
 
 														while($r = $fetcharrayp($result))
 															{
-																echo "<option";if ($gemeinde_id == $r[gem_schl]) echo " selected"; echo " value=\"$r[gem_schl]\">$r[gemeinde]</option>\n";
+																echo "<option";if ($gemeinde_id == $r["gem_schl"]) echo " selected"; echo ' value="',$r["gem_schl"],'">',$r["gemeinde"],'</option>\n"';
 															}
 													?>
 												</select>
@@ -270,8 +270,8 @@ if ($gemeinde_id > 0)
 									</tr>																
 									<?php for($v=0;$v<$z;$v++)
 										{ 
-											echo "<tr bgcolor=",get_farbe($v),"><td>&nbsp;<a href=\"$datei?$kuerzel=",$bioenergieanlage[$v][gid],"\">",$bioenergieanlage[$v][bst_ort],"</a></td>",
-											"<td>",$bioenergieanlage[$v][anlagenbez],"</td></tr>";											
+											echo "<tr bgcolor=",get_farbe($v),"><td>&nbsp;<a href=\"$datei?$kuerzel=",$bioenergieanlage[$v]["gid"],"\">",$bioenergieanlage[$v]["bst_ort"],"</a></td>",
+											"<td>",$bioenergieanlage[$v]["anlagenbez"],"</td></tr>";											
 										}
 									?>																																				
 								</table>
@@ -298,25 +298,25 @@ if ($themen_id > 0)
 	  $query="SELECT a.amt, a.amt_id, a.gemeinde, a.gem_schl as gemeindeid, b.gid as schulid FROM gemeinden as a, $schema.$tabelle as b WHERE ST_WITHIN(st_transform(b.geom,2398),a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $amtname=$r[amt];
-	  $amt=$r[amt_id];
-	  $gem_id=$r[gemeindeid];
-	  $gemeindename=$r[gemeinde];
+	  $amtname=$r["amt"];
+	  $amt=$r["amt_id"];
+	  $gem_id=$r["gemeindeid"];
+	  $gemeindename=$r["gemeinde"];
 	  
 	  $query="SELECT astext(st_transform(geom,2398)) as koordinaten, astext(st_transform(geom, 25833)) as utm,  st_astext(st_centroid(st_transform(geom, 31468))) as rd83, astext(st_transform(geom, 4326)) as geo,oid,gid,bst_ort,anlagenbez,anl4bimsch,leistungsb,leistungse,inbetriebn,altanlagen,hochwert,rechtswert,anlagensta,fid,stichtag,geom FROM $schema.$tabelle WHERE gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $name = $r[anlagenbez];
-	  $bildname=$r[bild];
-	  $oeffentlich=$r[oeffentlich];
-	  $id = $r[gid];
-	  $koord = $r[koordinaten];
+	  $name = $r["anlagenbez"];
+	  $bildname=$r["bild"];
+	  $oeffentlich=$r["oeffentlich"];
+	  $id = $r["gid"];
+	  $koord = $r["koordinaten"];
 	  $koord2 = trim($koord,"POINT(");
 	  $koord3 = trim($koord2,")");
 	  $koord4 = explode(" ",$koord3);
-	  $rd83 = $r[rd83];
-	  $utm = $r[utm];
-	  $geo = $r[geo];
+	  $rd83 = $r["rd83"];
+	  $utm = $r["utm"];
+	  $geo = $r["geo"];
 	  $lon = $koord4[0];
 	  $lon1 = explode(".",$koord4[0]);
 	  $lon2 = $lon1[0];
@@ -361,7 +361,7 @@ if ($themen_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=250 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[anlagenbez]; ?><? echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?><? echo $r["anlagenbez"]; ?><? echo $font_farbe_end ;?>
 										</td>
 										<td width=10 rowspan="7"></td>
 										<td border=0 valign=top align=left rowspan="6" colspan=3>
@@ -384,7 +384,7 @@ if ($themen_id > 0)
 
 														while($e = $fetcharrayp($result))
 															{
-																echo "<option";if ($gem_id == $e[gem_schl]) echo " selected"; echo " value=\"$e[gem_schl]\">$e[gemeinde]</option>\n";
+																echo "<option";if ($gem_id == $e["gem_schl"]) echo " selected"; echo ' value="',$e["gem_schl"],'">',$e["gemeinde"],'</option>\n"';
 															}
 													?>
 												</select>
@@ -426,11 +426,11 @@ if ($themen_id > 0)
 							<td valign=top>											
 								<table border=0 valign=top>
 									<tr height="35">
-										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<font size="+1"><? echo $font_farbe ;?><? echo $r[anlagenbez] ;?><? echo $font_farbe_end ;?></td>													
+										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<font size="+1"><? echo $font_farbe ;?><? echo $r["anlagenbez"] ;?><? echo $font_farbe_end ;?></td>													
 									</tr>
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?>>Ort:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[bst_ort] ;?></b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["bst_ort"] ;?></b></td>
 										<?											
 											$bildname1 = explode("&",$bildname);
 											$bildname2 = $bildname1[0];
@@ -448,15 +448,15 @@ if ($themen_id > 0)
 									</tr>
 									<tr>
 										<td>Schlüssel:</td>
-										<td width="300"><b><? echo $r[anl4bimsch] ;?></b></td>
+										<td width="300"><b><? echo $r["anl4bimsch"] ;?></b></td>
 									</tr>
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?>>Leistungsbeschreibung:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[leistungsb] ;?></b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["leistungsb"] ;?></b></td>
 									</tr>
 									<tr>
 										<td>Leistungseinheit:</td>
-										<td width="300"><b><? echo $r[leistungse] ;?></b></td>
+										<td width="300"><b><? echo $r["leistungse"] ;?></b></td>
 									</tr>
 								</table>
 							</td>									
