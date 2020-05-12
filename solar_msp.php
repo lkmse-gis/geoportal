@@ -151,7 +151,7 @@ if ($gemarkung_id > 0)
 	  $zentrum4 = explode(" ",$zentrum3);
 	  $rcenter = $zentrum4[0];
 	  $hcenter = $zentrum4[1];
-	  $boxstring = $r[etrsbox];
+	  $boxstring = $r["etrsbox"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
