@@ -1,6 +1,6 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 require_once ("classes/karte.class.php");
 require_once ("classes/legende_geo.class.php");
@@ -23,7 +23,7 @@ $gemarkung_id=$_GET["gemarkung"];
 $solaranlagen_id=$_GET["$kuerzel"];
 $themen_id=$solaranlagen_id;
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 if ($themen_id < 1 AND $gemarkung_id < 1)
     { 
@@ -31,7 +31,7 @@ if ($themen_id < 1 AND $gemarkung_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	?>
 		<?php
@@ -90,7 +90,7 @@ if ($themen_id < 1 AND $gemarkung_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
+						<? include ("includes/meta_i_aktualitaet.php"); ?>
 						<? // include ("includes/block_1_legende.php"); ?>
 						<!-- Tabelle für Legende -->
 								<td valign=bottom align=right>
@@ -144,8 +144,8 @@ if ($gemarkung_id > 0)
 	  $query="SELECT box(st_transform(the_geom,25833)) as etrsbox, st_astext(st_transform(st_centroid(the_geom),25833)) as etrscenter, box(a.the_geom) as box, area(a.the_geom) as area, st_astext(st_centroid(a.the_geom)) as center, a.gemarkungsname_kurz as name FROM gemarkung as a WHERE CAST(a.geographicidentifier AS INTEGER)='$gemarkung_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemarkungsname = $r[name];
-	  $zentrum = $r[etrscenter];
+	  $gemarkungsname = $r["name"];
+	  $zentrum = $r["etrscenter"];
 	  $zentrum2 = trim($zentrum,"POINT(");
 	  $zentrum3 = trim($zentrum2,")");
 	  $zentrum4 = explode(" ",$zentrum3);
@@ -232,8 +232,7 @@ if ($gemarkung_id > 0)
 
 													  while($r = $fetcharrayp($result))
 													   {
-													   echo "<option";if ($gemarkung_id == $r[gemkgschl]) echo " selected"; echo " value=\"$r[gemkgschl]\">$r[gemarkung]
-																	</option>\n";
+													   echo "<option";if ($gemarkung_id == $r["gemkgschl"]) echo " selected"; echo ' value="',$r["gemkgschl"],'">',$r["gemarkung"],'</option>\n';
 														}
 													?>
 												</select>								
@@ -285,7 +284,7 @@ if ($gemarkung_id > 0)
 												</tr>
 												<?php for($v=0;$v<$z;$v++)
 													{ 
-														$bildname = $solar[$v][bild];
+														$bildname = $solar[$v]["bild"];
 														$bildname1 = explode("&",$bildname);
 														$bildname2 = $bildname1[0];
 														$bildname3 = explode("/",$bildname2);
@@ -300,10 +299,10 @@ if ($gemarkung_id > 0)
 																echo "<td align='center'><a href=$bild target='_blank' onclick='return popup(this.href);'><img src=$bild height='30'></a></td>";
 															}
 														echo "
-														<td align='center'><a href=\"solar_msp.php?solaranlage=",$solar[$v][gid],"\">",$solar[$v][anls],"</a></td>",													
-														"<td align='center'>",$solar[$v][betreiber],"</td>",
-														"<td align='center'>",$solar[$v][plz]." ".$solar[$v][ort],"</td>",
-														"<td align='center'>",$solar[$v][strasse],"</td>",
+														<td align='center'><a href=\"solar_msp.php?solaranlage=",$solar[$v]["gid"],"\">",$solar[$v]["anls"],"</a></td>",													
+														"<td align='center'>",$solar[$v]["betreiber"],"</td>",
+														"<td align='center'>",$solar[$v]["plz"]." ".$solar[$v]["ort"],"</td>",
+														"<td align='center'>",$solar[$v]["strasse"],"</td>",
 														"</tr>";
 													}
 												?>																																															
@@ -337,8 +336,8 @@ if ($gemarkung_id > 0)
 	  $query="SELECT a.gemarkungsname_kurz, a.geographicidentifier as gemarkungid, b.gid FROM gemarkung as a, $tabelle as b WHERE ST_WITHIN(b.the_geom, a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemarkung_id=$r[gemarkungid];
-	  $gemarkungname=$r[gemarkungsname_kurz];
+	  $gemarkung_id=$r["gemarkungid"];
+	  $gemarkungname=$r["gemarkungsname_kurz"];
 
 	  $query="SELECT a.name, a.amts_sf FROM fd_amtsbereiche as a, $tabelle as b WHERE ST_WITHIN(b.the_geom, a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
@@ -350,15 +349,15 @@ if ($gemarkung_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $bildname=$r[bild];
-	  $oeffentlich=$r[oeffentlich];
-	  $koord = $r[koordinaten];
+	  $bildname=$r["bild"];
+	  $oeffentlich=$r["oeffentlich"];
+	  $koord = $r["koordinaten"];
 	  $koord2 = trim($koord,"POINT(");
 	  $koord3 = trim($koord2,")");
 	  $koord4 = explode(" ",$koord3);
-	  $rd83 = $r[rd83];
-	  $utm = $r[utm];
-	  $geo=$r[geo];
+	  $rd83 = $r["rd83"];
+	  $utm = $r["utm"];
+	  $geo=$r["geo"];
 	  $utm2 = trim($utm,"POINT(");
 	  $utm3 = trim($utm2,")");
 	  $utm4 = explode(" ",$utm3);
@@ -411,7 +410,7 @@ if ($gemarkung_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=250 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[betreiber]; ?><? echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?><? echo $r["betreiber"]; ?><? echo $font_farbe_end ;?>
 										</td>
 										<td width=10 rowspan="7"></td>
 										<td border=0 valign=top align=left rowspan="6" colspan=3>
@@ -435,8 +434,8 @@ if ($gemarkung_id > 0)
 
 													  while($e = $fetcharrayp($result))
 													   {
-													   echo "<option";if ($gemarkung_id == $e[gemkgschl]) echo " selected"; echo " value=\"$e[gemkgschl]\">$e[gemarkung]
-																	</option>\n";
+													   echo "<option";if ($gemarkung_id == $e["gemkgschl"]) echo " selected"; echo ' value="',$e["gemkgschl"],'">',$e["gemarkung"],'
+																	</option>\n';
 														}
 													?>
 												</select>
@@ -474,11 +473,11 @@ if ($gemarkung_id > 0)
 							<td valign=top>											
 								<table border=0 valign=top>
 									<tr height="35">
-										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[betreiber]."<br>&nbsp;&nbsp;Anlage: ".$r[anls]; ?><? echo $font_farbe_end ;?></td>													
+										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r["betreiber"]."<br>&nbsp;&nbsp;Anlage: ".$r["anls"]; ?><? echo $font_farbe_end ;?></td>													
 									</tr>
 									<tr height="30">
 										<td bgcolor=<? echo $element_farbe ?>>Betreiberdaten:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[betreiber]."<br>".$r[plzb]." ".$r[ortb]."<br>".$r[strasseb]."<br>E-Mail:<br><a href='mailto:".$r[mailb]."'>".$r[mailb]."</a><br>Homepage:<br><a href='http://".$r[homeb]."' target='_blank'>".$r[homeb]."</a>" ;?></b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["betreiber"]."<br>".$r["plzb"]." ".$r["ortb"]."<br>".$r["strasseb"]."<br>E-Mail:<br><a href='mailto:".$r["mailb"]."'>".$r["mailb"]."</a><br>Homepage:<br><a href='http://".$r["homeb"]."' target='_blank'>".$r["homeb"]."</a>" ;?></b></td>
 										<?											
 											$bildname1 = explode("&",$bildname);
 											$bildname2 = $bildname1[0];
@@ -496,35 +495,35 @@ if ($gemarkung_id > 0)
 									</tr>
 									<tr height="30">
 										<td>Anlagenschl&uuml;ssel:</td>
-										<td><b><? echo $r[anls] ;?></b></td>																									
+										<td><b><? echo $r["anls"] ;?></b></td>																									
 									</tr>
 									<tr height="30">
 										<td bgcolor=<? echo $element_farbe ?>>Anlagenstandort:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[plz]." ".$r[ort]."<br>".$r[strasse] ;?></b></td>									
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["plz"]." ".$r["ort"]."<br>".$r["strasse"] ;?></b></td>									
 									</tr>
 									<tr height="30">
 										<td>Spannungsebene:</td>
-										<td><b><? echo $r[spebene] ;?></b></td>																									
+										<td><b><? echo $r["spebene"] ;?></b></td>																									
 									</tr>
 									<tr height="30">
 										<td bgcolor=<? echo $element_farbe ?>>Leistung (KW):</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[kw] ;?></b></td>									
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["kw"] ;?></b></td>									
 									</tr>
 									<tr height="30">
 										<td>Leistung (KWH):</td>
-										<td><b><? echo $r[kwh] ;?></b></td>																									
+										<td><b><? echo $r["kwh"] ;?></b></td>																									
 									</tr>
 									<tr height="30">
 										<td bgcolor=<? echo $element_farbe ?>>Entstehungsjahr:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[entst] ;?></b></td>									
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["entst"] ;?></b></td>									
 									</tr>
 									<tr height="30">
 										<td>Typ:</td>
-										<td><b><? echo $r[typ] ;?></b></td>																									
+										<td><b><? echo $r["typ"] ;?></b></td>																									
 									</tr>
 									<tr height="30">
 										<td bgcolor=<? echo $element_farbe ?>>Urheber (Bild):</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[urheber] ;?></b></td>									
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["urheber"] ;?></b></td>									
 									</tr>
 								</table>
 							</td>									
