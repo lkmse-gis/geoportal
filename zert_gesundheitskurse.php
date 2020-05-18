@@ -1,6 +1,6 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 
 
@@ -16,7 +16,7 @@ $layerid="110650";
 $leg_bild="poi.png";
 $ortslage_id=$_GET["ortslage"];
 $themen_id=$_GET["$get_themenname"];
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 if ($themen_id < 1 AND $ortslage_id < 1)
     { 
@@ -24,7 +24,7 @@ if ($themen_id < 1 AND $ortslage_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	?>
 		<?php
@@ -78,9 +78,9 @@ if ($themen_id < 1 AND $ortslage_id < 1)
 										while($r = $fetcharrayp($result))
 											{
 												echo "<option ";
-												if ($r[typ] == 'Gemeinde') echo "class=bld ";
-												echo" value=\"$r[gid]\">";
-												if ($r[typ] == 'Gemeinde') ;
+												#if ($r["typ"] == 'Gemeinde') echo "class=bld ";
+												echo' value="',$r["gid"],'">';
+												
 												echo "$r[ortslage]</option>\n";
 												
 											}
@@ -91,7 +91,7 @@ if ($themen_id < 1 AND $ortslage_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
+						<? include ("includes/meta_i_aktualitaet.php"); ?>
 						<? include ("includes/block_1_1_legende.php"); ?>
 						<? include ("includes/block_1_1_uk.php"); ?>						
 					</table>
@@ -111,7 +111,7 @@ if ($themen_id < 1 AND $ortslage_id < 1)
 <?	} 
 
 
-if ($ortslage_id > 0)
+if ($ortslage_id > 0 AND !isset($themen_id))
    { 	  
 	  $query="SELECT a.* FROM $schema.$tabelle as a, management.ot_lt_rka as b WHERE ST_intersects(a.wkb_geometry,b.the_geom) AND b.gid='$ortslage_id'  ORDER BY a.kursnummer";
 	  $result = $dbqueryp($connectp,$query);
@@ -133,14 +133,14 @@ if ($ortslage_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemeindename = $r[name];
-	  $zentrum = $r[etrscenter];
+	  $gemeindename = $r["gem_name"];
+	  $zentrum = $r["etrscenter"];
 	  $zentrum2 = trim($zentrum,"POINT(");
 	  $zentrum3 = trim($zentrum2,")");
 	  $zentrum4 = explode(" ",$zentrum3);
 	  $rcenter = $zentrum4[0];
 	  $hcenter = $zentrum4[1];
-	  $boxstring = $r[etrsbox];
+	  $boxstring = $r["etrsbox"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -208,7 +208,7 @@ if ($ortslage_id > 0)
 									<tr>
 										<td align="center" height="40">
 											<form action="<? echo $_SERVER["PHP_SELF"];?>" method="get" name="ortslage">
-												Stadt:&nbsp;
+												Ort:&nbsp;
 							<select class='select_ort' name="ortslage" onchange="document.ortslage.submit();">
 								<option >Bitte auswählen</option>
 									<?php
@@ -217,11 +217,7 @@ if ($ortslage_id > 0)
 
 										while($r = $fetcharrayp($result))
 											{
-												echo "<option ";
-												if ($r[typ] == 'Gemeinde') echo "class=bld ";
-												echo" value=\"$r[gid]\">";
-												if ($r[typ] == 'Gemeinde') ;
-												echo "$r[ortslage]</option>\n";
+												echo "<option";if ($ortslage_id == $r["gid"]) echo " selected"; echo ' value="',$r["gid"],'">',$r["ortslage"],'</option>\n';
 											}
 									?>
 								</select>
@@ -258,16 +254,16 @@ if ($ortslage_id > 0)
 												</tr>												
 												<?php for($v=0;$v<$z;$v++)
 													{ 
-														$adresse=$zgkurs[$v][geoportal_anschrift];
+														$adresse=$zgkurs[$v]["geoportal_anschrift"];
 														$adresse1 = explode(";",$adresse);
 														$anschrift = $adresse1[0]."<br>".$adresse1[1]."<br>".$adresse1[2];
-														$bildname = $zgkurs[$v][bild];
+														$bildname = $zgkurs[$v]["bild"];
 														$bildname1 = explode("&",$bildname);
 														$bildname2 = $bildname1[0];
 														$bildname3 = explode("/",$bildname2);
 														$bild="pictures/".$bildname3[5]."/".$bildname3[6];
 														echo "<tr bgcolor=",get_farbe($v),">";															
-														// if(strlen($bildname) < 1 OR $zgkurs[$v][oeffentlich] == 'nein')
+														// if(strlen($bildname) < 1 OR $zgkurs[$v]["oeffentlich"] == 'nein')
 															// {
 																// echo "";	
 															// } 
@@ -276,12 +272,12 @@ if ($ortslage_id > 0)
 																// echo "<td align='center'><a href=$bild target='_blank' onclick='return popup(this.href);'><img src=$bild height='30'></a></td>";
 															// }											
 														echo "
-														<td align='center'>",$zgkurs[$v][kursnummer],"</td>
-														<td align='center' height='30'><a href=\"$scriptname?$get_themenname=",$zgkurs[$v][gid],"\">",$zgkurs[$v][bezeichnung],"</a></td>",
-														"<td align='center'>",$zgkurs[$v][anbieter],"</td>",
+														<td align='center'>",$zgkurs[$v]["kursnummer"],"</td>
+														<td align='center' height='30'><a href=\"$scriptname?$get_themenname=",$zgkurs[$v]["gid"],"&ortslage=",$ortslage_id,"\">",$zgkurs[$v]["bezeichnung"],"</a></td>",
+														"<td align='center'>",$zgkurs[$v]["anbieter"],"</td>",
 														"<td align='center'>",$anschrift,"</td>",
 														
-														"<td align='center'>",$zgkurs[$v][tel],"</td></tr>";
+														"<td align='center'>",$zgkurs[$v]["tel"],"</td></tr>";
 													}
 												?>																																				
 											</table>
@@ -314,10 +310,10 @@ if ($ortslage_id > 0)
 	  $query="SELECT a.amt, a.amt_id, a.gemeinde, a.gem_schl as gemeindeid, b.gid FROM gemeinden as a, $schema.$tabelle as b WHERE ST_WITHIN(st_transform(b.wkb_geometry,2398), a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $amtname=$r[amt];
-	  $amt=$r[amt_id];
-	  $gem_id=$r[gemeindeid];
-	  $gemeindename=$r[gemeinde];
+	  $amtname=$r["amt"];
+	  $amt=$r["amt_id"];
+	  $gem_id=$r["gemeindeid"];
+	  $gemeindename=$r["gemeinde"];
 	  
 	  
 	 
@@ -325,17 +321,17 @@ if ($ortslage_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $bildname=$r[bild];
-	  $oeffentlich=$r[oeffentlich];
-	  $adresse=$r[geoportal_anschrift];
+	  $bildname=$r["bild"];
+	  $oeffentlich=$r["oeffentlich"];
+	  $adresse=$r["geoportal_anschrift"];
 	  $adresse1 = explode(";",$adresse);
 	  $anschrift = $adresse1[0]."<br>".$adresse1[1]."<br>".$adresse1[2];
-	  $orts_id=$r[gid];
+	  $orts_id=$r["gid"];
 	  
-	  $s4283 = $r[gk4283];
-	  $geo=$r[geo];
-	  $rd83=$r[rd83];
-	  $utm=$r[utm];
+	  $s4283 = $r["gk4283"];
+	  $geo=$r["geo"];
+	  $rd83=$r["rd83"];
+	  $utm=$r["utm"];
 	  $lon = get_utmcoordinates_lon($utm);
 	  $lat=get_utmcoordinates_lat($utm);
 	  
@@ -377,7 +373,7 @@ if ($ortslage_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=270 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[bezeichnung]; ?><? echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?><? echo $r["bezeichnung"]; ?><? echo $font_farbe_end ;?>
 										</td>
 										<td width=10 rowspan="7"></td>
 										<td border=0 valign=top align=left rowspan="6" colspan=3>
@@ -392,7 +388,7 @@ if ($ortslage_id > 0)
 									<tr>
 										<td align="center" height="35" colspan="2">
 											<form action="<? echo $_SERVER["PHP_SELF"];?>" method="get" name="ortslage">
-												Stadt:&nbsp;
+												Ort:&nbsp;
 							<select class='select_ort' name="ortslage" onchange="document.ortslage.submit();">
 								<option >Bitte auswählen</option>
 									<?php
@@ -401,11 +397,7 @@ if ($ortslage_id > 0)
 
 										while($e = $fetcharrayp($result))
 											{
-												echo "<option ";
-												if ($e[typ] == 'Gemeinde') echo "class=bld ";
-												echo" value=\"$e[gid]\">";
-												if ($e[typ] == 'Gemeinde') ;
-												echo "$e[ortslage]</option>\n";
+												echo "<option";if ($ortslage_id == $e["gid"]) echo " selected"; echo ' value="',$e["gid"],'">',$e["ortslage"],'</option>\n';
 											}
 									?>
 								</select>
@@ -435,11 +427,11 @@ if ($ortslage_id > 0)
 								<td valign=top>											
 									<table border=0 valign=top>
 										<tr height="35">
-											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[bezeichnung] ;?><? echo $font_farbe_end ;?></td>													
+											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r["bezeichnung"] ;?><? echo $font_farbe_end ;?></td>													
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Kursnummer:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[kursnummer] ;?></b></td>	
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["kursnummer"] ;?></b></td>	
 											<?												
 												$bildname1 = explode("&",$bildname);
 												$bildname2 = $bildname1[0];
@@ -457,26 +449,26 @@ if ($ortslage_id > 0)
 										</tr>
 										<tr>
 											<td>Beschreibung:</td>
-											<td><b><p align="justify"><? echo $r[beschreibung] ;?></p></b></td>																																																	
+											<td><b><p align="justify"><? echo $r["beschreibung"] ;?></p></b></td>																																																	
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Umfang / Dauer:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[umfang_dauer] ;?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["umfang_dauer"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td>Zeit:</td>
-											<td><b><? echo $r[datum_zeit];?></b></td>																									
+											<td><b><? echo $r["datum_zeit"];?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Kursgebühr:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[kursgebuer] ;?> €</b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["kursgebuer"] ;?> €</b></td>																									
 										</tr>
 											<td>Kursleiter:</td>
-											<td><b><? echo $r[kursleiter] ;?></b></td>																									
+											<td><b><? echo $r["kursleiter"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Anbieter:</td>
-											<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r[anbieter];?></b></td>												
+											<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r["anbieter"];?></b></td>												
 										</tr>
 										<tr>
 											<td>Anschrift:</td>
@@ -484,19 +476,19 @@ if ($ortslage_id > 0)
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Telefon:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[tel] ;?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["tel"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td>Faxnummer:</td>
-											<td><b><? echo $r[fax] ;?></b></td>																									
+											<td><b><? echo $r["fax"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>E-Mail:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><a href="mailto:<? echo $r[mail] ;?>" target=blank><? echo $r[mail] ;?></a></b></td>																										
+											<td bgcolor=<? echo $element_farbe ?>><b><a href="mailto:<? echo $r["mail"] ;?>" target=blank><? echo $r["mail"] ;?></a></b></td>																										
 										</tr>
 										<tr>
 											<td>Homepage:</td>
-											<td><b><a href="<? echo $r[internet] ;?>" target=blank><? echo $r[internet] ;?></a></b></td>																									
+											<td><b><a href="<? echo $r["internet"] ;?>" target=blank><? echo $r["internet"] ;?></a></b></td>																									
 										</tr>																		
 									</table>
 							</td>									

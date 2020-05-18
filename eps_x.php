@@ -6,10 +6,10 @@ require_once ("classes/karte.class.php");
 require_once ("classes/legende_geo.class.php");
 
 //globale Varibalen
-$beschriftung_karte="Befallsgebiete des Eichenprozessionsspinners (2019)";
-$layername_mapfile="EPS_2019";
-$titel="Befallsgebiete des Eichenprozessionsspinners (2019)";
-$titel_plural="Befallsgebieten des Eichenprozessionsspinners (2019)";
+$beschriftung_karte="Befallsgebiete des Eichenprozessionsspinners (2020)";
+$layername_mapfile="EPS_2020";
+$titel="Befallsgebiete des Eichenprozessionsspinners (2020)";
+$titel_plural="Befallsgebieten des Eichenprozessionsspinners (2020)";
 $titel_legende="Befallsgebiet";
 $scriptname="eps_x.php";
 
@@ -20,23 +20,23 @@ $v_hoehe="490";
 // Legenden - Layer - msp.map - 2 spaltig - Standard|Themen 
 $breite1="90";
 $breite2="180";
-$layer="EPS_2019"; // beides
-$layer1="Befall_EPS_2019";
+$layer="EPS_2020"; // beides
+$layer1="Befall_EPS_2020";
 $layer2="Kreisgrenze_msp";
 $layer3="aemter_msp_outline";
 $layer4="msp_outline_gem";
 $layer5="msp_outline_gemkg";
 $layer6="Postleitzahlbereiche";
-$layer7="Befall_EPS_Punkte_2019";
+$layer7="Befall_EPS_Punkte_2020";
 $layer8="gemeinden_msp";
 $layer99="";
 
 $schema="health";
 $tabelle="befall_eps";
-$v_jahr="2019";
+$v_jahr="2020";
 
 $get_themenname="eps_area";
-$layerid="110130";
+$layerid="110160";
 //$layerid="110139";
 $leg_bild="eps_rot.png";
 $gemeinde_id=$_GET["gemeinde"];
@@ -160,8 +160,8 @@ if ($gemeinde_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemeindename = $r[name];
-	  $boxstring = $r[etrsbox];
+	  $gemeindename = $r["name"];
+	  $boxstring = $r["etrsbox"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -230,7 +230,7 @@ if ($gemeinde_id > 0)
 
 														while($r = $fetcharrayp($result))
 															{
-																echo "<option";if ($gemeinde_id == $r[gem_schl]) echo " selected"; echo " value=\"$r[gem_schl]\">$r[gemeinde]</option>\n";
+																echo "<option";if ($gemeinde_id == $r["gem_schl"]) echo " selected"; echo ' value="',$r["gem_schl"],'">',$r["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
@@ -280,19 +280,19 @@ if ($gemeinde_id > 0)
 													{   echo "<tr ";
 													    if ($v % 2 == 0) echo "bgcolor=$element_farbe";
 														echo ">";
-													    $beobachtung=$eps[$v][beobachtung];
-														$warnschilder=$eps[$v][warnschilder];
-														$entfernung_nester=$eps[$v][entfernung_nester];
-														$chemische_bekaempfung=$eps[$v][chemische_bekaempfung];
+													    $beobachtung=$eps[$v]["beobachtung"];
+														$warnschilder=$eps[$v]["warnschilder"];
+														$entfernung_nester=$eps[$v]["entfernung_nester"];
+														$chemische_bekaempfung=$eps[$v]["chemische_bekaempfung"];
 														echo
-														"<td align='center'><a href='$scriptname?$get_themenname=",$eps[$v][gid],"'>",$eps[$v][gid],"</a></td>",
+														"<td align='center'><a href='$scriptname?$get_themenname=",$eps[$v]["gid"],"'>",$eps[$v]["gid"],"</a></td>",
 														"<td align='center'>";
-														if ($beobachtung == t) echo "Beobachtung<br>";
-														if ($warnschilder == t) echo "Aufstellen von Warnschildern<br>";
-														if ($entfernung_nester == t) echo "mechanische Entfernung der Nester<br>";
-														if ($chemische_bekaempfung == t) echo "chemische Bekaempfung aus der Luft<br>";
+														if ($beobachtung == 't') echo "Beobachtung<br>";
+														if ($warnschilder == 't') echo "Aufstellen von Warnschildern<br>";
+														if ($entfernung_nester == 't') echo "mechanische Entfernung der Nester<br>";
+														if ($chemische_bekaempfung == 't') echo "chemische Bekaempfung aus der Luft<br>";
 														
-														if ($beobachtung != t AND $warnschilder != t AND $entfernung_nester != t AND $chemische_bekaempfung != t) echo "noch keine Maßnahmen eingeleitet";
+														if ($beobachtung != 't' AND $warnschilder != 't' AND $entfernung_nester != 't' AND $chemische_bekaempfung != 't') echo "noch keine Maßnahmen eingeleitet";
 														echo "</td></tr>";
 													}
 												?>																																				
@@ -317,10 +317,10 @@ if ($gemeinde_id > 0)
       $query="SELECT a.amt, a.amt_id, a.gemeinde, a.gem_schl as gemeindeid, b.gid,b.grad_des_befalls FROM gemeinden as a, $schema.$tabelle as b WHERE ST_intersects(st_transform(b.the_geom,2398), a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $amtname=$r[amt];
-	  $amt=$r[amt_id];
-	  $gem_id=$r[gemeindeid];
-	  $gemeindename=$r[gemeinde];  
+	  $amtname=$r["amt"];
+	  $amt=$r["amt_id"];
+	  $gem_id=$r["gemeindeid"];
+	  $gemeindename=$r["gemeinde"];  
    
    
       $query="SELECT box(a.the_geom) as etrsbox, st_astext(st_centroid(a.the_geom)) as utm,astext(st_transform(st_centroid(a.the_geom),4326)) as geo, astext(st_transform(st_centroid(a.the_geom),2398)) as s4283, astext(st_transform(st_centroid(a.the_geom),31468)) as rd83,st_perimeter(a.the_geom) as umfang, area(the_geom) as flaeche,a.gid,a.grad_des_befalls,a.beobachtung,a.warnschilder,a.entfernung_nester,a.chemische_bekaempfung,a.datum_massnahme FROM $schema.$tabelle as a WHERE a.gid='$themen_id'";
@@ -328,16 +328,16 @@ if ($gemeinde_id > 0)
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 	  
-	  $objekt_id=$r[gid];
-	  $grad_des_befalls=$r[grad_des_befalls];
-	  $utm=$r[utm];
-	  $s4283=$r[s4283];
-	  $rd83=$r[rd83];
-	  $geo=$r[geo];
-	  $umfang=$r[umfang];
-	  $area=$r[flaeche];
+	  $objekt_id=$r["gid"];
+	  $grad_des_befalls=$r["grad_des_befalls"];
+	  $utm=$r["utm"];
+	  $s4283=$r["s4283"];
+	  $rd83=$r["rd83"];
+	  $geo=$r["geo"];
+	  $umfang=$r["umfang"];
+	  $area=$r["flaeche"];
 	  
-	  $boxstring = $r[etrsbox];
+	  $boxstring = $r["etrsbox"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -404,7 +404,7 @@ if ($gemeinde_id > 0)
 
 														while($gr = $fetcharrayp($result))
 															{
-																echo "<option";if ($gem_id == $gr[gem_schl]) echo " selected"; echo " value=\"$gr[gem_schl]\">$gr[gemeinde]</option>\n";
+																echo "<option";if ($gem_id == $gr["gem_schl"]) echo " selected"; echo ' value="',$gr["gem_schl"],'">',$gr["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
@@ -455,12 +455,12 @@ if ($gemeinde_id > 0)
 										</tr>	
 										<tr>
 											<td>eingeleitete Maßnahmen:</td>
-											<td><b><ol><? if ($r[beobachtung] == t) echo "<li>Beobachtung</li>";
-														if ($r[warnschilder] == t) echo "<li>Aufstellen von Warnschildern</li>";
-														if ($r[entfernung_nester] == t) echo "<li>mechanische Entfernung der Nester</li>";
-														if ($r[chemische_bekaempfung] == t) echo "<li>chemische Bekaempfung aus der Luft</li>";
-														if (($r[beobachtung] == t OR $r[warnschilder] == t OR $r[entfernung_nester] == t OR $r[chemische_bekaempfung] == t) AND ($r[datum_massnahme] != '')) echo "<small>(Die Maßnahme(n) wurde durchgeführt am: $r[datum_massnahme])";
-														if ($r[beobachtung] != t AND $r[warnschilder] != t AND $r[entfernung_nester] != t AND $r[chemische_bekaempfung] != t) echo "noch keine Maßnahmen eingeleitet";?></b></ol></td>																									
+											<td><b><ol><? if ($r["beobachtung"] == 't') echo "<li>Beobachtung</li>";
+														if ($r["warnschilder"] == 't') echo "<li>Aufstellen von Warnschildern</li>";
+														if ($r["entfernung_nester"] == 't') echo "<li>mechanische Entfernung der Nester</li>";
+														if ($r["chemische_bekaempfung"] == 't') echo "<li>chemische Bekaempfung aus der Luft</li>";
+														if (($r["beobachtung"] == 't' OR $r["warnschilder"] == 't' OR $r["entfernung_nester"] == 't' OR $r["chemische_bekaempfung"] == 't') AND ($r["datum_massnahme"] != '')) echo "<small>(Die Maßnahme(n) wurde durchgeführt am:",$r["datum_massnahme"],")";
+														if ($r["beobachtung"] != 't' AND $r["warnschilder"] != 't' AND $r["entfernung_nester"] != 't' AND $r["chemische_bekaempfung"] != 't') echo "noch keine Maßnahmen eingeleitet";?></b></ol></td>																									
 										</tr>
 										
 										<tr>

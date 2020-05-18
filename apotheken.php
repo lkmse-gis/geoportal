@@ -1,6 +1,6 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 
 //globale Varibalen
@@ -16,7 +16,7 @@ $leg_bild="apotheke.gif";
 $gemeinde_id=$_GET["gemeinde"];
 $themen_id=$_GET["$get_themenname"];
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 if ($themen_id < 1 AND $gemeinde_id < 1)
     { 
@@ -24,7 +24,7 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	?>
 		<?php
@@ -84,7 +84,7 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
+						<? include ("includes/meta_i_aktualitaet.php"); ?>
 						<? include ("includes/block_1_1_legende.php"); ?>
 						<? include ("includes/block_1_1_uk.php"); ?>						
 					</table>
@@ -126,14 +126,14 @@ if ($gemeinde_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemeindename = $r[name];
-	  $zentrum = $r[etrscenter];
+	  $gemeindename = $r["name"];
+	  $zentrum = $r["etrscenter"];
 	  $zentrum2 = trim($zentrum,"POINT(");
 	  $zentrum3 = trim($zentrum2,")");
 	  $zentrum4 = explode(" ",$zentrum3);
 	  $rcenter = $zentrum4[0];
 	  $hcenter = $zentrum4[1];
-	  $boxstring = $r[etrsbox];
+	  $boxstring = $r["etrsbox"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -209,7 +209,7 @@ if ($gemeinde_id > 0)
 
 														while($r = $fetcharrayp($result))
 															{
-																echo "<option";if ($gemeinde_id == $r[gem_schl]) echo " selected"; echo " value=\"$r[gem_schl]\">$r[gemeinde]</option>\n";
+																echo "<option";if ($gemeinde_id == $r["gem_schl"]) echo " selected"; echo ' value="',$r["gem_schl"],'">',$r["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
@@ -247,16 +247,16 @@ if ($gemeinde_id > 0)
 												</tr>												
 												<?php for($v=0;$v<$z;$v++)
 													{ 
-														$adresse=$apotheke[$v][geoportal_anschrift];
+														$adresse=$apotheke[$v]["geoportal_anschrift"];
 														$adresse1 = explode(";",$adresse);
 														$anschrift = $adresse1[0]."<br>".$adresse1[1]."<br>".$adresse1[2];
-														$bildname = $apotheke[$v][bild];
+														$bildname = $apotheke[$v]["bild"];
 														$bildname1 = explode("&",$bildname);
 														$bildname2 = $bildname1[0];
 														$bildname3 = explode("/",$bildname2);
 														$bild="pictures/".$bildname3[5]."/".$bildname3[6];
 														echo "<tr bgcolor=",get_farbe($v),">";															
-														if(strlen($bildname) < 1 OR $apotheke[$v][oeffentlich] == 'nein')
+														if(strlen($bildname) < 1 OR $apotheke[$v]["oeffentlich"] == 'nein')
 															{
 																echo "<td></td>";	
 															} 
@@ -265,11 +265,11 @@ if ($gemeinde_id > 0)
 																echo "<td align='center'><a href=$bild target='_blank' onclick='return popup(this.href);'><img src=$bild height='30'></a></td>";
 															}											
 														echo "
-														<td align='center' height='30'><a href=\"$scriptname?$get_themenname=",$apotheke[$v][gid],"\">",$apotheke[$v][bezeichnung],"</a></td>",
-														"<td align='center'>",$apotheke[$v][ih],"</td>",
+														<td align='center' height='30'><a href=\"$scriptname?$get_themenname=",$apotheke[$v]["gid"],"\">",$apotheke[$v]["bezeichnung"],"</a></td>",
+														"<td align='center'>",$apotheke[$v]["ih"],"</td>",
 														"<td align='center'>",$anschrift,"</td>",
-														"<td align='center'>",$apotheke[$v][email],"</td>",
-														"<td align='center'>",$apotheke[$v][tel],"</td></tr>";
+														"<td align='center'>",$apotheke[$v]["email"],"</td>",
+														"<td align='center'>",$apotheke[$v]["tel"],"</td></tr>";
 													}
 												?>																																				
 											</table>
@@ -302,25 +302,25 @@ if ($gemeinde_id > 0)
 	  $query="SELECT a.amt, a.amt_id, a.gemeinde, a.gem_schl as gemeindeid, b.gid FROM gemeinden as a, $schema.$tabelle as b WHERE ST_WITHIN(st_transform(b.wkb_geometry,2398), a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $amtname=$r[amt];
-	  $amt=$r[amt_id];
-	  $gem_id=$r[gemeindeid];
-	  $gemeindename=$r[gemeinde];
+	  $amtname=$r["amt"];
+	  $amt=$r["amt_id"];
+	  $gem_id=$r["gemeindeid"];
+	  $gemeindename=$r["gemeinde"];
 	  
 	  $query="SELECT astext(wkb_geometry) as utm, astext(st_transform(wkb_geometry,2398)) as gk4283,astext(st_transform(wkb_geometry, 4326)) as geo,astext(st_transform(wkb_geometry, 31468)) as rd83, gid, geoportal_anschrift, bezeichnung, ih, tel, fax, internet, email, bild, oeffentlich, oeffnungszeiten FROM $schema.$tabelle WHERE gid='$themen_id'";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $bildname=$r[bild];
-	  $oeffentlich=$r[oeffentlich];
-	  $adresse=$r[geoportal_anschrift];
+	  $bildname=$r["bild"];
+	  $oeffentlich=$r["oeffentlich"];
+	  $adresse=$r["geoportal_anschrift"];
 	  $adresse1 = explode(";",$adresse);
 	  $anschrift = $adresse1[0]."<br>".$adresse1[1]."<br>".$adresse1[2];
 	 
-	  $s4283 = $r[gk4283];
-	  $geo=$r[geo];
-	  $rd83=$r[rd83];
-	  $utm=$r[utm];
+	  $s4283 = $r["gk4283"];
+	  $geo=$r["geo"];
+	  $rd83=$r["rd83"];
+	  $utm=$r["utm"];
 	  $lon = get_utmcoordinates_lon($utm);
 	  $lat=get_utmcoordinates_lat($utm);
 	  
@@ -362,7 +362,7 @@ if ($gemeinde_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=270 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[bezeichnung]; ?><? echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?><? echo $r["bezeichnung"]; ?><? echo $font_farbe_end ;?>
 										</td>
 										<td width=10 rowspan="7"></td>
 										<td border=0 valign=top align=left rowspan="6" colspan=3>
@@ -377,7 +377,7 @@ if ($gemeinde_id > 0)
 									<tr>
 										<td align="center" height="35" colspan="2">
 											<form action="<? echo $scriptname;?>" method="get" name="<? echo $get_themenname;?>">
-												Stadt:&nbsp;
+												Gemeinde:&nbsp;
 												<select name="gemeinde" onchange="document.<? echo $get_themenname;?>.submit();">
 													<?php
 														$query="SELECT DISTINCT b.gem_schl, b.gemeinde FROM $schema.$tabelle as a, gemeinden as b WHERE ST_WITHIN(st_transform(a.wkb_geometry,2398), b.the_geom) ORDER BY gemeinde";
@@ -385,7 +385,7 @@ if ($gemeinde_id > 0)
 
 														while($e = $fetcharrayp($result))
 															{
-																echo "<option";if ($gem_id == $e[gem_schl]) echo " selected"; echo " value=\"$e[gem_schl]\">$e[gemeinde]</option>\n";
+																echo "<option";if ($gem_id == $e["gem_schl"]) echo " selected"; echo ' value="',$e["gem_schl"],'">',$e["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
@@ -415,7 +415,7 @@ if ($gemeinde_id > 0)
 								<td valign=top>											
 									<table border=0 valign=top>
 										<tr height="35">
-											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[bezeichnung] ;?><? echo $font_farbe_end ;?></td>													
+											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r["bezeichnung"] ;?><? echo $font_farbe_end ;?></td>													
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Anschrift:</td>
@@ -437,27 +437,27 @@ if ($gemeinde_id > 0)
 										</tr>
 										<tr>
 											<td>Inhaber:</td>
-											<td><b><? echo $r[ih] ;?></b></td>																									
+											<td><b><? echo $r["ih"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Telefon:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[tel] ;?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["tel"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td>Faxnummer:</td>
-											<td><b><? echo $r[fax] ;?></b></td>																									
+											<td><b><? echo $r["fax"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>E-Mail:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><a href="mailto:<? echo $r[email] ;?>" target=blank><? echo $r[email] ;?></a></b></td>																										
+											<td bgcolor=<? echo $element_farbe ?>><b><a href="mailto:<? echo $r["email"] ;?>" target=blank><? echo $r["email"] ;?></a></b></td>																										
 										</tr>
 										<tr>
 											<td>Homepage:</td>
-											<td><b><a href="<? echo $r[internet] ;?>" target=blank><? echo $r[internet] ;?></a></b></td>																									
+											<td><b><a href="<? echo $r["internet"] ;?>" target=blank><? echo $r["internet"] ;?></a></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Öffnungszeiten:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[oeffnungszeiten] ;?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["oeffnungszeiten"] ;?></b></td>																									
 										</tr>																		
 									</table>
 							</td>									
