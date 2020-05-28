@@ -1,11 +1,14 @@
 <?php
 include ("includes/connect_geobasis.php");
 include ("includes/portal_functions.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
+require_once ("classes/karte.class.php");
 
 $amt_id=$_GET["amt"];
 $layerid=30800;
-$log=write_log($db_link,$layerid);
+$beschriftung_karte="Amstbereiche";
+$layer_name="aemter_msp_outline";
+$log=write_i_log($db_link,$layerid);
 
 if ($amt_id > 0)
    { 
@@ -18,30 +21,30 @@ if ($amt_id > 0)
 		   $z++;		   
 		}	  	  
 	  
-	  $query="SELECT box(a.the_geom) as box, area(a.the_geom) as area, st_astext(st_centroid(a.the_geom)) as center, st_astext(st_centroid(st_transform(a.the_geom, 25833))) as utm, st_astext(st_centroid(st_transform(a.the_geom, 4326))) as geo, a.name as name, st_perimeter(a.the_geom) as umfang, b.gid as vsitzid, a.gliederung as gliederung, a.einwohner as einw, a.mann, a.frau, a.mann_quote, a.frau_quote, a.einw_quote, a.einw_km as einw_km, a.akt_bevoelkerung, a.amtsvorsteher as av FROM fd_amtsbereiche as a, fd_amtssitze_msp as b WHERE CAST(a.amts_sf as character varying)='$amt_id' AND  CAST(a.amts_sf as character varying) = b.amt_id";
+	  $query="SELECT box(a.the_geom) as box, box(a.geom_25833) as etrsbox,area(a.the_geom) as area, st_astext(st_centroid(a.the_geom)) as center, st_astext(st_centroid(st_transform(a.the_geom, 25833))) as utm, st_astext(st_centroid(st_transform(a.the_geom, 4326))) as geo, a.name as name, st_perimeter(a.the_geom) as umfang, b.gid as vsitzid, a.gliederung as gliederung, a.einwohner as einw, a.mann, a.frau, a.mann_quote, a.frau_quote, a.einw_quote, a.einw_km as einw_km, a.akt_bevoelkerung, a.amtsvorsteher as av FROM kataster.amtsbereiche as a, kataster.amtsbereiche_standorte as b WHERE CAST(a.amts_sf as character varying)='$amt_id' AND  CAST(a.amts_sf as character varying) = b.amt_id";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $vsitzid = $r[vsitzid];
-	  $av = $r[av];
-	  $einw = $r[einw];
-	  $mann = $r[mann];
-	  $frau = $r[frau];
-	  $mann_quote = $r[mann_quote];
-	  $frau_quote = $r[frau_quote];
-	  $einw_km = $r[einw_km];
-	  $einw_quote = $r[einw_quote];
-	  $aktualitaet = $r[akt_bevoelkerung];
-	  $gliederung = $r[gliederung];
-	  $area=$r[area];
-	  $amtname = $r[name];	  
-	  $zentrum = $r[center];
+	  $vsitzid = $r["vsitzid"];
+	  $av = $r["av"];
+	  $einw = $r["einw"];
+	  $mann = $r["mann"];
+	  $frau = $r["frau"];
+	  $mann_quote = $r["mann_quote"];
+	  $frau_quote = $r["frau_quote"];
+	  $einw_km = $r["einw_km"];
+	  $einw_quote = $r["einw_quote"];
+	  $aktualitaet = $r["akt_bevoelkerung"];
+	  $gliederung = $r["gliederung"];
+	  $area=$r["area"];
+	  $amtname = $r["name"];	  
+	  $zentrum = $r["center"];
 	  $zentrum2 = trim($zentrum,"POINT(");
 	  $zentrum3 = trim($zentrum2,")");
 	  $zentrum4 = explode(" ",$zentrum3);
-	  $utm = $r[utm];
-	  $geo = $r[geo];
-	  $umfang = $r[umfang];
+	  $utm = $r["utm"];
+	  $geo = $r["geo"];
+	  $umfang = $r["umfang"];
 	  $umfang2 = explode(".",$umfang);
 	  $umfang3 = $umfang2[0];
 	  $rcenter = $zentrum4[0];
@@ -50,7 +53,8 @@ if ($amt_id > 0)
 	  $hcenter = $zentrum4[1];
 	  $hcenter1 = explode(".",$hcenter);
 	  $hcenter2 = $hcenter1[0];
-	  $boxstring = $r[box];
+	  $boxstring_etrs = $r["etrsbox"];
+	  $boxstring = $r["box"];
 	  $klammern=array("(",")");
 	  $boxstring = str_replace($klammern,"",$boxstring);
 	  $koordinaten = explode(",",$boxstring);
@@ -75,111 +79,8 @@ if ($amt_id > 0)
 		<? include ("ajax.php"); ?>
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
-			<style type="text/css">
-			   #map {
-					width: 650px;
-					height: 490px;
-					border: 1px solid black;
-				}
-			</style>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			var lon   = <?php echo $lon; ?>;
-			var lat   = <?php echo $lat; ?>;
-			var lonc  = <?php echo $rcenter; ?>;
-			var latc  = <?php echo $hcenter; ?>;
-             <?php
-              if ($hoch_range > 30000 OR $rechts_range > 39000) $zoom=10;
-			  else if ($hoch_range > 16000 AND $hoch_range < 29999 OR $rechts_range > 16000 AND $rechts_range < 29999) $zoom=11;
-              else $zoom=13;
-             ?>
-
-			var zoom  = <?php echo $zoom ?>;
-
-			var map, info;
-
-			function load() {
-				map = new OpenLayers.Map({
-					div: "map",
-					projection: "EPSG:2398",
-					scales: [750000,700000,650000,600000,550000,500000,450000,400000,350000,250000,200000,150000,100000,75000,70000,65000,60000,55000,50000,45000,40000,35000,30000,25000,20000,15000,10000,5000,2500,1000,500],
-					maxResolution: "auto",
-					maxExtent:  new OpenLayers.Bounds(4400000,5880000,4660000,6060000),
-					units: 'm'
-				});
-
-				var orka = new OpenLayers.Layer.WMS.Untiled("ORKa-MV",
-                   <? echo $osm_citymap_url; ?>,
-                   {'layers': 'orkamv-gesamt', transparent: true, format: 'image/png'},
-                   {isBaseLayer: true}
-				);
-
-				 var dop = new OpenLayers.Layer.WMS.Untiled("Luftbild",
-									<? echo $dop_url; ?>,
-									{'layers': 'adv_dop', transparent: true, format: 'image/png'},
-									{isBaseLayer: true}
-				);
-				
-				var msp_outline = new OpenLayers.Layer.WMS.Untiled("Gemeindegrenzen",
-								 <? echo $map_msp_url; ?>,
-								 {layers: 'msp_outline_gem', transparent: true, format: 'image/png'},
-								 {isBaseLayer: false}
-				);				
-				
-				var amt_outline = new OpenLayers.Layer.WMS.Untiled("Ämter",
-								 <? echo $map_msp_url; ?>,
-								 {layers: 'aemter_msp_outline', transparent: true, format: 'image/jpeg'},
-								 {isBaseLayer: false}
-				);				
-
-				var gemarkungen = new OpenLayers.Layer.WMS.Untiled("Gemarkungen",
-								 <? echo $map_msp_url; ?>,
-								 {layers: 'msp_outline_gemkg', transparent: true, format: 'image/png'},
-								 {isBaseLayer: false}
-				);
-				
-				var msp_aemter = new OpenLayers.Layer.WMS.Untiled("<? echo $amtname; ?>",
-								 <? echo $amtmap_url; ?>,
-								 {layers: '<? echo $amt_id; ?>', transparent: true, format: 'image/png'},
-								 {isBaseLayer: false}
-				);
-				
-				var markers = new OpenLayers.Layer.Markers( "Markers" ); 
-				
-				map.addLayers([orka,dop,gemarkungen,msp_outline,amt_outline,msp_aemter]);
-
-				info = new OpenLayers.Control.WMSGetFeatureInfo({
-					layers: [amt_outline],
-					url: '<? echo $featureinfo_msp_url; ?>',
-					title: 'Identify features by clicking',
-					queryVisible: true,
-					eventListeners: {
-						getfeatureinfo: function(event) {
-							map.addPopup(new OpenLayers.Popup.FramedCloud(
-								"chicken",
-								map.getLonLatFromPixel(event.xy),
-								null,
-								event.text,
-								null,
-								true
-							));
-						}
-					}
-				});
-				map.addControl(info);
-				info.activate();
-
-				map.addControl(new OpenLayers.Control.LayerSwitcher());
-				map.addControl(new OpenLayers.Control.Permalink());
-				map.addControl(new OpenLayers.Control.OverviewMap());
-				map.addControl(new OpenLayers.Control.MousePosition());
-				var lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:2398"), map.getProjectionObject());
-				var lonLatc = new OpenLayers.LonLat(lonc, latc).transform(new OpenLayers.Projection("EPSG:2398"), map.getProjectionObject());
-				markers.addMarker(new OpenLayers.Marker(lonLatc));
-				map.setCenter(lonLat,zoom);
-			}
-		</script>
+        <?$aemterkarte= new karte;
+        echo $aemterkarte->zeigeKarteBox($boxstring_etrs,'680','450','orka','1','0','0','0','0',$beschriftung_karte,$layer_name); ?>			 
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>	
 		</head>
 		<body onload="init();load();">
@@ -300,12 +201,12 @@ if ($amt_id > 0)
 												Amt:&nbsp;
 												<select name="amt" onchange="document.amt.submit();">
 													<?php
-														$query="SELECT * FROM fd_amtsbereiche ORDER BY name";
+														$query="SELECT * FROM kataster.amtsbereiche ORDER BY name";
 														$result = $dbqueryp($connectp,$query);
 
 														while($r = $fetcharrayp($result))
 														{
-														 echo "<option";if ($amt_id == $r[amts_sf]) echo " selected"; echo " value=\"$r[amts_sf]\">$r[name]</option>\n";
+														 echo "<option";if ($amt_id == $r["amts_sf"]) echo " selected"; echo ' value="',$r["amts_sf"],'">',$r["name"],'</option>\n';
 														}
 													?>
 												</select>
@@ -375,19 +276,13 @@ if ($amt_id > 0)
 				</div>
 			</div>
 			<div id="navigation">
-				<table border="0" align="left">
-					<tr>
-						<td>
-							<script type="text/javascript" language="JavaScript1.2" src="menu_msp_i.js"></script>
-						</td>
-					</tr>
-				</table>
+				<? include ("includes/navigation.php"); ?>
 			</div>
 			<div id="extra">
 				<? include ("includes/news.php"); ?>
 			</div>
-			<div id="footer">				
-			</div>
+			<div id="footer">			
+		  </div>
 		</div>
 		</body>
 		</html>
@@ -400,10 +295,10 @@ if ($amt_id > 0)
 else
     { 
 	
-		$query="SELECT COUNT(*) AS anzahl FROM fd_amtsbereiche";	  
+		$query="SELECT COUNT(*) AS anzahl FROM kataster.amtsbereiche";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	
 	?>
@@ -420,83 +315,10 @@ else
 		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 		<? include ("ajax.php"); ?>
 		<? include ("includes/zeit.php"); ?>
-		<? include ("includes/meta_popup.php"); ?>
-			<style type="text/css">
-			   #map {
-					width: 680px;
-					height: 490px;
-					border: 1px solid black;
-				}
-			</style>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyle_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			var lon   = <?php echo $lon; ?>;
-			var lat   = <?php echo $lat; ?>;
-			var zoom  = 0;
-
-			var map, info;
-
-			function load() {
-				map = new OpenLayers.Map({
-					div: "map",
-					projection: 'EPSG:25833',
-					scales: [600000,500000,400000,300000,200000,100000,50000,40000,30000,20000,10000,5000,2500,1000,500],					
-					maxExtent:  new OpenLayers.Bounds(198843,5885901,466202,6054736),
-					units: 'm'
-				});
-
-				var orka = new OpenLayers.Layer.WMS.Untiled("ORKa-MV",
-                   <? echo $osm_citymap_url; ?>,
-                   {'layers': 'orkamv-gesamt', transparent: true, format: 'image/png'},
-                   {isBaseLayer: true}
-				);
-
-				 var dop = new OpenLayers.Layer.WMS.Untiled("Luftbild",
-									<? echo $dop_url; ?>,
-									{'layers': 'adv_dop', transparent: true, format: 'image/png'},
-									{isBaseLayer: true}
-				);
-				
-				var amt_outline = new OpenLayers.Layer.WMS.Untiled("Ämter Grenze",
-								 <? echo $map_msp_url;?>,
-								 {layers: 'aemter_msp_outline', transparent: true, format: 'image/png'},
-								 {isBaseLayer: false}
-				);				
-
-				map.addLayers([orka,dop,amt_outline]);
-
-				info = new OpenLayers.Control.WMSGetFeatureInfo({
-					layers: [amt_outline],
-					url: '<? echo $featureinfo_msp_url; ?>',
-					title: 'Identify features by clicking',
-					queryVisible: true,
-					eventListeners: {
-						getfeatureinfo: function(event) {
-							map.addPopup(new OpenLayers.Popup.FramedCloud(
-								"chicken",
-								map.getLonLatFromPixel(event.xy),
-								null,
-								event.text,
-								null,
-								true
-							));
-						}
-					}
-				});
-				map.addControl(info);
-				info.activate();
-
-				map.addControl(new OpenLayers.Control.LayerSwitcher({"ascending":false}));				
-				map.addControl(new OpenLayers.Control.Permalink());
-				map.addControl(new OpenLayers.Control.OverviewMap({"ascending":false}));
-				//var om = map.getControlsByClass("OpenLayers.Control.OverviewMap")[0];
-				//om.maximizeControl();
-				map.addControl(new OpenLayers.Control.MousePosition());
-				var lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:25833"), map.getProjectionObject());
-				map.setCenter(lonLat,zoom);
-			}
-		</script>
+		<? include ("includes/meta_popup.php"); 
+        $aemterkarte= new karte;
+        echo $aemterkarte->zeigeKarteBox($box_mse_gesamt,'680','450','orka','1','0','0','0','0',$beschriftung_karte,$layer_name);			 
+            ?>
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>	
 		</head>
 		<body onload="init();load();">
@@ -512,7 +334,7 @@ else
 					<tr>
 						<td align="center" valign="top" width=300 height=60 colspan=2>
 							<br>
-							<h3>Ämter* Landkreis<br>Mecklenburgische Seenplatte</h3>
+							<h3>Amtsbereiche* Landkreis<br>Mecklenburgische Seenplatte</h3>
 							Zu diesem Thema befinden sich<br>
 							<b><? echo $count; ?></b> Datens&auml;tze in der Datenbank.
 						</td>
@@ -533,7 +355,7 @@ else
 								<select name="amt" onchange="document.amt.submit();">
 									<option>Bitte auswählen</option>
 									 <?php
-									 $query="SELECT * FROM fd_amtsbereiche ORDER BY name";
+									 $query="SELECT * FROM kataster.amtsbereiche ORDER BY name";
 									 $result = $dbqueryp($connectp,$query);
 
 									 while($r = $fetcharrayp($result))
@@ -545,64 +367,21 @@ else
 							</form>
 						</td>									
 					</tr>
-					<tr>
-					    <td valign=bottom align=center colspan=2>
-					    *) <a href="metadaten/metadaten.php?Layer_ID=30800" target="_blank" onclick="return meta_popup(this.href)">Info zum Thema &Auml;mter</a>
-						</td>
-					</tr>
-					<tr><td align=center colspan=2>letzte Aktualisierung: <b><i><? echo get_aktualitaet($dbname,'30800'); ?></i></b></td></tr>
-					<tr>
-						<td colspan=2 valign=bottom align=center>
-							<a href="includes/aemter_liste.php" target="_blank" onclick="return liste_popup(this.href)">&Auml;mterliste</a>																
-						</td>
-					</tr>
-					<tr>
-									<td valign=bottom align=center>
-										<a href="includes/kartehilfe.php" target="_blank" onclick="return hilfe_popup(this.href)">Wie nutze ich die<br>webbasierte Karte?<br>(OpenLayers)</a>																
-									</td>	
-										<td valign=bottom align=right>
-											<!-- Tabelle für Legende -->
-											<table border="1" rules="none" width=140 valign=bottom align=right>					
-												<tr>
-													<td colspan=2 align=center height=25><i>Kartenlegende:</i></td>
-												</tr>
-												<tr>
-													<td width=100 align=right><small>Amtsgrenze: </td>
-													<td align=right><img src="images/amtsgrenze.png" width=30></td>													
-												</tr>																						
-											</table> <!-- Ende der Tabelle für die Legende -->
-										</td>
-									</tr>
-								<tr>
-									<td height=35 colspan=2></td>									
-									<td>
-										<small><? echo $cr; ?>| &nbsp;<a href="includes/kartehilfe.php" target="_blank" onclick="return hilfe_popup(this.href)">Hilfe zur Kartennutzung</a>
-									</td>	
-									<td>
-										<a href="metadaten/metadaten.php?Layer_ID=30800" target="_blank" onclick="return meta_popup(this.href)"><img src="images/info_button.gif" title="Metadaten" border=0></a>
-									</td>
-									<td align=right>
-										<a href="aemter_msp.php"><img src="images/reload.png" title="Kartenausschnitt neu laden"></a>
-									</td>
-									</tr>
-							</table>
+					<? include ("includes/meta_i_aktualitaet.php"); ?>
+                    <? include ("includes/block_1_1_legende.php"); ?>
+					<? include ("includes/block_1_1_uk.php"); ?>
+					</table>
 						</div>
 					</div>
-					<div id="navigation">
-						<table border="0" align="left">
-							<tr>
-								<td>
-									<script type="text/javascript" language="JavaScript1.2" src="menu_msp_i.js"></script>
-								</td>
-							</tr>
-						</table>
-					</div>
-					<div id="extra">
-						<? include ("includes/news.php"); ?>
-					</div>
-					<div id="footer">						
-					</div>
-				</div>
+			<div id="navigation">
+				<? include ("includes/navigation.php"); ?>
+			</div>
+			<div id="extra">
+				<? include ("includes/news.php"); ?>
+			</div>
+			<div id="footer">			
+		  </div>
+		  </div>
 			</body>
 		</html>
 <?	} ?>
