@@ -1,13 +1,13 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 
 //globale Varibalen
 $titel="Amtsverwaltungen";
 $titel2="Amtsverwaltung";
 $datei="vsitz_msp.php";
-$tabelle="fd_amtssitze_msp";
+$tabelle="kataster.amtsbereiche_standorte";
 $kuerzel="amtsverwaltung";
 $layerid="150100";
 $leg_bild="amtssitz.gif";
@@ -15,7 +15,7 @@ $leg_bild="amtssitz.gif";
 $vsitz_id=$_GET["$kuerzel"];
 $themen_id=$vsitz_id;
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 if ($themen_id < 1)
     { 
@@ -23,7 +23,7 @@ if ($themen_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $tabelle WHERE art='Amtsverwaltung'";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	?>
 		<?php
@@ -94,7 +94,7 @@ if ($themen_id < 1)
 										</form>
 									</td>
 								</tr>
-								<? include ("includes/meta_aktualitaet.php"); ?>
+								<? include ("includes/meta_i_aktualitaet.php"); ?>
 						<? include ("includes/block_1_legende.php"); ?>
 						<? include ("includes/block_1_uk.php"); ?>							
 					</table>
@@ -115,30 +115,30 @@ if ($themen_id < 1)
 
 if ($themen_id > 0)
    {   
-	  $query="SELECT a.amt, a.amt_id, a.gemeinde, a.gem_schl as gemeindeid, b.gid as vsitzid FROM gemeinden as a, fd_amtssitze_msp as b WHERE ST_WITHIN(b.the_geom,a.the_geom) AND b.gid='$themen_id'";
+	  $query="SELECT a.amt, a.amt_id, a.gemeinde, a.gem_schl as gemeindeid, b.gid as vsitzid FROM gemeinden as a, $tabelle b WHERE ST_WITHIN(b.the_geom,a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $amtname=$r[amt];
+	  $amtname=$r["amt"];
 	  
-	  $gem_id=$r[gemeindeid];
-	  $gemeindename=$r[gemeinde];
+	  $gem_id=$r["gemeindeid"];
+	  $gemeindename=$r["gemeinde"];
 	  
-	  $query="SELECT astext(the_geom) as koordinaten, astext(st_transform(the_geom, 25833)) as utm, astext(st_transform(the_geom, 4326)) as geo,astext(st_transform(the_geom, 31468)) as rd83, amt_id,gid, name, plz, ort, strasse, tel, internet, email, fax, bild, oeffentlich, urheber FROM fd_amtssitze_msp WHERE gid='$themen_id'";
+	  $query="SELECT astext(the_geom) as koordinaten, astext(st_transform(the_geom, 25833)) as utm, astext(st_transform(the_geom, 4326)) as geo,astext(st_transform(the_geom, 31468)) as rd83, amt_id,gid, name, plz, ort, strasse, tel, internet, email, fax, bild, oeffentlich, urheber FROM $tabelle WHERE gid='$themen_id'";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $amt=$r[amt_id];
-	  $bildname=$r[bild];
-	  $oeffentlich=$r[oeffentlich];
-	  $name = $r[name];
-	  $id = $r[gid];
-	  $koord = $r[koordinaten];
+	  $amt=$r["amt_id"];
+	  $bildname=$r["bild"];
+	  $oeffentlich=$r["oeffentlich"];
+	  $name = $r["name"];
+	  $id = $r["gid"];
+	  $koord = $r["koordinaten"];
 	  $koord2 = trim($koord,"POINT(");
 	  $koord3 = trim($koord2,")");
 	  $koord4 = explode(" ",$koord3);
-	  $utm = $r[utm];
-	  $geo = $r[geo];
-	  $rd83=$r[rd83];
+	  $utm = $r["utm"];
+	  $geo = $r["geo"];
+	  $rd83=$r["rd83"];
 	  $lon = $koord4[0];
 	  $lon1 = explode(".",$koord4[0]);
 	  $lon2 = $lon1[0];
@@ -183,7 +183,7 @@ if ($themen_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=270 bgcolor=<? echo $header_farbe ;?> colspan=2>
-											<? echo $font_farbe ;?>Amtsverwaltung<br><? echo $r[name] ?><? echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?>Amtsverwaltung<br><? echo $r["name"] ?><? echo $font_farbe_end ;?>
 										</td>
 										<td width=30 rowspan=7></td>
 										<td border=0 valign=top align=center rowspan="6" colspan=3>
@@ -203,11 +203,11 @@ if ($themen_id > 0)
 											<form action="<? echo $datei;?>" method="get" name="<? echo $kuerzel;?>">												
 												<select name="<? echo $kuerzel;?>" onchange="document.<? echo $kuerzel;?>.submit();">
 													<?php
-														$query="SELECT gid, name FROM fd_amtssitze_msp WHERE art='Amtsverwaltung' ORDER BY name";
+														$query="SELECT gid, name FROM $tabelle WHERE art='Amtsverwaltung' ORDER BY name";
 														$result = $dbqueryp($connectp,$query);
 														while($e = $fetcharrayp($result))
 														{
-														 echo "<option";if ($themen_id == $e[gid]) echo " selected"; echo " value=\"$e[gid]\">$e[name]</option>\n";
+														 echo "<option";if ($themen_id == $e["gid"]) echo ' selected'; echo ' value="',$e["gid"],'">',$e["name"],'</option>\n';
 														}
 													?>
 												</select>
@@ -230,11 +230,11 @@ if ($themen_id > 0)
 							<td valign=top>											
 								<table border=0 valign=top>
 									<tr height="35">
-										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<b><font size="+1"><? echo $font_farbe ;?><? echo $r[name] ;?><? echo $font_farbe_end ;?></td>													
+										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<b><font size="+1"><? echo $font_farbe ;?><? echo $r["name"] ;?><? echo $font_farbe_end ;?></td>													
 									</tr>
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?>>Postleitzahl/Ort:</td>
-										<td width=500 bgcolor=<? echo $element_farbe ?>><b><? echo $r[plz]," ",$r[ort] ;?></b></td>	
+										<td width=500 bgcolor=<? echo $element_farbe ?>><b><? echo $r["plz"]," ",$r["ort"] ;?></b></td>	
 										<?											
 											$bildname1 = explode("&",$bildname);
 											$bildname2 = $bildname1[0];
@@ -252,28 +252,25 @@ if ($themen_id > 0)
 									<tr>
 									<tr>
 													<td>Strasse:</td>
-													<td><b><? echo $r[strasse] ;?></b></td>																									
+													<td><b><? echo $r["strasse"] ;?></b></td>																									
 												</tr>
 												<tr>
 													<td bgcolor=<? echo $element_farbe ?>>Telefon:</td>
-													<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[tel] ;?></b></td>																									
+													<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["tel"] ;?></b></td>																									
 												</tr>
 												<tr>
 													<td>Faxnummer:</td>
-													<td><b><? echo $r[fax] ;?></b></td>																									
+													<td><b><? echo $r["fax"] ;?></b></td>																									
 												</tr>
 												<tr>
 													<td bgcolor=<? echo $element_farbe ?>>E-Mail:</td>
-													<td bgcolor=<? echo $element_farbe ?>><b><a href="mailto:<? echo $r[email] ;?>" target=blank><? echo $r[email] ;?></a></b></td>																									
+													<td bgcolor=<? echo $element_farbe ?>><b><a href="mailto:<? echo $r["email"] ;?>" target=blank><? echo $r["email"] ;?></a></b></td>																									
 												</tr>
 												<tr>
 													<td>Homepage:</td>
-													<td><b><a href="<? echo $r[internet] ;?>" target=blank>zur Homepage</a></b></td>																									
+													<td><b><a href="<? echo $r["internet"] ;?>" target=blank>zur Homepage</a></b></td>																									
 												</tr>
-												<tr>
-													<td bgcolor=<? echo $element_farbe ?>>Urheber (Bild):</td>
-													<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[urheber] ;?></b></td>																									
-												</tr>
+												
 											</table>
 							</td>									
 							<td valign=top align=center width="250">
