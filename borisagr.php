@@ -16,11 +16,11 @@ $log=write_i_log($db_link,$layerid);
 $gemarkung_id=$_GET["gemarkung"];
 $themen_id=$_GET["$kuerzel"];
 $stichtag=$_GET["stichtag"];
-$titel="Bodenrichtwerte_AGR_".$stichtag;
+
 
 if (!isset($stichtag))
     {
-	  $query="SELECT stichtag ,layer_id_agf from bodenrichtwerte.bw_stichtage ORDER BY stichtag DESC LIMIT 1";
+	  $query="SELECT stichtag ,layer_id_agf from bodenrichtwerte.bw_stichtage WHERE aktuell";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 	  $stichtag = $r['stichtag'];
@@ -36,6 +36,7 @@ if (!isset($stichtag))
 	  
 	}
 	
+$titel="Bodenrichtwerte_AGR_".$stichtag;	
 
 if ($themen_id < 1 AND $gemarkung_id < 1)
     { 

@@ -26,7 +26,7 @@ $themen_id=$borisf_id;
 
 if (!isset($stichtag))
     {
-	  $query="SELECT stichtag,layer_id_bau from bodenrichtwerte.bw_stichtage ORDER BY stichtag DESC LIMIT 1";
+	  $query="SELECT stichtag,layer_id_bau from bodenrichtwerte.bw_stichtage WHERE aktuell";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 	  $stichtag = $r["stichtag"];
