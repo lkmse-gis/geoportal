@@ -3,6 +3,8 @@ include ("includes/connect_geobasis.php");
 include ("includes/portal_functions.php");
 include ("includes/connect_i_procedure_mse.php");
 require_once ("classes/karte.class.php");
+require_once ("classes/legende_geo.class.php");
+$layer_legende="aemter_msp_outline";
 
 $amt_id=$_GET["amt"];
 $layerid=30800;
@@ -368,7 +370,18 @@ else
 						</td>									
 					</tr>
 					<? include ("includes/meta_i_aktualitaet.php"); ?>
-                    <? include ("includes/block_1_1_legende.php"); ?>
+ 			<!-- Tabelle für Legende -->
+						<td valign=bottom align=left >
+							<table class="table_legende" >
+								<B>Kartenlegende :</B>
+								<?php
+								 $legende_geo= new legende_geo;
+								 echo $legende_geo->zeigeLegende($layer_legende,'','','','');
+								?>
+							</table> 
+						</td>
+			<!-- ENDE Tabelle für Legende --> 
+
 					<? include ("includes/block_1_1_uk.php"); ?>
 					</table>
 						</div>
