@@ -255,6 +255,7 @@
 				info = new OpenLayers.Control.WMSGetFeatureInfo({
 					layers: [thema";
 					if ($gemeinden == '1') $html=$html.",gemeinden";
+					if ($gemarkungen == '1') $html=$html.",gemarkungen";
 					$html=$html."],
 					url: '$this->featureinfo_mse_url',
 					title: 'Identify features by clicking',

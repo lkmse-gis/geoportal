@@ -19,7 +19,7 @@ $log=write_i_log($db_link,$layerid);
 if ($gemeinde_id > 0)
    { 
 	  
-	  $query="SELECT gemarkungsname_kurz as gemkgname,geographicidentifier as gemkgschl FROM gemarkung WHERE gemeinde='$gemeinde_id' ORDER BY gemkgname";
+	  $query="SELECT gemarkungsname_kurz as gemkgname,geographicidentifier as gemkgschl FROM kataster.gemarkung WHERE gemeinde='$gemeinde_id' ORDER BY gemkgname";
 	  $result = $dbqueryp($connectp,$query);
 	  $i=0;
 	  while($r = $fetcharrayp($result))
