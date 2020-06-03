@@ -44,7 +44,7 @@ if ($gemeinde_id > 0)
 		   $count=$l;
 		}
 	  
-	  $query="SELECT box(a.the_geom) as box, box(a.geom_25833) as etrsbox,area(a.the_geom) as area, st_astext(st_centroid(st_transform(a.the_geom,4326))) as geo, st_astext(st_centroid(a.the_geom)) as center, st_astext(st_centroid(a.the_geom)) as utm, st_perimeter(a.the_geom) as umfang, a.gemeinde as name, b.gid as vsitzid, a.einwohner as einw, a.mann, a.frau, a.einw_quote, a.mann_quote, a.frau_quote, a.buergermeister as bm, a.einw_km as einw_km, a.wappen as wappen, a.vorwahl as vorwahl, a.plz as plz, a.akt_bevoelkerung from gemeinden as a, fd_amtssitze_msp as b WHERE gem_schl='$gemeinde_id' AND a.amt_id=CAST(b.amt_id as character varying)";
+	  $query="SELECT box(a.the_geom) as box, box(st_buffer(a.geom_25833,1000)) as etrsbox,area(a.the_geom) as area, st_astext(st_centroid(st_transform(a.the_geom,4326))) as geo, st_astext(st_centroid(a.the_geom)) as center, st_astext(st_centroid(a.the_geom)) as utm, st_perimeter(a.the_geom) as umfang, a.gemeinde as name, b.gid as vsitzid, a.einwohner as einw, a.mann, a.frau, a.einw_quote, a.mann_quote, a.frau_quote, a.buergermeister as bm, a.einw_km as einw_km, a.wappen as wappen, a.vorwahl as vorwahl, a.plz as plz, a.akt_bevoelkerung from gemeinden as a, fd_amtssitze_msp as b WHERE gem_schl='$gemeinde_id' AND a.amt_id=CAST(b.amt_id as character varying)";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
@@ -370,7 +370,7 @@ else
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); 
         $gemeinde_karte= new karte;
-        echo $gemeinde_karte->zeigeKarteBox($box_mse_gesamt,'680','450','orka','1','0','0','0','0',$beschriftung_karte,$layer_name);	
+        echo $gemeinde_karte->zeigeKarteBox($box_mse_gesamt,'680','450','orka','1','0','1','0','0',$beschriftung_karte,'msp_outline_gem');	
         ?>		
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>		
 		</head>
@@ -427,7 +427,7 @@ else
 								<B>Kartenlegende :</B>
 								<?php
 								 $legende_geo= new legende_geo;
-								 echo $legende_geo->zeigeLegende($layer_legende,'','','','');
+								 echo $legende_geo->zeigeLegende($layer_legende_1,'','','','');
 								?>
 							</table> 
 						</td>
