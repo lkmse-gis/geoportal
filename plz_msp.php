@@ -16,7 +16,7 @@ $log=write_i_log($db_link,$layerid);
 
 if ($plz_id < 1)
     { 
-		$query="SELECT COUNT(*) AS anzahl FROM fd_plz";	  
+		$query="SELECT COUNT(*) AS anzahl FROM osm.plz";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
 		$count = $r["anzahl"];
@@ -101,8 +101,8 @@ if ($plz_id < 1)
 
 					<? include ("includes/block_1_1_uk.php"); ?>
 					</table>
-						</div>
-					</div>
+				</div>
+			</div>
 			<div id="navigation">
 				<? include ("includes/navigation.php"); ?>
 			</div>
@@ -190,7 +190,7 @@ if ($plz_id > 0)
         $plz_karte= new karte;
         echo $plz_karte->zeigeKarteBox($boxstring_etrs,'680','450','orka','0','0','0','0','0',$beschriftung_karte,$layer);			 
             ?>
-		
+		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		</head>
 		<body onload="init();load();">
 		<div id="container">
@@ -245,10 +245,10 @@ if ($plz_id > 0)
 										</td>										
 									</tr>									
 									<tr>										
- 			<!-- Tabelle für Legende -->
-						<td valign=bottom align=left >
-							<table class="table_legende" >
-								<B>Kartenlegende :</B>
+ 			                        <!-- Tabelle für Legende -->
+						               <td valign=bottom align=left >
+							            <table class="table_legende" >
+								          <B>Kartenlegende :</B>
 								<?php
 								 $legende_geo= new legende_geo;
 								 echo $legende_geo->zeigeLegende($layer_legende,'','','','');
@@ -311,21 +311,15 @@ if ($plz_id > 0)
 						</tr>
 					</table>				
 				</div>
-			</div>
+			  </div>
 			<div id="navigation">
-				<table border="0" align="left">
-					<tr>
-						<td>
-							<script type="text/javascript" language="JavaScript1.2" src="menu_msp_i.js"></script>
-						</td>
-					</tr>
-				</table>
+				<? include ("includes/navigation.php"); ?>
 			</div>
 			<div id="extra">
-				<? include ("includes/news.php") ?>		
+				<? include ("includes/news.php"); ?>
 			</div>
 			<div id="footer">			
-			</div>
+		  </div>
 		</div>
 		</body>
 		</html>
