@@ -34,7 +34,7 @@ if ($gemeinde_id > 0)
 	  $amtname=$r[0];
 	  $amt=$r[1];	  
 		
-	  $query="SELECT b.plz, b.gid FROM gemeinden as a, fd_plz as b WHERE ST_INTERSECTS(ST_BUFFER(b.the_geom,-10),a.the_geom) AND a.gem_schl='$gemeinde_id' ORDER by b.plz";
+	  $query="SELECT b.plz, b.gid FROM gemeinden as a, osm.plz as b WHERE ST_INTERSECTS(b.geom,st_buffer(a.geom_25833,-500)) AND a.gem_schl='$gemeinde_id' ORDER by b.plz";
 	  $result = $dbqueryp($connectp,$query);
 	  $l=0;
 	  while($r = $fetcharrayp($result))
@@ -44,7 +44,7 @@ if ($gemeinde_id > 0)
 		   $count=$l;
 		}
 	  
-	  $query="SELECT box(a.the_geom) as box, box(st_buffer(a.geom_25833,1000)) as etrsbox,area(a.the_geom) as area, st_astext(st_centroid(st_transform(a.the_geom,4326))) as geo, st_astext(st_centroid(a.the_geom)) as center, st_astext(st_centroid(a.the_geom)) as utm, st_perimeter(a.the_geom) as umfang, a.gemeinde as name, b.gid as vsitzid, a.einwohner as einw, a.mann, a.frau, a.einw_quote, a.mann_quote, a.frau_quote, a.buergermeister as bm, a.einw_km as einw_km, a.wappen as wappen, a.vorwahl as vorwahl, a.plz as plz, a.akt_bevoelkerung from gemeinden as a, fd_amtssitze_msp as b WHERE gem_schl='$gemeinde_id' AND a.amt_id=CAST(b.amt_id as character varying)";
+	  $query="SELECT box(a.the_geom) as box, box(st_buffer(a.geom_25833,1000)) as etrsbox,area(a.the_geom) as area, st_astext(st_centroid(st_transform(a.the_geom,4326))) as geo, st_astext(st_centroid(a.the_geom)) as center, st_astext(st_centroid(a.the_geom)) as utm, st_perimeter(a.the_geom) as umfang, a.gemeinde as name, b.gid as vsitzid, a.einwohner as einw, a.mann, a.frau, a.einw_quote, a.mann_quote, a.frau_quote, a.buergermeister as bm, a.einw_km as einw_km, a.wappen as wappen, a.vorwahl as vorwahl, a.plz as plz, a.akt_bevoelkerung from gemeinden as a, kataster.amtsbereiche_standorte as b WHERE gem_schl='$gemeinde_id' AND a.amt_id=CAST(b.amt_id as character varying)";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);

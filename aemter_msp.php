@@ -14,7 +14,7 @@ $log=write_i_log($db_link,$layerid);
 
 if ($amt_id > 0)
    { 
-	  $query="SELECT a.gem_schl, a.gemeinde FROM gemeinden as a, fd_amtsbereiche as b WHERE CAST(b.amts_sf as character varying)='$amt_id' AND a.amt_id=CAST(b.amts_sf as character varying) ORDER BY a.gemeinde";
+	  $query="SELECT a.gem_schl, a.gemeinde FROM gemeinden as a, kataster.amtsbereiche as b WHERE CAST(b.amts_sf as character varying)='$amt_id' AND a.amt_id=CAST(b.amts_sf as character varying) ORDER BY a.gemeinde";
 	  $result = $dbqueryp($connectp,$query);
 	  $z=0;
 	  while($r = $fetcharrayp($result))
