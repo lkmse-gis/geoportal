@@ -6,7 +6,7 @@
 	$ip=getenv('REMOTE_ADDR');
 	$ip_array=explode(".",$ip);
 		
-	$query="SELECT box(st_transform(the_geom,2398)) as box, box(st_transform(the_geom,25833)) as etrsbox, area(st_transform(the_geom,2398)) as area, st_perimeter(st_transform(the_geom,2398)) as umfang, astext(st_transform(st_centroid(the_geom), 4326)) as geo, astext(st_transform(st_centroid(the_geom), 25833)) as etrs FROM fd_kreis WHERE 1=1"; 
+	$query="SELECT box(st_transform(the_geom,2398)) as box, box(st_transform(the_geom,25833)) as etrsbox, area(st_transform(the_geom,2398)) as area, st_perimeter(st_transform(the_geom,2398)) as umfang, astext(st_transform(st_centroid(the_geom), 4326)) as geo, astext(st_transform(st_centroid(the_geom), 25833)) as etrs FROM kataster.landkreis_mse WHERE 1=1"; 
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 	  $etrs = $r["etrs"];							//ETRS89 Koordinaten ermitteln (Polygonschwerpunkt)
@@ -90,7 +90,7 @@
 		$r = $fetcharrayp($result);
 		$count_aemter = $r["anzahl"];		
 	  
-	  $query="SELECT einwohner, mann, mann_quote, frau, frau_quote, aktualitaet as stand FROM fd_kreis;";	  
+	  $query="SELECT einwohner, mann, mann_quote, frau, frau_quote, aktualitaet as stand FROM kataster.landkreis_mse;";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
 		$count_einwohner = $r["einwohner"];
