@@ -606,6 +606,42 @@
 			return $html;
     }
 
-	
+	function VariablenSetzen($r)
+	  {
+	     	  
+		  $this->area=$r["area"];
+          $this->geom_25833=$r["geom_25833"];		  
+	      $this->zentrum = $r["center"];
+	      $zentrum2 = trim($zentrum,"POINT(");
+	      $zentrum3 = trim($zentrum2,")");
+	      $zentrum4 = explode(" ",$zentrum3);
+	      $this->s4283 = $r["s4283"];
+	      $this->rd83 = $r["rd83"];
+	      $this->utm = $r["utm"];
+	      $this->geo = $r["geo"];
+	      $this->umfang = $r["umfang"];
+	      $umfang2 = explode(".",$umfang);
+	      $umfang3 = $umfang2[0];
+	      $rcenter = $zentrum4[0];
+	      $rcenter1 = explode(".",$rcenter);
+	      $rcenter2 = $rcenter1[0];
+	      $hcenter = $zentrum4[1];
+	      $hcenter1 = explode(".",$hcenter);
+	      $hcenter2 = $hcenter1[0];
+	      $boxstring = $r["box"];
+	      $this->etrsbox=$r["etrsbox"];
+	      $klammern=array("(",")");
+	      $this->boxstring = str_replace($klammern,"",$boxstring);
+	      $koordinaten = explode(",",$this->boxstring);
+	      $rechts_range = $koordinaten[0]-$koordinaten[2];
+	      $rechts = $koordinaten[2]+($rechts_range/2);
+	      $hoch_range = $koordinaten[1]-$koordinaten[3];
+	      $this->hoch = $koordinaten[3]+($hoch_range/2);
+	      $this->range = $hoch_range;
+	      if ($rechts_range > $hoch_range) $range=$rechts_range;
+		  
+        }
+		
+
    }
 ?>
