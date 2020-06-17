@@ -606,7 +606,7 @@
 			return $html;
     }
 
-	function VariablenSetzenPolygon($r)
+	function VariablenSetzen($r)
 	  {
 	     	  
 		  $this->area=$r["area"];
