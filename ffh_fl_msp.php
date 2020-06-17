@@ -159,7 +159,7 @@ if ($ffh_id > 0)
 		   $count_gemeinde=$k;
 		}
 	  
-	  $query="SELECT st_transform(the_geom,25833) as geom_25833,box(st_transform(the_geom,2398)) as box,box(st_transform(the_geom,25833)) as etrsbox, area(the_geom) as area, st_astext(st_centroid(st_transform(the_geom,2398))) as center, st_astext(st_centroid(the_geom)) as utm, st_astext(st_centroid(st_transform(the_geom, 31468))) as rd83, st_astext(st_centroid(st_transform(the_geom, 4326))) as geo, st_astext(st_centroid(st_transform(the_geom, 2398))) as s4283, st_perimeter(the_geom) as umfang, gid, name,ha_etrs as area_ha, eu_nr, ffh_art1, ffh_art2, anz_art, bedeut,  managem, gis_code FROM $schema.$tabelle WHERE gid='$ffh_id'";	  
+	  $query="SELECT st_transform(the_geom,25833) as geom_25833,box(st_transform(the_geom,25833)) as etrsbox,  gid, name,ha_etrs as area_ha, eu_nr, ffh_art1, ffh_art2, anz_art, bedeut,  managem, gis_code FROM $schema.$tabelle WHERE gid='$ffh_id'";	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 	  $bildname = $r["ziel"];

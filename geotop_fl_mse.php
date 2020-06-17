@@ -1,13 +1,15 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect_i_mse.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 require_once ("classes/karte.class.php");
-require_once ("classes/legenden.class.php");
+require_once ("classes/legende_geo.class.php");
 
 //Variablen
 $titel="Geotope (Flächen)";
 $layer_name="geotope_fl_2016";
+$layer_legende="geotope_fl_2016";
+$layer_legende_2="Kreisgrenze_msp";
 $beschriftung_karte="Geotope";
 $tabelle="sg_geotope_fl_2016";
 $schema="environment";
@@ -23,7 +25,7 @@ if ($objekt_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzah"];
 	
 		
 		?>
@@ -40,7 +42,7 @@ if ($objekt_id < 1)
 			
 			<?
              $geotopkarte= new karte;
-             echo $geotopkarte->zeigeKarteBox($box_mse_gesamt,'730','490','orka','1','1','1','0','0',$beschriftung_karte,$layer_name);			 
+             echo $geotopkarte->zeigeKarteBox($box_mse_gesamt,'730','490','orka','1','0','0','0','0',$beschriftung_karte,$layer_name);			 
             ?>
 		
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
@@ -96,40 +98,23 @@ if ($objekt_id < 1)
 										</form>
 									</td>									
 								</tr>
-                                <tr>
-					             <td valign=bottom align=center colspan=2>
-					    *) <a href="<? echo $metadatenpfad.$layerid;?>" target="_blank" onclick="return hilfe_popup(this.href)">Info zum Thema <? echo $titel; ?></a>
-						         </td>
-					            </tr>
-					            <tr><td align=center colspan=2>letzte Aktualisierung: <b><i><? echo get_i_aktualitaet($db_link,$layerid); ?></td>
-								</tr>
-								<tr>
-									<td valign=bottom align=center>
-										<a href="wissenswertes/kartehilfe.php" target="_blank" onclick="return hilfe_popup(this.href)">Wie nutze ich die webbasierte Karte?<br>(OpenLayers)</a>																
-									</td>
-								</tr>
-                                <tr>									
-										<td valign=bottom align=right>
-											<!-- Tabelle für Legende -->
-											<?php
-											  $geotoplegende=new legende;
-											  echo $geotoplegende->geotope_flaechen();
-											?>
-											<!-- Ende der Tabelle für die Legende -->
-										</td>					           
-								</tr>							
-								<tr>
-										<td colspan=2 height=35></td>                                       										
-										<td><small>
-											 <? echo $cr; ?>| &nbsp;<a href="wissenswertes/kartehilfe.php" target="_blank" onclick="return hilfe_popup(this.href)">Hilfe zur Kartennutzung</a>
-										</td>	
-										<td>   
-											<a href="<? echo $metadatenpfad.$layerid;?>" target="_blank" onclick="return hilfe_popup(this.href)"><img src="images/info_button.gif" title="Metadaten" border=0></a>
-										</td>
-										<td align=right>
-											<a href="<? echo $_SERVER["PHP_SELF"];?>"><img src="images/reload.png" title="Kartenausschnitt neu laden"></a>
-										</td>
-									</tr>
+			<!-- Einbindung eines Snippets mit der Verknüpfung zu den Metadaten (3 Zeilen)-->
+			
+						<? include ("includes/meta_i_aktualitaet.php"); ?>
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>				
 							</table>
 						</div>
 					</div>
@@ -169,8 +154,8 @@ if ($objekt_id > 0)
 	  $query="SELECT  box(a.geom) as box,a.gid, a.geotop_nr, a.geotoptyp, a.legende,b.sg_bezeichnung as geotoptyp_bez,a.geotop_nr || ': ' || c.gemarkungsname_kurz || ', ' || b.sg_bezeichnung as geotop_bez,a.geom as geometrie FROM $schema.$tabelle as a, $schema.sg_geotope_code_zuordn as b, gemarkung as c WHERE a.geotoptyp=b.sg_code AND st_intersects(st_transform(a.geom,2398),c.the_geom) AND a.gid='$objekt_id'";	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $geometrie=$r[geometrie];	  
-	  $boxstring = $r[box];
+	  $geometrie=$r["geometrie"];	  
+	  $boxstring = $r["box"];
 	  ?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
@@ -219,7 +204,7 @@ if ($objekt_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=250 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[geotop_bez]; ?><? echo $font_farbe_End ;?>
+											<? echo $font_farbe ;?><? echo $r["geotop_bez"]; ?><? echo $font_farbe_End ;?>
 										</td>
 										<td width=30 rowspan=7></td>
 										<td border=0 align=center rowspan="6" colspan=3>
@@ -228,7 +213,7 @@ if ($objekt_id > 0)
 									</tr>
 									<tr>
 										<td align="center" height="35" valign=center colspan="2" bgcolor=<? echo $element_farbe; ?>>
-											<b>Typ: <? echo $r[geotoptyp_bez]; ?></b><br>											
+											<b>Typ: <? echo $r["geotoptyp_bez"]; ?></b><br>											
 										</td>
 									</tr>
 									<tr>
@@ -244,7 +229,7 @@ if ($objekt_id > 0)
 												echo "<option>Bitte ausw&auml;hlen</option>\n";
 												while($e = $fetcharrayp($result))
 													{
-														echo "<option";if ($objekt_id == $e[gid]) echo " selected"; echo " value=\"$e[gid]\">$e[geotop_bez]</option>\n";
+														echo "<option";if ($objekt_id == $e["gid"]) echo " selected"; echo ' value="',$e["gid"],'">',$e["geotop_bez"],'</option>\n';
 													}
 											?>
 												</select>
@@ -257,28 +242,22 @@ if ($objekt_id > 0)
 											<a href="<? echo $_SERVER["PHP_SELF"];?>"><? echo $font_farbe ;?>alle <? echo $titel;?><? echo $font_farbe_end ;?></a>
 										</td>										
 									</tr>									
-									<tr>										
-										<td valign=bottom align=right>
-											<!-- Tabelle für Legende -->
-											<?php
-											  $geotoplegende=new legende;
-											  echo $geotoplegende->geotope_flaechen();
-											?>
-											<!-- Ende der Tabelle für die Legende -->
-										</td>
-									</tr>	
-									<tr>
-										<td colspan=2></td>                                       										
-										<td><small>
-											 <? echo $cr; ?>| &nbsp;<a href="wissenswertes/kartehilfe.php" target="_blank" onclick="return hilfe_popup(this.href)">Hilfe zur Kartennutzung</a>
-										</td>	
-										<td>
-											<a href="<? echo $metadatenpfad.$layerid;?>" target="_blank" onclick="return hilfe_popup(this.href)"><img src="images/info_button.gif" title="Metadaten" border=0></a>
-										</td>
-										<td align=right>
-											<a href="<? echo $_SERVER["PHP_SELF"];?>?wert=<? echo $objekt_id; ?>"><img src="images/reload.png" title="Kartenausschnitt neu laden"></a>
-										</td>
-									</tr>
+								<!-- Zeile für die Legende -->
+								
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>				
 								</table>
 							</td>
 						</tr>
@@ -288,16 +267,16 @@ if ($objekt_id > 0)
 							<td valign=top>											
 								<table border=0 valign=top>
 									<tr height="35">
-										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[geotop_bez] ;?><? echo $font_farbe_end ;?></td>													
+										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r["geotop_bez"] ;?><? echo $font_farbe_end ;?></td>													
 									</tr>
 									
 									<tr>
 										<td height=30>Geotop-Nummer:</td>
-										<td><b><? echo $r[geotop_nr] ;?></b></td>													
+										<td><b><? echo $r["geotop_nr"] ;?></b></td>													
 									</tr>
 									<tr>
 										<td bgcolor=<? echo $element_farbe ?> height=30>Bezeichnung:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[geotoptyp_bez] ;?></b></td>													
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["geotoptyp_bez"] ;?></b></td>													
 									</tr>
 									
 									<tr>

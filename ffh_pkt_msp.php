@@ -310,7 +310,7 @@ if ($gemeinde_id > 0)
 	  $gem_id=$r["gemeindeid"];
 	  $gemeindename=$r["gemeinde"];
 	  
-	  $query="SELECT astext(st_transform(geom,2398)) as koordinaten, astext(st_transform(geom, 25833)) as utm, st_astext(st_centroid(st_transform(geom, 31468))) as rd83, box(st_transform(geom,25833)) as etrsbox, st_transform(geom,25833) as geom_25833, astext(st_transform(geom, 4326)) as geo, gid, eu_nr, name_zus, name_tg FROM $schema.$tabelle WHERE gid='$themen_id'";
+	  $query="SELECT  st_transform(geom,25833) as geom_25833,box(st_transform(geom,25833)) as etrsbox,  gid, eu_nr, name_zus, name_tg FROM $schema.$tabelle WHERE gid='$themen_id'";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
@@ -370,7 +370,7 @@ if ($gemeinde_id > 0)
 
 														while($e = $fetcharrayp($result))
 															{
-																echo "<option";if ($gemeinde_id == $e["gem_schl"]) echo " selected"; echo ' value="',$e["gem_schl"],'">',$e["gemeinde"],'</option>\n';
+																echo "<option";if ($gem_id == $e["gem_schl"]) echo " selected"; echo ' value="',$e["gem_schl"],'">',$e["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
@@ -391,21 +391,19 @@ if ($gemeinde_id > 0)
 										</td>
 										
 									</tr>
-									<tr>										
-										<td valign=bottom align=right>
-											<table border="1" rules="none" width="100%" valign=bottom align=right>					
-												<tr>
-													<td colspan=4 align=center height=25><i>Kartenlegende:</i></td>
-												</tr>
-												<tr>
-													<td width=100 align=right><small><? echo $label_auswahl;?>: </td>
-													<td align=right><img src="images/ffh_pkt.gif" width=20></td>
-													<td align=right><small>Kreisgrenze: </td>
-													<td align=right><img src="images/gemeindegrenze_2.png" width=20></td>
-												</tr>																					
-											</table>
-										</td>
-									</tr>
+								<!-- Zeile für die Legende -->
+								
+								   <tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,$layer_legende_3,'','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
 									<? include ("includes/block_3_uk.php"); ?>	
                                  </table>
 								 
