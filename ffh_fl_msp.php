@@ -164,7 +164,7 @@ if ($ffh_id > 0)
 	  $r = $fetcharrayp($result);
 	  $bildname = $r["ziel"];
 	  $ffh_karte= new karte;
-      $ffh_karte->VariablenSetzen($r);  ?>
+      $ffh_karte->VariablenSetzenPolygon($r);  ?>
 	  
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">

@@ -470,10 +470,10 @@ function geo_punkt($geom,$connectp,$dbqueryp,$fetcharrayp)
  $result = $dbqueryp($connectp,$query);
  $r = $fetcharrayp($result);
   
- $rd83 = $r[rd83];
- $utm = $r[utm];
- $geo = $r[geo];
- $s4283 = $r[gk4283];
+ $rd83 = $r["rd83"];
+ $utm = $r["utm"];
+ $geo = $r["geo"];
+ $s4283 = $r["gk4283"];
  
  $html=' <table border=0>
 			<tr height="35">

@@ -606,7 +606,7 @@
 			return $html;
     }
 
-	function VariablenSetzen($r)
+	function VariablenSetzenPolygon($r)
 	  {
 	     	  
 		  $this->area=$r["area"];
@@ -628,7 +628,7 @@
 	      $hcenter = $zentrum4[1];
 	      $hcenter1 = explode(".",$hcenter);
 	      $hcenter2 = $hcenter1[0];
-	      $boxstring = $r["box"];
+	      $boxstring = $r["etrsbox"];
 	      $this->etrsbox=$r["etrsbox"];
 	      $klammern=array("(",")");
 	      $this->boxstring = str_replace($klammern,"",$boxstring);

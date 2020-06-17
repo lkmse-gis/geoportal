@@ -1,18 +1,25 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
+require_once ("classes/karte.class.php");
+require_once ("classes/legende_geo.class.php");
+$layer_legende="Fauna Flora Habitat (Punkte)";
+$layer_legende_2="Kreisgrenze_msp";
+$layer_legende_3="msp_outline_gem";
+$layer="Fauna Flora Habitat (Punkte)";
 
 //globale Varibalen
 $titel="Fauna Flora Habitat (Punkte)";
-$titel2="FFH (Punkt)";
-$datei="ffh_pkt_msp.php";
+$label_auswahl="FFH (Punkt)";
+$beschriftung_karte="Fauna Flora Habitat Punkt";
+$datei=$_SERVER["PHP_SELF"];
 $tabelle="sg_ffh_pkt";
 $schema="environment";
 $kuerzel="ffhpkt";
 $layerid="32250";
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 $gemeinde_id=$_GET["gemeinde"];
 $ffh_pkt=$_GET["$kuerzel"];
@@ -24,13 +31,9 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	?>
-		<?php
-		$lon=368607;
-		$lat=5937811;
-		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
@@ -40,13 +43,9 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 		<? include ("ajax.php"); ?>
 		<? include ("includes/zeit.php"); ?>
-		<? include ("includes/meta_popup.php"); ?>
-		<? include ("includes/block_1_css_map.php"); ?>			
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_1.php"); ?>
-		</script>
+		<? include ("includes/meta_popup.php"); 
+        $ffh_karte= new karte;
+        echo $ffh_karte->zeigeKarteBox($box_mse_gesamt,'740','450','orka','1','0','0','0','0',$beschriftung_karte,$layer);?>
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
@@ -60,7 +59,27 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 			<div id="wrapper">
 				<div id="content">
 					<table width="100%" border=0 cellpadding="0" align="center" cellspacing="0">
-						<? include ("includes/count_map.php"); ?>
+								<tr>
+									<!-- linke Spalte mit Auswahlfeld, Kartenlegende usw. -->
+									
+									<td align="center" valign="top" height=30 colspan=2><br>
+										<h3><? echo $titel; ?>*</h3>
+										Zu diesem Thema befinden sich<br>
+										<b><? echo $count; ?></b> Datens&auml;tze in der Datenbank.
+									</td>
+									
+									<!-- schmale Zwischenspalte für den Abstand zur Karte -->
+									
+									<td width=30 rowspan=8></td>
+									
+									<!-- Spalte für die Karte, der Map-Container wird in der Klasse Karte erzeugt -->
+									
+									<td border=0 valign=top align=center rowspan=7 colspan=3>
+										<br>
+										<div style="margin:1px" id="map"></div>
+									</td>
+								</tr>
+		<!-- es folgen 2 Zeilen für die Auswahl des Objektes -->
 						<tr>
 							<td align="center" height=50 colspan=2>
 								Gemeinde ausw&auml;hlen:
@@ -83,35 +102,40 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 								</select>
 								</form>
 							</td>
-						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
-						<tr>										
-										<td valign=bottom align=right>
-											<table border="1" rules="none" width="100%" valign=bottom align=right>					
-												<tr>
-													<td colspan=4 align=center height=25><i>Kartenlegende:</i></td>
-												</tr>
-												<tr>
-													<td width=100 align=right><small><? echo $titel2;?>: </td>
-													<td align=right><img src="images/ffh_pkt.gif" width=20></td>
-													<td align=right><small>Kreisgrenze: </td>
-													<td align=right><img src="images/gemeindegrenze_2.png" width=20></td>
-												</tr>																					
-											</table>
-										</td>
-									</tr>
-						<? include ("includes/block_1_uk.php"); ?>						
-					</table>
-				</div>
-			</div>
-			<div id="navigation">
-				<? include ("includes/navigation.php"); ?>
-			</div>
-			<div id="extra">
-				<? include ("includes/news.php"); ?>
-			</div>
-			<div id="footer">			
-		  </div>
+						</tr>
+			<!-- Einbindung eines Snippets mit der Verknüpfung zu den Metadaten (3 Zeilen)-->
+			
+						<? include ("includes/meta_i_aktualitaet.php"); ?>
+						
+			<!-- Zeile für die Legende -->
+								
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+																			
+
+			 <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+			    <? include ("includes/block_1_1_uk.php"); ?>				
+			 </table>
+			</div>  <!-- Ende Content-Container -->
+		</div>  <!-- Ende Wrapper-Container -->			
+		<div id="navigation">
+		<? include ("includes/navigation.php"); ?>
+		</div>
+		<div id="extra">
+		<? include ("includes/news.php"); ?>
+		</div>
+		<div id="footer">			
+		</div>
 		</div>
 		</body>
 		</html>
@@ -140,28 +164,10 @@ if ($gemeinde_id > 0)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemeindename = $r[name];
-	  $zentrum = $r[etrscenter];
-	  $zentrum2 = trim($zentrum,"POINT(");
-	  $zentrum3 = trim($zentrum2,")");
-	  $zentrum4 = explode(" ",$zentrum3);
-	  $rcenter = $zentrum4[0];
-	  $hcenter = $zentrum4[1];
-	  $boxstring = $r[etrsbox];
-	  $klammern=array("(",")");
-	  $boxstring = str_replace($klammern,"",$boxstring);
-	  $koordinaten = explode(",",$boxstring);
-	  $rechts_range = $koordinaten[0]-$koordinaten[2];
-	  $rechts = $koordinaten[2]+($rechts_range/2);
-	  $hoch_range = $koordinaten[1]-$koordinaten[3];
-	  $hoch = $koordinaten[3]+($hoch_range/2);
-	  $range = $hoch_range;
-	  if ($rechts_range > $hoch_range) $range=$rechts_range;
-    
-
-        $lon=$rechts;
-		$lat=$hoch;
-		?>
+	  $gemeindename = $r["name"];
+	  $ffh_karte= new karte;
+      $ffh_karte->VariablenSetzenPolygon($r);  ?>
+	  
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
@@ -172,15 +178,7 @@ if ($gemeinde_id > 0)
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
 		<? include ("includes/bilder_popup.php"); ?>
-		<? include ("includes/block_2_css_map.php"); ?>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />		
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_2.php"); ?>
-		</script>
-		<style type="text/css">
-			td.rand {border: solid #000000 1px;}
-		</style>
+		<?php echo $ffh_karte->zeigeKarteBox($ffh_karte->etrsbox,'680','450','orka','1','0','1','0','0',$beschriftung_karte,$layer); ?>			 
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
@@ -222,7 +220,7 @@ if ($gemeinde_id > 0)
 
 														while($r = $fetcharrayp($result))
 															{
-																echo "<option";if ($gemeinde_id == $r[gem_schl]) echo " selected"; echo " value=\"$r[gem_schl]\">$r[gemeinde]</option>\n";
+																echo "<option";if ($gemeinde_id == $r["gem_schl"]) echo " selected"; echo ' value="',$r["gem_schl"],'">',$r["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
@@ -237,22 +235,19 @@ if ($gemeinde_id > 0)
 										
 									</tr>
 									<tr><td  height=10></td></tr>
-									<tr>
-										
-										<td valign=bottom align=right>
-											<table border="1" rules="none" width="100%" valign=bottom align=right>					
-											<tr>
-												<td colspan=4 align=center height=25><i>Kartenlegende:</i></td>
-											</tr>
-											<tr>
-												<td width=100 align=right><small><? echo $titel2;?>: </td>
-												<td align=right><img src="images/ffh_pkt.gif" width=20></td>
-												<td align=right><small>Kreisgrenze: </td>
-												<td align=right><img src="images/gemeindegrenze_2.png" width=30></td>
-											</tr>																					
-										</table>
-										</td>
-									</tr>									
+								<!-- Zeile für die Legende -->
+								
+								   <tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,$layer_legende_3,'','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
 									<? include ("includes/block_2_uk_gem.php"); ?>	
 								</table> <!-- Ende innere Tablle oberer Block -->
 							</td>
@@ -275,9 +270,9 @@ if ($gemeinde_id > 0)
 													{ 
 														echo "<tr bgcolor=",get_farbe($v),">";																								
 														echo "
-														<td align='center' height='30'><a href=\"$datei?$kuerzel=",$ffhpkt[$v][gid],"\">",$ffhpkt[$v][eu_nr],"</a></td>",
-														"<td align='center'>",$ffhpkt[$v][name_zus],"</td>",
-														"<td align='center'>",$ffhpkt[$v][name_tg],"</td>";
+														<td align='center' height='30'><a href=\"$datei?$kuerzel=",$ffhpkt[$v]["gid"],"\">",$ffhpkt[$v]["eu_nr"],"</a></td>",
+														"<td align='center'>",$ffhpkt[$v]["name_zus"],"</td>",
+														"<td align='center'>",$ffhpkt[$v]["name_tg"],"</td>";
 													}
 												?>																																				
 											</table>
@@ -310,37 +305,19 @@ if ($gemeinde_id > 0)
 	  $query="SELECT a.amt, a.amt_id, a.gemeinde, a.gem_schl as gemeindeid, b.gid FROM gemeinden as a, $schema.$tabelle as b WHERE ST_WITHIN(st_transform(b.geom,2398), a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $amtname=$r[amt];
-	  $amt=$r[amt_id];
-	  $gem_id=$r[gemeindeid];
-	  $gemeindename=$r[gemeinde];
+	  $amtname=$r["amt"];
+	  $amt=$r["amt_id"];
+	  $gem_id=$r["gemeindeid"];
+	  $gemeindename=$r["gemeinde"];
 	  
-	  $query="SELECT astext(st_transform(geom,2398)) as koordinaten, astext(st_transform(geom, 25833)) as utm, st_astext(st_centroid(st_transform(geom, 31468))) as rd83, astext(st_transform(geom, 4326)) as geo, gid, eu_nr, name_zus, name_tg FROM $schema.$tabelle WHERE gid='$themen_id'";
+	  $query="SELECT astext(st_transform(geom,2398)) as koordinaten, astext(st_transform(geom, 25833)) as utm, st_astext(st_centroid(st_transform(geom, 31468))) as rd83, box(st_transform(geom,25833)) as etrsbox, st_transform(geom,25833) as geom_25833, astext(st_transform(geom, 4326)) as geo, gid, eu_nr, name_zus, name_tg FROM $schema.$tabelle WHERE gid='$themen_id'";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $bildname = $r[ziel];
-	  $koord = $r[koordinaten];
-	  $koord2 = trim($koord,"POINT(");
-	  $koord3 = trim($koord2,")");
-	  $koord4 = explode(" ",$koord3);
-	  $rd83 = $r[rd83];
-	  $utm = $r[utm];
-	  $geo=$r[geo];
-	  $utm2 = trim($utm,"POINT(");
-	  $utm3 = trim($utm2,")");
-	  $utm4 = explode(" ",$utm3);
-	  $utm5 = explode(".",$utm4[0]);
-	  $utm_lon = $utm5[0];
-	  $utm6 = explode(".",$utm4[1]);
-	  $utm_lat = $utm6[0];
-	  $lon = $koord4[0];
-	  $lon1 = explode(".",$koord4[0]);
-	  $lon2 = $lon1[0];
-	  $lat = $koord4[1];
-	  $lat1 = explode(".",$koord4[1]);
-	  $lat2 = $lat1[0];
-		?>
+	  $bildname = $r["ziel"];
+	  $ffh_karte= new karte;
+      $ffh_karte->VariablenSetzenPolygon($r);  ?>
+	  
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
@@ -351,16 +328,7 @@ if ($gemeinde_id > 0)
 		<? include ("ajax.php"); ?>
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
-		<? include ("includes/bilder_popup.php"); ?>
-		<? include ("includes/block_3_css_map.php"); ?>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_3.php"); ?>
-		</script>
-		<style type="text/css">
-			td.rand {border: solid #000000 2px;}
-		</style> 
+		<?php echo $ffh_karte->zeigeKarteBox($ffh_karte->etrsbox,'680','450','orka','1','0','0','0','0',$beschriftung_karte,$layer); ?>			 
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
@@ -379,7 +347,7 @@ if ($gemeinde_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=270 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[name_tg]; ?><? echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?><? echo $r["name_tg"]; ?><? echo $font_farbe_end ;?>
 										</td>
 										<td width=10 rowspan="7"></td>
 										<td border=0 valign=top align=left rowspan="6" colspan=3>
@@ -402,7 +370,7 @@ if ($gemeinde_id > 0)
 
 														while($e = $fetcharrayp($result))
 															{
-																echo "<option";if ($gem_id == $e[gem_schl]) echo " selected"; echo " value=\"$e[gem_schl]\">$e[gemeinde]</option>\n";
+																echo "<option";if ($gemeinde_id == $e["gem_schl"]) echo " selected"; echo ' value="',$e["gem_schl"],'">',$e["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
@@ -430,7 +398,7 @@ if ($gemeinde_id > 0)
 													<td colspan=4 align=center height=25><i>Kartenlegende:</i></td>
 												</tr>
 												<tr>
-													<td width=100 align=right><small><? echo $titel2;?>: </td>
+													<td width=100 align=right><small><? echo $label_auswahl;?>: </td>
 													<td align=right><img src="images/ffh_pkt.gif" width=20></td>
 													<td align=right><small>Kreisgrenze: </td>
 													<td align=right><img src="images/gemeindegrenze_2.png" width=20></td>
@@ -446,22 +414,22 @@ if ($gemeinde_id > 0)
 							<td valign=top>											
 								<table border=0 valign=top>
 									<tr height="35">
-										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[name_tg] ;?><? echo $font_farbe_end ;?></td>													
+										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r["name_tg"] ;?><? echo $font_farbe_end ;?></td>													
 									</tr>
 									<tr height="30">
 										<td bgcolor=<? echo $element_farbe ?>>EU-Nummer:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[eu_nr] ;?></b></td>
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["eu_nr"] ;?></b></td>
 									</tr>
 									<tr height="30">
 										<td>Name:</td>
-										<td><b><? echo $r[name_zus] ;?></b></td>																									
+										<td><b><? echo $r["name_zus"] ;?></b></td>																									
 									</tr>
 									
 									
 								</table>
 							</td>									
 							<td valign=top align=center width="250">
-							<? include("includes/geo_point.php"); ?>	
+							<?php echo geo_punkt($ffh_karte->geom_25833,$connectp,$dbqueryp,$fetcharrayp); ?>	
 							</td>
 						</tr>
 						</table>
