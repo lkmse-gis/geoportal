@@ -128,7 +128,7 @@ if ($nlp_id < 1)
 
 if ($nlp_id > 0)
    {   
-	  $query="SELECT a.name, a.amts_sf FROM fd_amtsbereiche as a, $schema.$tabelle as b WHERE ST_INTERSECTS(b.the_geom,a.the_geom) AND b.gid='$nlp_id' ORDER by a.name";
+	  $query="SELECT a.name, a.amts_sf FROM kataster.amtsbereiche as a, $schema.$tabelle as b WHERE ST_INTERSECTS(b.the_geom,a.the_geom) AND b.gid='$nlp_id' ORDER by a.name";
 	  $result = $dbqueryp($connectp,$query);
 	  $i=0;
 	  while($r = $fetcharrayp($result))
@@ -138,7 +138,7 @@ if ($nlp_id > 0)
 		   $count=$i;
 		}
 
-	  $query="SELECT a.gem_schl, a.gemeinde FROM gemeinden as a, $schema.$tabelle as b WHERE ST_INTERSECTS(b.the_geom,a.the_geom) AND b.gid='$nlp_id' ORDER by a.gemeinde";
+	  $query="SELECT a.gem_schl, a.gemeinde FROM kataster.gemeinden as a, $schema.$tabelle as b WHERE ST_INTERSECTS(b.the_geom,a.the_geom) AND b.gid='$nlp_id' ORDER by a.gemeinde";
 	  $result = $dbqueryp($connectp,$query);
 	  $k=0;
 	  while($r = $fetcharrayp($result))
