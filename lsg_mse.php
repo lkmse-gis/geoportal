@@ -136,7 +136,7 @@ if ($lsg_id < 1)
 
 if ($lsg_id > 0)
    {   
-	  $query="SELECT a.name, a.amts_sf FROM fd_amtsbereiche as a, $schema.$tabelle as b WHERE ST_INTERSECTS(st_transform(b.geom,2398),a.the_geom) AND b.gid='$lsg_id' ORDER by a.name";
+	  $query="SELECT a.name, a.amts_sf FROM kataster.amtsbereiche as a, $schema.$tabelle as b WHERE ST_INTERSECTS(st_transform(b.geom,2398),a.the_geom) AND b.gid='$lsg_id' ORDER by a.name";
 	  $result = $dbqueryp($connectp,$query);
 	  $i=0;
 	  while($r = $fetcharrayp($result))

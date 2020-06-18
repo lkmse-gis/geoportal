@@ -7,7 +7,7 @@ require_once ("classes/legende_geo.class.php");
 $layer_legende="Naturpark_2016";
 $layer_legende_2="Kreisgrenze_msp";
 $layer="Naturpark_2016";
-$label_auswahl="Naturpark_2016";
+$label_auswahl="Naturpark";
 
 //globale Varibalen
 $titel="Naturparke";
