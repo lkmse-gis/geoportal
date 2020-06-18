@@ -1,27 +1,19 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 require_once ("classes/karte.class.php");
 require_once ("classes/legende_geo.class.php");
+$layer_legende="Naturschutzgebiete";
+$layer_legende_2="Kreisgrenze_msp";
+$layer="Naturschutzgebiete";
+$label_auswahl="Naturschutzgebiet";
 
 //globale Varibalen
-$datei="nsg_mse.php";
+$datei=$_SERVER["PHP_SELF"];
 $beschriftung_karte="Naturschutzgebiete";
-$layer_name="Naturschutzgebiete";
-
 $titel="Naturschutzgebiete";
-$titel2="Naturschutzgebiet";
 
-// Legenden - Layer - msp.map
-$layer_name2="";
-$breite1="90";
-$breite2="120";
-$layer="Kreisgrenze_msp";
-$layer2="aemter_msp_outline";
-$layer3="Ortsteile_lt_rka";
-$layer4="Naturschutzgebiete";
-$layer99="";
 
 $tabelle="sg_naturschutzgebiete";
 $schema="environment";
@@ -29,7 +21,7 @@ $schema="environment";
 $kuerzel="nsg";
 $layerid="32010";
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 $nsg_id=$_GET["$kuerzel"];
 
@@ -39,10 +31,9 @@ if ($nsg_id < 1)
         $query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";      
         $result = $dbqueryp($connectp,$query);
         $r = $fetcharrayp($result);
-        $count = $r[anzahl];
+        $count = $r["anzahl"];
     
-        $lon=368607;
-        $lat=5937811;
+
         ?>
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
@@ -55,9 +46,9 @@ if ($nsg_id < 1)
         <? include ("includes/zeit.php"); ?>
         <? include ("includes/meta_popup.php"); ?>
 		<?
-           $geotopkarte= new karte;
-           echo $geotopkarte->zeigeKarteBox($box_mse_gesamt,'730','490','orka','1','1','0','0','0',$beschriftung_karte,$layer_name);
-        ?>
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($box_mse_gesamt,'750','510','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
+            ?>
 		
         <script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
         
@@ -87,7 +78,7 @@ if ($nsg_id < 1)
                                 </tr>
                                 <tr>
                                     <td align="center"  height=30 colspan=2>
-                                        <? echo $titel2; ?> ausw&auml;hlen:
+                                        <? echo $label_auswahl; ?> ausw&auml;hlen:
                                     </td>
                                 </tr>
                                 <tr>
@@ -108,29 +99,35 @@ if ($nsg_id < 1)
                                         </form>
                                     </td>
                                 </tr>                                
-                                <? include ("includes/meta_aktualitaet.php"); ?>
-                                     
-								<!-- Tabelle für Legende -->
-										<td valign=bottom align=right>
-											<table  width="100%" border="1" cellpadding="0" cellspacing="0" align="left">
-											<B>Kartenlegende :</B>
-												<?php
-													$legende_geo= new legende_geo;
-													echo $legende_geo->zeigeLegende2th($breite1,$breite2,$layer,$layer2,$layer99,$layer4,$layer99,$layer99)
-												?>
-										</table> 
-										</td>
-									<!-- ENDE Tabelle für Legende --> 
-                            	
-                          <? include ("includes/block_1_uk.php"); ?> 
-                            </table>
-                        </div>
-                      </div>
-                    <?php 
-                        echo div_navigation(); 
-                        echo div_extra(); 
-                        echo div_footer(); 
-                    ?>
+								<!-- es folgt die Einbindung eines Snippets mit der Verknüpfung zu den Metadaten -->
+								
+                                <? include ("includes/meta_i_aktualitaet.php"); ?> 
+								
+								<!-- Zeile für die Legende -->
+								
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>	
+							</table>
+						</div>
+					</div>
+					<?php 
+					echo div_navigation(); 
+					echo div_extra(); 
+					echo div_footer(); 
+					?>
                     
                 </div>
             </body>
@@ -160,24 +157,13 @@ if ($nsg_id > 0)
            $count=$k;
         }
       
-      $query="SELECT box(st_transform(the_geom,25833)) as box, area(the_geom) as area, st_astext(st_centroid(the_geom)) as center, st_astext(st_centroid(st_transform(the_geom, 25833))) as utm, st_astext(st_centroid(st_transform(the_geom, 31468))) as rd83, st_astext(st_centroid(st_transform(the_geom, 4326))) as geo, st_astext( st_centroid(st_transform(the_geom, 2398))) as koordinaten, st_perimeter(the_geom) as umfang, gid, name, area_ha, ausweis_mv, gis_code, lage FROM $schema.$tabelle WHERE gid='$nsg_id'";
+      $query="SELECT box(st_transform(the_geom,25833)) as etrsbox, st_transform(the_geom,25833) as geom_25833,  gid, name, area_ha, ausweis_mv, gis_code, lage,rechtsgr FROM $schema.$tabelle WHERE gid='$nsg_id'";
       
       $result = $dbqueryp($connectp,$query);
       $r = $fetcharrayp($result);     
-      $area=$r[area];
-	  $s4283 = $r[koordinaten];
-      $rd83 = $r[rd83];
-      $utm = $r[utm];
-      $geo = $r[geo];
-	  $umfang = $r[umfang];
-      $boxstring = $r[box];
-      $klammern=array("(",")");
-      $boxstring = str_replace($klammern,"",$boxstring);
-      $koordinaten = explode(",",$boxstring);
-	  $hoch_range = $koordinaten[1]-$koordinaten[3];
-      $rechts_range = $koordinaten[0]-$koordinaten[2];
-  
-        ?>
+	  $geom_25833 = $r["geom_25833"];
+      $etrsbox = $r["etrsbox"];
+      ?>
         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
         <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -188,10 +174,10 @@ if ($nsg_id > 0)
         <? include ("ajax.php"); ?>
         <? include ("includes/zeit.php"); ?>
         <? include ("includes/meta_popup.php"); ?>
-        <?php
-			$geotopkarte= new karte;
-            echo $geotopkarte->zeigeKarteBox($boxstring,'730','490','orka','0','0','1','0','0',$beschriftung_karte,$layer_name);
-        ?>
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($etrsbox,'700','520','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
+        ?> 
         <script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 	</head>
         <body onload="init();load();">
@@ -209,7 +195,7 @@ if ($nsg_id > 0)
                                 <table border=0>
                                     <tr>
                                         <td height="40" align="center" valign=center width=250 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-                                            <? echo $font_farbe ;?><? echo $r[name]; ?><? echo $font_farbe_End ;?>
+                                            <? echo $font_farbe ;?><? echo $r["name"]; ?><? echo $font_farbe_End ;?>
                                         </td>
                                         <td width=30 rowspan=7></td>
                                         <td border=0 align=center rowspan="6" colspan=3>
@@ -218,11 +204,11 @@ if ($nsg_id > 0)
                                     </tr>
                                     <tr>
                                         <td align="center" height="35" valign=center colspan="2" bgcolor=<? echo $element_farbe; ?>>
-                                            <b>GIS-Code: <? echo $r[gis_code]; ?></b><br>                                            
+                                            <b>GIS-Code: <? echo $r["gis_code"]; ?></b><br>                                            
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td align="center" height="25" colspan="2"><? echo $titel2;?>:</td>                                        
+                                        <td align="center" height="25" colspan="2"><? echo $label_auswahl;?>:</td>                                        
                                     </tr>
                                     <tr>
                                         <td align="center" height="25" colspan="2">
@@ -233,7 +219,7 @@ if ($nsg_id > 0)
                                                         $result = $dbqueryp($connectp,$query);                                                        
                                                         while($e = $fetcharrayp($result))
                                                         {
-                                                         echo "<option";if ($nsg_id == $e[gid]) echo " selected"; echo " value=\"$e[gid]\" title=\"$e[name]\">$e[name]</option>\n";
+                                                         echo "<option";if ($nsg_id == $e["gid"]) echo " selected"; echo ' value="',$e["gid"],'" title="',$e["name"],'">',$e["name"],'</option>\n';
                                                         }
                                                     ?>
                                                 </select>
@@ -245,49 +231,50 @@ if ($nsg_id > 0)
                                             <a href="<? echo $datei;?>"><? echo $font_farbe ;?>alle <? echo $titel;?><? echo $font_farbe_end ;?></a>
                                         </td>                                        
                                     </tr>                                    
-                                    <tr>                                        
-                                     <!-- Tabelle für Legende -->
-										<td valign=bottom align=right>
-											<table  width="100%" border="1" cellpadding="0" cellspacing="0" align="left">
-											<B>Kartenlegende :</B>
-												<?php
-													$legende_geo= new legende_geo;
-													echo $legende_geo->zeigeLegende2th($breite1,$breite2,$layer,$layer99,$layer99,$layer4,$layer99,$layer99)
-												?>
-										</table> 
-										</td>
-									<!-- ENDE Tabelle für Legende --> 
-                                    </tr>    
-									<? include ("includes/block_1_uk.php"); ?>
-                                </table>
-                            </td>
-                        </tr>
+								<!-- Zeile für die Legende -->
+								
+								   <tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>				</table>
+							</td>
+						</tr>
                     </table>
                     <table width="100%" border="0" cellpadding="0" align="center" cellspacing="0">
                             <tr>
                             <td valign=top>                                            
                                 <table border=0 valign=top>
                                     <tr height="35">
-                                        <td colspan=2  width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[name] ;?><? echo $font_farbe_end ;?></td>                                                    
+                                        <td colspan=2  width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r["name"] ;?><? echo $font_farbe_end ;?></td>                                                    
                                     </tr>
                                     <tr height="30">
                                         <td bgcolor=<? echo $element_farbe ?> width="30%">Ausweisung:</td>
-                                        <td bgcolor=<? echo $element_farbe ?>><b><? echo $r[ausweis_mv] ;?></b></td>                                                    
+                                        <td bgcolor=<? echo $element_farbe ?>><b><? echo $r["ausweis_mv"] ;?></b></td>                                                    
                                     </tr>
                                     <tr height="30">
                                         <td>Fl&auml;che in ha:</td>
-                                        <td><b><? echo $r[area_ha] ;?></b></td>                                                    
+                                        <td><b><? echo $r["area_ha"] ;?></b></td>                                                    
                                     </tr>
                                     <tr height="30">
-                                        <td bgcolor=<? echo $element_farbe ?> width="30%">Zust&auml;ndigkeit:</td>
-                                        <td bgcolor=<? echo $element_farbe ?>><b><? echo $r[zustaendig] ;?></b></td>                                                    
+                                        <td bgcolor=<? echo $element_farbe ?> width="30%">Rechtsgrundlage:</td>
+                                        <td bgcolor=<? echo $element_farbe ?>><b><? echo $r["rechtsgr"] ;?></b></td>                                                    
                                     </tr>
                                     <tr height="30">
                                         <td>Lagebeschreibung:</td>
-                                        <td><b><? echo $r[lage] ;?></b></td>                                                    
+                                        <td><b><? echo $r["lage"] ;?></b></td>                                                    
                                     </tr>
                                     <tr>
-                                        <td bgcolor=<? echo $element_farbe ?> valign=top><? echo $titel2;?> schneidet folgende<br>&Auml;mter des Kreises:</td>
+                                        <td bgcolor=<? echo $element_farbe ?> valign=top><? echo $label_auswahl;?> schneidet folgende<br>&Auml;mter des Kreises:</td>
                                         <td bgcolor=<? echo $element_farbe ?>><b>
                                             <?php 
                                                 for($x=0;$x<$i;$x++)
@@ -296,7 +283,7 @@ if ($nsg_id > 0)
                                         </td>                                                    
                                     </tr>
                                     <tr>
-                                        <td valign=top><? echo $titel2;?> schneidet folgende<br>Gemeinden des Kreises:</td>
+                                        <td valign=top><? echo $label_auswahl;?> schneidet folgende<br>Gemeinden des Kreises:</td>
                                         <td><b>
                                             <?php 
                                                 for($y=0;$y<$k;$y++)
@@ -308,7 +295,7 @@ if ($nsg_id > 0)
                             </td>
                             
                             <td valign=top align=center width="350">
-                                <? include ("includes/geo_flaeche.php") ?>
+                                <? echo geo_flaeche($geom_25833,$connectp,$dbqueryp,$fetcharrayp) ?>
                             </td>
                         </tr>
                     </table>                
