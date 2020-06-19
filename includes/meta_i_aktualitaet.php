@@ -2,7 +2,7 @@
 	echo "
 	<tr>
 	    <td valign=bottom align=\"center\" colspan=2>
-			<a href=\"metadaten/metadaten.php?Layer_ID=$layerid\" target=\"_blank\" onclick=\"return meta_popup(this.href)\">Info zum Thema $titel</a>
+			<a href=\"metadaten/metadaten.php?Layer_ID=$layerid\" target=\"_blank\" onclick=\"return meta_popup(this.href)\">*)Info zum Thema $titel</a>
 	    </td>
 	</tr>
 	<tr>
