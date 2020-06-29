@@ -8,6 +8,7 @@ $layer_legende="Polizeidienststellen";
 $layer_legende_2="Kreisgrenze_msp";
 $layer="Polizeidienststellen";
 $label_auswahl="Polizeidienststelle";
+$beschriftung_karte="Polizeidienststelle";
 
 //globale Varibalen
 $titel="Polizeidienststellen";
