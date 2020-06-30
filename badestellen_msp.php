@@ -47,7 +47,7 @@ if ($themen_id < 1 AND $gemarkung_id < 1)
 		<? include ("includes/meta_popup.php"); ?>
 		<?
              $geoportal_karte= new karte;
-             echo $geoportal_karte->zeigeKarteBox($box_mse_gesamt,'750','510','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
+             echo $geoportal_karte->zeigeKarteBox($box_mse_gesamt,'685','510','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
             ?>
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
@@ -551,14 +551,11 @@ if ($gemarkung_id > 0)
 					</table>
 				</div>
 			</div>
-			<div id="navigation">
-				<? include ("includes/navigation.php"); ?>
-			</div>
-			<div id="extra">
-             <? include ("includes/news.php") ?>			
-			</div>
-			<div id="footer">				
-			</div>
+			<?php 
+                echo div_navigation(); 
+                echo div_extra(); 
+                echo div_footer(); 
+            ?>
 		</div>
 		</body>
 		</html>
