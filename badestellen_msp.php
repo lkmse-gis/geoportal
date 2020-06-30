@@ -1,12 +1,20 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
+require_once ("classes/karte.class.php");
+require_once ("classes/legende_geo.class.php");
+$layer_legende="Badestellen";
+$layer_legende_2="Kreisgrenze_msp";
+$layer_legende_3="msp_outline_gemkg";
+$layer="Badestellen";
+$label_auswahl="Badestelle";
+$beschriftung_karte="Badestelle";
 
 //globale Varibalen
 $titel="Badestellen";
-$titel2="Badestelle";
-$datei="badestellen_msp.php";
+
+$datei=$_SERVER["PHP_SELF"];
 $tabelle="tourism.badestellen";
 $kuerzel="badestelle";
 $layerid="131300";
@@ -16,7 +24,7 @@ $gemarkung_id=$_GET["gemarkung"];
 $badestellen_id=$_GET["$kuerzel"];
 $themen_id=$badestellen_id;
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 if ($themen_id < 1 AND $gemarkung_id < 1)
     { 
@@ -24,13 +32,9 @@ if ($themen_id < 1 AND $gemarkung_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	?>
-		<?php
-		$lon=368607;
-		$lat=5937811;
-		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
@@ -41,12 +45,10 @@ if ($themen_id < 1 AND $gemarkung_id < 1)
 		<? include ("ajax.php"); ?>
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
-		<? include ("includes/block_1_css_map.php"); ?>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyle_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_1.php"); ?>
-		</script>
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($box_mse_gesamt,'750','510','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
+            ?>
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
@@ -72,7 +74,7 @@ if ($themen_id < 1 AND $gemarkung_id < 1)
 								<select name="gemarkung" onchange="document.<? echo $kuerzel;?>.submit();" style="font-family:Arial; font-size: 8pt; font-weight: bold">
 								    <option>Bitte auswählen</option>
 									<?php
-										$query="SELECT DISTINCT a.gemarkung,a.gemkgschl FROM show_gemarkungen as a, gemarkung as b,$tabelle as c WHERE ST_WITHIN(st_transform(c.the_geom,2398),b.the_geom) AND CAST(b.geographicidentifier as INTEGER)=a.gemkgschl ORDER BY gemarkung";
+										$query="SELECT DISTINCT a.gemarkung,a.gemkgschl FROM show_gemarkungen as a, kataster.gemarkung as b,$tabelle as c WHERE ST_WITHIN(st_transform(c.the_geom,2398),b.the_geom) AND CAST(b.geographicidentifier as INTEGER)=a.gemkgschl ORDER BY gemarkung";
 										$result = $dbqueryp($connectp,$query);
 
 										while($r = $fetcharrayp($result))
@@ -84,20 +86,36 @@ if ($themen_id < 1 AND $gemarkung_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
-						<? include ("includes/block_1_legende.php"); ?>
-						<? include ("includes/block_1_uk.php"); ?>
+								<!-- es folgt die Einbindung eines Snippets mit der Verknüpfung zu den Metadaten -->
+								
+                                <? include ("includes/meta_i_aktualitaet.php"); ?> 
+								
+								<!-- Zeile für die Legende -->
+								
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>	
 					</table>
 				</div>
 			</div>
-			<div id="navigation">
-				<? include ("includes/navigation.php"); ?>
-			</div>
-			<div id="extra">
-				<? include ("includes/news.php"); ?>
-			</div>
-			<div id="footer">			
-		  </div>
+					<?php 
+                echo div_navigation(); 
+                echo div_extra(); 
+                echo div_footer(); 
+				
+					?>
 		</div>
 		</body>
 		</html>
@@ -106,7 +124,7 @@ if ($themen_id < 1 AND $gemarkung_id < 1)
 
 if ($gemarkung_id > 0)
    { 	  
-	  $query="SELECT a.* FROM $tabelle as a, gemarkung as b WHERE ST_WITHIN (st_transform(a.the_geom,2398), b.the_geom) AND CAST(b.geographicidentifier AS INTEGER)='$gemarkung_id'";
+	  $query="SELECT a.* FROM $tabelle as a, kataster.gemarkung as b WHERE ST_WITHIN (st_transform(a.the_geom,2398), b.the_geom) AND CAST(b.geographicidentifier AS INTEGER)='$gemarkung_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $z=0;
 	  while($r = $fetcharrayp($result))
@@ -116,36 +134,18 @@ if ($gemarkung_id > 0)
 		   $count=$z;	
 		}
 	  
-	  $query="SELECT a.name, a.amts_sf FROM fd_amtsbereiche as a, gemarkung as b WHERE ST_WITHIN (ST_BUFFER(b.the_geom,-10), a.the_geom) AND CAST(b.geographicidentifier AS INTEGER)='$gemarkung_id'";
+	  $query="SELECT a.name, a.amts_sf FROM kataster.amtsbereiche as a, kataster.gemarkung as b WHERE ST_WITHIN (ST_BUFFER(b.the_geom,-10), a.the_geom) AND CAST(b.geographicidentifier AS INTEGER)='$gemarkung_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $i = $fetcharrayp($result);
 	  $amtname = $i[0];
 	  $amt = $i[1];
 	  
-	  $query="SELECT box(st_transform(a.the_geom,25833)) as etrsbox, st_astext(st_transform(st_centroid(a.the_geom),25833)) as etrscenter, box(a.the_geom) as box, area(a.the_geom) as area, st_astext(st_centroid(a.the_geom)) as center, a.gemarkungsname_kurz as name FROM gemarkung as a WHERE CAST(a.geographicidentifier AS INTEGER)='$gemarkung_id'";
+	  $query="SELECT box(a.geom_25833) as etrsbox, a.geom_25833, a.gemarkungsname_kurz as name FROM kataster.gemarkung as a WHERE CAST(a.geographicidentifier AS INTEGER)='$gemarkung_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemarkungsname = $r[name];
-	  $zentrum = $r[etrscenter];
-	  $zentrum2 = trim($zentrum,"POINT(");
-	  $zentrum3 = trim($zentrum2,")");
-	  $zentrum4 = explode(" ",$zentrum3);
-	  $rcenter = $zentrum4[0];
-	  $hcenter = $zentrum4[1];
-	  $boxstring = $r[etrsbox];
-	  $klammern=array("(",")");
-	  $boxstring = str_replace($klammern,"",$boxstring);
-	  $koordinaten = explode(",",$boxstring);
-	  $rechts_range = $koordinaten[0]-$koordinaten[2];
-	  $rechts = $koordinaten[2]+($rechts_range/2);
-	  $hoch_range = $koordinaten[1]-$koordinaten[3];
-	  $hoch = $koordinaten[3]+($hoch_range/2);
-	  $range = $hoch_range;
-	  if ($rechts_range > $hoch_range) $range=$rechts_range;
-    
-
-        $lon=$rechts;
-		$lat=$hoch;
+	  $gemarkungsname = $r["name"];
+	  $etrsbox=$r["etrsbox"];
+	  $geom_25833=$r["25833"];
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
@@ -158,15 +158,10 @@ if ($gemarkung_id > 0)
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
 		<? include ("includes/bilder_popup.php"); ?>
-		<? include ("includes/block_2_css_map.php"); ?>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />		
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_2_gemkg.php"); ?>
-		</script>
-		<style type="text/css">
-			td.rand {border: solid #000000 1px;}
-		</style>
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($etrsbox,'700','520','orka','1','0','0','1','0',$beschriftung_karte,$layer);			 
+        ?> 
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
@@ -208,13 +203,12 @@ if ($gemarkung_id > 0)
 												<select name="gemarkung" onchange="document.gemarkung.submit();" style="font-family:Arial; font-size: 8pt; font-weight: bold">
 													<option>Bitte auswählen</option>
 													<?php
-													 $query="SELECT DISTINCT a.gemarkung,a.gemkgschl FROM show_gemarkungen as a, gemarkung as b,$tabelle as c WHERE ST_WITHIN(st_transform(c.the_geom,2398),b.the_geom) AND CAST(b.geographicidentifier as INTEGER)=a.gemkgschl ORDER BY gemarkung";
+													 $query="SELECT DISTINCT a.gemarkung,a.gemkgschl FROM show_gemarkungen as a, kataster.gemarkung as b,$tabelle as c WHERE ST_WITHIN(st_transform(c.the_geom,2398),b.the_geom) AND CAST(b.geographicidentifier as INTEGER)=a.gemkgschl ORDER BY gemarkung";
 													 $result = $dbqueryp($connectp,$query);
 
 													  while($r = $fetcharrayp($result))
 													   {
-													   echo "<option";if ($gemarkung_id == $r[gemkgschl]) echo " selected"; echo " value=\"$r[gemkgschl]\">$r[gemarkung]
-																	</option>\n";
+													   echo "<option";if ($gemarkung_id == $r["gemkgschl"]) echo " selected"; echo ' value="',$r["gemkgschl"],'">',$r["gemarkung"],'</option>\n';
 														}
 													?>
 												</select>								
@@ -227,9 +221,22 @@ if ($gemarkung_id > 0)
 										</td>										
 									</tr>
 									<tr><td  height=10></td></tr>
-									<? include ("includes/block_2_legende_gemkg.php"); ?>								
-									<? include ("includes/block_2_uk_gemkg.php"); ?>
-								</table> <!-- Ende innere Tablle oberer Block -->
+								<!-- Zeile für die Legende -->
+								
+								   <tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,$layer_legende_3,'','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>												</table>
 							</td>
 						</tr>
 					</table>	<!-- Ende äußere Tablle oberer Block -->
@@ -253,7 +260,7 @@ if ($gemarkung_id > 0)
 												</tr>
 												<?php for($v=0;$v<$z;$v++)
 													{ 
-														$bildname = $badestelle[$v][bild];
+														$bildname = $badestelle[$v]["bild"];
 														$bildname1 = explode("&",$bildname);
 														$bildname2 = $bildname1[0];
 														$bildname3 = explode("/",$bildname2);
@@ -268,9 +275,9 @@ if ($gemarkung_id > 0)
 																echo "<td align='center'><a href=$bild target='_blank' onclick='return popup(this.href);'><img src=$bild height='30'></a></td>";
 															}
 														echo "
-														<td align='center'><a href=\"$datei?$kuerzel=",$badestelle[$v][gid],"\">",$badestelle[$v][badegewaesser],"</a></td>","<td align='center'>",$badestelle[$v][einstufung],"</td>",													
-														"<td align='center'>",$badestelle[$v][eu_nr],"</td>",
-														"<td align='center'>",$badestelle[$v][beschreibung],"</td>",																												
+														<td align='center'><a href=\"$datei?$kuerzel=",$badestelle[$v]["gid"],"\">",$badestelle[$v]["badegewaesser"],"</a></td>","<td align='center'>",$badestelle[$v]["einstufung"],"</td>",													
+														"<td align='center'>",$badestelle[$v]["eu_nr"],"</td>",
+														"<td align='center'>",$badestelle[$v]["beschreibung"],"</td>",																												
 														"</tr>";
 													}
 												?>																																															
@@ -286,14 +293,11 @@ if ($gemarkung_id > 0)
 					</table>
 				</div>
 			</div>
-			<div id="navigation">
-				<? include ("includes/navigation.php"); ?>
-			</div>
-			<div id="extra">
-				<? include ("includes/news.php") ?>			
-			</div>
-			<div id="footer">				
-			</div>
+			<?php 
+                echo div_navigation(); 
+                echo div_extra(); 
+                echo div_footer(); 
+            ?>
 		</div>
 		</body>
 		</html>
@@ -301,44 +305,26 @@ if ($gemarkung_id > 0)
 
  if ($themen_id > 0)
    {   
-	  $query="SELECT a.gemarkungsname_kurz, a.geographicidentifier as gemarkungid, b.gid FROM gemarkung as a, $tabelle as b WHERE ST_WITHIN(st_transform(b.the_geom,2398), a.the_geom) AND b.gid='$themen_id'";
+	  $query="SELECT a.gemarkungsname_kurz, a.geographicidentifier as gemarkungid, b.gid FROM kataster.gemarkung as a, $tabelle as b WHERE ST_WITHIN(st_transform(b.the_geom,2398), a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $gemarkung_id=$r[gemarkungid];
-	  $gemarkungname=$r[gemarkungsname_kurz];
+	  $gemarkung_id=$r["gemarkungid"];
+	  $gemarkungname=$r["gemarkungsname_kurz"];
 
-	  $query="SELECT a.name, a.amts_sf FROM fd_amtsbereiche as a, $tabelle as b WHERE ST_WITHIN(st_transform(b.the_geom,2398), a.the_geom) AND b.gid='$themen_id'";
+	  $query="SELECT a.name, a.amts_sf FROM kataster.amtsbereiche as a, $tabelle as b WHERE ST_WITHIN(st_transform(b.the_geom,2398), a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $i = $fetcharrayp($result);
 	  $amtname = $i[0];
 	  $amt = $i[1];
 	  
-	  $query="SELECT astext(st_transform(the_geom,2398)) as koordinaten, astext(st_transform(the_geom, 25833)) as utm, st_astext(st_centroid(st_transform(the_geom, 31468))) as rd83, astext(st_transform(the_geom, 4326)) as geo, gid, eu_meldung, badegewaesser, eu_nr, gaststaette, kiosk, bade__aufs, toiletten, duschen, umkleiden, parken_mit, parken_ohne, strandkorb, campingpla, grillplatz, spielplatz, rudern, tretboot, surfen, fkk_strand, hundestrand, eintritt_kostenpflichtig, naturschutzgebiet, behindertengerecht, beschreibung, bild,einstufung FROM $tabelle WHERE gid='$themen_id'";
+	  $query="SELECT box(the_geom) as etrsbox,the_geom as geom_25833, gid, eu_meldung, badegewaesser, eu_nr, gaststaette, kiosk, bade__aufs, toiletten, duschen, umkleiden, parken_mit, parken_ohne, strandkorb, campingpla, grillplatz, spielplatz, rudern, tretboot, surfen, fkk_strand, hundestrand, eintritt_kostenpflichtig, naturschutzgebiet, behindertengerecht, beschreibung, bild,einstufung FROM $tabelle WHERE gid='$themen_id'";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $bildname=$r[bild];
-	  $oeffentlich=$r[oeffentlich];
-	  $koord = $r[koordinaten];
-	  $koord2 = trim($koord,"POINT(");
-	  $koord3 = trim($koord2,")");
-	  $koord4 = explode(" ",$koord3);
-	  $rd83 = $r[rd83];
-	  $utm = $r[utm];
-	  $geo=$r[geo];
-	  $utm2 = trim($utm,"POINT(");
-	  $utm3 = trim($utm2,")");
-	  $utm4 = explode(" ",$utm3);
-	  $utm5 = explode(".",$utm4[0]);
-	  $utm_lon = $utm5[0];
-	  $utm6 = explode(".",$utm4[1]);
-	  $utm_lat = $utm6[0];
-	  $lon = $koord4[0];
-	  $lon1 = explode(".",$koord4[0]);
-	  $lon2 = $lon1[0];
-	  $lat = $koord4[1];
-	  $lat1 = explode(".",$koord4[1]);
-	  $lat2 = $lat1[0];
+	  $bildname=$r["bild"];
+	  $oeffentlich=$r["oeffentlich"];
+	  $etrsbox=$r["etrsbox"];
+	  $geom_25833=$r["geom_25833"];
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
@@ -351,15 +337,10 @@ if ($gemarkung_id > 0)
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
 		<? include ("includes/bilder_popup.php"); ?>
-		<? include ("includes/block_3_css_map.php"); ?>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_3.php"); ?>
-		</script>
-		<style type="text/css">
-			td.rand {border: solid #000000 2px;}
-		</style> 
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($etrsbox,'700','520','orka','1','0','0','1','0',$beschriftung_karte,$layer);			 
+        ?> 
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
@@ -378,7 +359,7 @@ if ($gemarkung_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=250 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[badegewaesser]; ?><br><br>Einstufung: <? echo $r[einstufung]; echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?><? echo $r["badegewaesser"]; ?><br><br>Einstufung: <? echo $r["einstufung"]; echo $font_farbe_end ;?>
 										</td>
 										<td width=10 rowspan="7"></td>
 										<td border=0 valign=top align=left rowspan="6" colspan=3>
@@ -397,13 +378,13 @@ if ($gemarkung_id > 0)
 												<select name="gemarkung" onchange="document.gemarkung.submit();" style="font-family:Arial; font-size: 8pt; font-weight: bold">
 													<option>Bitte auswählen</option>
 													<?php
-													 $query="SELECT DISTINCT a.gemarkung,a.gemkgschl FROM show_gemarkungen as a, gemarkung as b,$tabelle as c WHERE ST_WITHIN(st_transform(c.the_geom,2398),b.the_geom) AND CAST(b.geographicidentifier as INTEGER)=a.gemkgschl ORDER BY gemarkung";
+													 $query="SELECT DISTINCT a.gemarkung,a.gemkgschl FROM show_gemarkungen as a, kataster.gemarkung as b,$tabelle as c WHERE ST_WITHIN(st_transform(c.the_geom,2398),b.the_geom) AND CAST(b.geographicidentifier as INTEGER)=a.gemkgschl ORDER BY gemarkung";
 													 $result = $dbqueryp($connectp,$query);
 
 													  while($e = $fetcharrayp($result))
 													   {
-													   echo "<option";if ($gemarkung_id == $e[gemkgschl]) echo " selected"; echo " value=\"$e[gemkgschl]\">$e[gemarkung]
-																	</option>\n";
+													   echo "<option";if ($gemarkung_id == $e["gemkgschl"]) echo " selected"; echo ' value="',$e["gemkgschl"],'">',$e["gemarkung"],
+														'</option>\n';
 														}
 													?>
 												</select>
@@ -420,20 +401,36 @@ if ($gemarkung_id > 0)
 											<a href="<? echo $datei;?>?gemarkung=<? echo $gemarkung_id; ?>"><? echo $font_farbe ;?>alle <? echo $titel;?><br><? echo $gemarkungname ?><? echo $font_farbe_end ;?></a>
 										</td>										
 									</tr>
-									<? include ("includes/block_3_legende.php"); ?>
-									<? include ("includes/block_3_uk.php"); ?>
-                                 </table>
+								<!-- Zeile für die Legende -->
+								
+								   <tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,$layer_legende_3,'','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>												</table>
+							</td>
+						</tr>
+                        </table>
 								 
-							 <table width="100%" border="0" cellpadding="0" align="center" cellspacing="0">
+						<table width="100%" border="0" cellpadding="0" align="center" cellspacing="0">
 						<tr>
 							<td valign=top>											
 								<table border=0 valign=top>
 									<tr height="35">
-										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[badegewaess]; ?><? echo $font_farbe_end ;?></td>													
+										<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r["badegewaess"]; ?><? echo $font_farbe_end ;?></td>													
 									</tr>
 									<tr height="30">
 										<td bgcolor=<? echo $element_farbe ?>>Nummer:</td>
-										<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r[eu_nr] ;?></b></td>
+										<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r["eu_nr"] ;?></b></td>
 										<?											
 											$bildname1 = explode("&",$bildname);
 											$bildname2 = $bildname1[0];
@@ -451,102 +448,102 @@ if ($gemarkung_id > 0)
 									</tr>
 									<tr height="30">
 										<td>Einstufung:</td>
-										<td><b><? echo $r[einstufung];?></b></td>																									
+										<td><b><? echo $r["einstufung"];?></b></td>																									
 									</tr>
 									<tr height="30">
 										<td bgcolor=<? echo $element_farbe ?>>Beschreibung:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[beschreibung] ;?></b></td>									
+										<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["beschreibung"] ;?></b></td>									
 									</tr>
 									<tr height="30">
 										<td>Ausstattung:</td>
 										<td><b><? 
-												if ($r[gaststaette] == 'X' OR $r[gaststaette] == 'x')
+												if ($r["gaststaette"] == 'X' OR $r["gaststaette"] == 'x')
 													echo "Gaststätte<br>";
-												else if (strlen($r[gaststaette]) > 1) 
-													echo "Gaststätte (".$r[gaststaette].")<br>";													
-												if ($r[kiosk] == 'X' OR $r[kiosk] == 'x') 
+												else if (strlen($r["gaststaette"]) > 1) 
+													echo 'Gaststätte (',$r["gaststaette"],')<br>';													
+												if ($r["kiosk"] == 'X' OR $r["kiosk"] == 'x') 
 													echo "Kiosk<br>";
-												else if (strlen($r[kiosk]) > 1) 
-													echo "Kiosk (".$r[kiosk].")<br>";
-												if ($r[bade_aufs] == 'X' OR $r[bade_aufs] == 'x') 
+												else if (strlen($r["kiosk"]) > 1) 
+													echo 'Kiosk (',$r["kiosk"],')<br>';
+												if ($r["bade_aufs"] == 'X' OR $r["bade_aufs"] == 'x') 
 													echo "Badeaufsicht<br>";
-												else if (strlen($r[bade_aufs]) > 1) 
-													echo "Badeaufsicht (".$r[bade_aufs].")<br>";
-												if ($r[toiletten] == 'X' OR $r[toiletten] == 'x') 
+												else if (strlen($r["bade_aufs"]) > 1) 
+													echo 'Badeaufsicht (',$r["bade_aufs"],')<br>';
+												if ($r["toiletten"] == 'X' OR $r["toiletten"] == 'x') 
 													echo "Toiletten<br>";
-												else if (strlen($r[toiletten]) > 1) 
-													echo "Toiletten (".$r[toiletten].")<br>";
-												if ($r[duschen] == 'X' OR $r[duschen] == 'x') 
+												else if (strlen($r["toiletten"]) > 1) 
+													echo 'Toiletten (',$r["toiletten"],')<br>';
+												if ($r["duschen"] == 'X' OR $r["duschen"] == 'x') 
 													echo "Duschen<br>";
-												else if (strlen($r[duschen]) > 1) 
-													echo "Duschen (".$r[duschen].")<br>";
-												if ($r[umkleiden] == 'X' OR $r[umkleiden] == 'x') 
+												else if (strlen($r["duschen"]) > 1) 
+													echo 'Duschen (',$r["duschen"],')<br>';
+												if ($r["umkleiden"] == 'X' OR $r["umkleiden"] == 'x') 
 													echo "Umkleiden<br>";
-												else if (strlen($r[umkleiden]) > 1) 
-													echo "Umkleiden (".$r[umkleiden].")<br>";
-												if ($r[parken_mit] == 'X' OR $r[parken_mit] == 'x') 
+												else if (strlen($r["umkleiden"]) > 1) 
+													echo "Umkleiden (".$r['umkleiden'].")<br>";
+												if ($r["parken_mit"] == 'X' OR $r["parken_mit"] == 'x') 
 													echo "kostenpflichtige Parkplätze<br>";
-												else if (strlen($r[parken_mit]) > 1) 
-													echo "kostenpflichtige Parkplätze (".$r[parken_mit].")<br>";
-												if ($r[parken_ohn] == 'X' OR $r[parken_ohn] == 'x') 
+												else if (strlen($r["parken_mit"]) > 1) 
+													echo "kostenpflichtige Parkplätze (".$r['parken_mit'].")<br>";
+												if ($r["parken_ohn"] == 'X' OR $r["parken_ohn"] == 'x') 
 													echo "kostenfreie Parkplätze<br>";
-												else if (strlen($r[parken_ohne]) > 1) 
-													echo "kostenfreie Parkplätze (".$r[parken_ohne].")<br>";
-												if ($r[strandkorb] == 'X' OR $r[strandkorb] == 'x') 
+												else if (strlen($r["parken_ohne"]) > 1) 
+													echo "kostenfreie Parkplätze (".$r['parken_ohne'].")<br>";
+												if ($r["strandkorb"] == 'X' OR $r["strandkorb"] == 'x') 
 													echo "Strandkorbverleih<br>";
-												else if (strlen($r[strandkorb]) > 1) 
-													echo "Strandkorbverleih (".$r[strandkorb].")<br>";
-												if ($r[campingpla] == 'X' OR $r[campingpla] == 'x') 
+												else if (strlen($r["strandkorb"]) > 1) 
+													echo "Strandkorbverleih (".$r['strandkorb'].")<br>";
+												if ($r["campingpla"] == 'X' OR $r["campingpla"] == 'x') 
 													echo "Campingplatz<br>";
-												else if (strlen($r[campingpla]) > 1) 
-													echo "Campingplatz (".$r[campingpla].")<br>";
-												if ($r[grillplatz] == 'X' OR $r[grillplatz] == 'x') 
+												else if (strlen($r["campingpla"]) > 1) 
+													echo "Campingplatz (".$r['campingpla'].")<br>";
+												if ($r["grillplatz"] == 'X' OR $r["grillplatz"] == 'x') 
 													echo "Grillplatz<br>";
-												else if (strlen($r[grillplatz]) > 1) 
-													echo "Grillplatz (".$r[grillplatz].")<br>";
-												if ($r[spielplatz] == 'X' OR $r[spielplatz] == 'x') 
+												else if (strlen($r["grillplatz"]) > 1) 
+													echo "Grillplatz (".$r['grillplatz'].")<br>";
+												if ($r["spielplatz"] == 'X' OR $r["spielplatz"] == 'x') 
 													echo "Spielplatz<br>";
-												else if (strlen($r[spielplatz]) > 1) 
-													echo "Spielplatz (".$r[spielplatz].")<br>";
-												if ($r[rudern] == 'X' OR $r[rudern] == 'x') 
+												else if (strlen($r["spielplatz"]) > 1) 
+													echo "Spielplatz (".$r['spielplatz'].")<br>";
+												if ($r["rudern"] == 'X' OR $r["rudern"] == 'x') 
 													echo "Ruderbootverleih<br>";
-												else if (strlen($r[rudern]) > 1) 
-													echo "Ruderbootverleih (".$r[rudern].")<br>";
-												if ($r[tretboot] == 'X' OR $r[tretboot] == 'x') 
+												else if (strlen($r["rudern"]) > 1) 
+													echo "Ruderbootverleih (".$r['rudern'].")<br>";
+												if ($r["tretboot"] == 'X' OR $r["tretboot"] == 'x') 
 													echo "Tretbootverleih<br>";
-												else if (strlen($r[tretboot]) > 1) 
-													echo "Tretbootverleih (".$r[tretboot].")<br>";
-												if ($r[surfen] == 'X' OR $r[surfen] == 'x') 
+												else if (strlen($r["tretboot"]) > 1) 
+													echo "Tretbootverleih (".$r['tretboot'].")<br>";
+												if ($r["surfen"] == 'X' OR $r["surfen"] == 'x') 
 													echo "Windsurfen<br>";
-												else if (strlen($r[surfen]) > 1) 
-													echo "Windsurfen (".$r[surfen].")<br>";
-												if ($r[fkk_strand] == 'X' OR $r[fkk_strand] == 'x') 
+												else if (strlen($r["surfen"]) > 1) 
+													echo "Windsurfen (".$r['surfen'].")<br>";
+												if ($r["fkk_strand"] == 'X' OR $r["fkk_strand"] == 'x') 
 													echo "FKK-Strand<br>";
-												else if (strlen($r[fkk_strand]) > 1) 
-													echo "FKK-Strand (".$r[fkk_strand].")<br>";
-												if ($r[hundestran] == 'X' OR $r[hundestran] == 'x') 
+												else if (strlen($r["fkk_strand"]) > 1) 
+													echo "FKK-Strand (".$r['fkk_strand'].")<br>";
+												if ($r["hundestran"] == 'X' OR $r["hundestran"] == 'x') 
 													echo "Hundestrand<br>";
-												else if (strlen($r[hundestrand]) > 1) 
-													echo "Hundestrand (".$r[hundestrand].")<br>";
-												if ($r[eintritt_k] == 'X' OR $r[eintritt_k] == 'x') 
+												else if (strlen($r["hundestrand"]) > 1) 
+													echo "Hundestrand (".$r['hundestrand'].")<br>";
+												if ($r["eintritt_k"] == 'X' OR $r["eintritt_k"] == 'x') 
 													echo "Besuch der Badestelle ist kostenpflichtig<br>";
-												else if (strlen($r[eintritt_kostenpflichtig]) > 1) 
-													echo "Besuch der Badestelle ist kostenpflichtig (".$r[eintritt_kostenpflichtig].")<br>";
-												if ($r[naturschutzgebiet] == 'X' OR $r[naturschutzgebiet] == 'x') 
+												else if (strlen($r["eintritt_kostenpflichtig"]) > 1) 
+													echo "Besuch der Badestelle ist kostenpflichtig (".$r['eintritt_kostenpflichtig'].")<br>";
+												if ($r["naturschutzgebiet"] == 'X' OR $r["naturschutzgebiet"] == 'x') 
 													echo "liegt im Naturschutzgebiet<br>";
-												else if (strlen($r[naturschutzgebiet]) > 1) 
-													echo "liegt im Naturschutzgebiet (".$r[naturschut].")<br>";
-												if ($r[behindertengerecht] == 'X' OR $r[behindertengerecht] == 'x') 
+												else if (strlen($r["naturschutzgebiet"]) > 1) 
+													echo "liegt im Naturschutzgebiet (".$r['naturschut'].")<br>";
+												if ($r["behindertengerecht"] == 'X' OR $r["behindertengerecht"] == 'x') 
 													echo "Behinderten gerecht<br>";
-												else if (strlen($r[behindertengerecht]) > 1) 
-													echo "Behinderten gerecht (".$r[behindertengerecht].")<br>";												
+												else if (strlen($r["behindertengerecht"]) > 1) 
+													echo "Behinderten gerecht (".$r['behindertengerecht'].")<br>";												
 											?></b>
 										</td>																									
 									</tr>									
 								</table>
 							</td>									
 							<td valign=top align=center width="350">
-							<? include("includes/geo_point.php"); ?>	
+							<? echo geo_punkt($geom_25833,$connectp,$dbqueryp,$fetcharrayp) ?>		
 							</td>
 						</tr>
 						</table>

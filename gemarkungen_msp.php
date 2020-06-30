@@ -100,7 +100,7 @@ if ($gemarkung_id > 0)
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
         <?$gemarkung_karte= new karte;
-        echo $gemarkung_karte->zeigeKarteBox($boxstring_etrs,'580','450','orka','1','1','','1','0',$beschriftung_karte,$gemarkung_id); ?>			 
+        echo $gemarkung_karte->zeigeKarteBox($boxstring_etrs,'580','450','orka','1','1','','1','0',$gemarkungsname,$gemarkung_id); ?>			 
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>		
 		</head>
 		<body onload="init();load();">
