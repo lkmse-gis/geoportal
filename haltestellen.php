@@ -1,9 +1,14 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
 require_once ("classes/karte.class.php");
 require_once ("classes/legende_geo.class.php");
+$layer_legende="HS-Kataster";
+$layer_legende_2="Kreisgrenze_msp";
+$layer="HS-Kataster";
+$label_auswahl="Haltestelle";
+$beschriftung_karte="Haltestelle";
 
 
 //globale Varibalen
@@ -33,12 +38,12 @@ if (isset($linie_id))
    $query="SELECT linie ,verlauf, fahrplan FROM traffic.buslinien WHERE gid='$linie_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $linie_bezeichnung=$r[linie];
-	  $linie_verlauf=$r[verlauf];
-	  $fahrplan=$r[fahrplan];
+	  $linie_bezeichnung=$r["linie"];
+	  $linie_verlauf=$r["verlauf"];
+	  $fahrplan=$r["fahrplan"];
   }
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 // Ebene 1
 if ($themen_id < 1 AND $ortslage_id < 1 AND $linie_id < 1)
@@ -47,7 +52,7 @@ if ($themen_id < 1 AND $ortslage_id < 1 AND $linie_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	?>
 		
@@ -112,7 +117,7 @@ if ($themen_id < 1 AND $ortslage_id < 1 AND $linie_id < 1)
 												echo "<option ";
 												#if ($r[typ] == 'Gemeinde') echo "class=bld ";
 												echo" value=\"$r[gid]\">";
-												if ($r[typ] == 'Gemeinde') ;
+												
 												echo "$r[ortslage]</option>\n";
 											}
 									?>
@@ -141,29 +146,37 @@ if ($themen_id < 1 AND $ortslage_id < 1 AND $linie_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
-						<!-- Tabelle für Legende -->
-						<td valign=bottom align=left >
-							<table class="table_legende" >
-								<B>Kartenlegende :</B>
-								<?php
-								 $legende_geo= new legende_geo;
-								 echo $legende_geo->zeigeLegende($layername_mapfile,'','','','');
-								?>
-							</table> 
-						</td>
-						<!-- ENDE Tabelle für Legende --> 
-						<? include ("includes/block_1_uk.php"); ?> 
-					</table>
+						<!-- es folgt die Einbindung eines Snippets mit der Verknüpfung zu den Metadaten -->
+								
+                                <? include ("includes/meta_i_aktualitaet.php"); ?> 
+								
+								<!-- Zeile für die Legende -->
+								
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>			</table>
 				</div>
 			</div>
-			<?php
-			
-				echo div_navigation(); 
-				echo div_extra(); 
-				echo div_footer();
-				
-			?>
+			<div id="navigation">
+				<? include ("includes/navigation.php"); ?>
+			</div>
+			<div id="extra">
+				<? include ("includes/news.php"); ?>
+			</div>
+			<div id="footer">			
+		  </div>
 			</div>
 			</body>
 		</html>
@@ -188,8 +201,8 @@ if ($ortslage_id > 0 AND isset($themen_id) == FALSE)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $ortslage = $r[gem_name].', '.$r[ortsteil];
-	  $boxstring = $r[etrsbox];
+	  $ortslage = $r["gem_name"].', '.$r["ortsteil"];
+	  $boxstring = $r["etrsbox"];
 	  ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
@@ -238,8 +251,8 @@ if ($ortslage_id > 0 AND isset($themen_id) == FALSE)
 									<tr>
 									<td height="auto" align="center" valign=top width=270>
 									<?
-									 echo "<h3>",$r[ortsteil],"</h3>";
-											 if ($r[typ] != 'Gemeinde') echo "Gemeinde: ",$r[gem_name];
+									 echo "<h3>",$r['ortsteil'],"</h3>";
+											 if ($r["typ"] != 'Gemeinde') echo "Gemeinde: ",$r['gem_name'];
 											 echo '<br><br><hr>','<a href="#liste">';
 											 if ($count > 0) echo $count;
 											   else echo "keine";
@@ -263,12 +276,12 @@ if ($ortslage_id > 0 AND isset($themen_id) == FALSE)
 										while($r = $fetcharrayp($result))
 											{
 												echo "<option ";
-												#if ($r[typ] == 'Gemeinde') echo "class=bld";
-												echo" value=\"$r[gid]\"";
-												if ($r[gid] == $ortslage_id) echo "selected";
+												
+												echo ' value="',$r["gid"],'"';
+												if ($r["gid"] == $ortslage_id) echo "selected";
 												echo ">";
-												if ($r[typ] == 'Gemeinde') ;
-												echo "$r[ortslage]</option>\n";
+												
+												echo $r["ortslage"],'</option>\n';
 											}
 									?>
 								</select>
@@ -329,14 +342,14 @@ if ($ortslage_id > 0 AND isset($themen_id) == FALSE)
 													{   echo "<tr ";
 													    if ($v % 2 == 0) echo "bgcolor=$element_farbe";
 														echo ">";
-														$bild_array=explode("/",$haltestelle[$v][hs_foto]);
+														$bild_array=explode("/",$haltestelle[$v]["hs_foto"]);
 														$bild_name=$bild_array[6];
 														$bild_array2=explode(".",$bild_name);
 														$bild_datei=$bild_array2[0];
-														$linien=explode("-",$haltestelle[$v][hs_linien]);
+														$linien=explode("-",$haltestelle[$v]["hs_linien"]);
 														$bildpfad='pictures/haltestellen_kataster/'.$bild_datei.'_thumb.jpg';
 													    
-														echo '<td align=center><a href=',$_SERVER["PHP_SELF"],'?',$get_themenname,'=',$haltestelle[$v][gid],'&ortslage=',$ortslage_id,'>',$haltestelle[$v][hs_name],'</a></td>';
+														echo '<td align=center><a href=',$_SERVER["PHP_SELF"],'?',$get_themenname,'=',$haltestelle[$v]["gid"],'&ortslage=',$ortslage_id,'>',$haltestelle[$v]["hs_name"],'</a></td>';
 														echo "<td align=center><img src=\"",$bildpfad,"\" width=50></td>";
 														echo "
 														      <td align=center>";
@@ -345,14 +358,14 @@ if ($ortslage_id > 0 AND isset($themen_id) == FALSE)
 												                 $query="SELECT fahrplan FROM traffic.buslinien WHERE linie = '$linie'";
 													             $result = $dbqueryp($connectp,$query);
 													             $xr = $fetcharrayp($result);
-													             $fahrplan=$xr[fahrplan];
+													             $fahrplan=$xr["fahrplan"];
 													             if ($fahrplan != '') echo "<a href=\"",$fahrplan,"\" target=_blank title=\"zum Fahtplan\">",$linie,"</a>&nbsp;&nbsp;&nbsp;";
 												                 else echo $linie,"&nbsp;&nbsp;&nbsp;";
 													 
 													            }
 													 
 														echo "</td>
-															   <td align=center>",$haltestelle[$v][hs_richtungen],"</td>
+															   <td align=center>",$haltestelle[$v]["hs_richtungen"],"</td>
 															   </td></tr>";
 													}
 												?>																																				
@@ -394,7 +407,7 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 	  $query="SELECT box(st_union(st_buffer(geometrie,500))) as etrsbox FROM $schema.$tabelle WHERE hs_linien LIKE '%-$linie_bezeichnung-%'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $boxstring = $r[etrsbox];
+	  $boxstring = $r["etrsbox"];
 	  ?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" /> <!--   FEHLER CSS , IE7 emuliert, IE7 unterstützt CSS nicht-->
@@ -474,10 +487,10 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 											{
 												echo "<option ";
 												
-												echo" value=\"$r[gid]\"";
-												if ($r[gid] == $linie_id) echo "selected";
+												echo ' value="',$r["gid"],'"';
+												if ($r["gid"] == $linie_id) echo "selected";
 												echo ">";
-												echo "$r[label]</option>\n";
+												echo $r["label"],'</option>\n';
 											}
 									?>
 								</select>
@@ -539,14 +552,14 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 													{   echo "<tr ";
 													    if ($v % 2 == 0) echo "bgcolor=$element_farbe";
 														echo ">";
-														$bild_array=explode("/",$haltestelle[$v][hs_foto]);
+														$bild_array=explode("/",$haltestelle[$v]["hs_foto"]);
 														$bild_name=$bild_array[6];
 														$bild_array2=explode(".",$bild_name);
 														$bild_datei=$bild_array2[0];
-														$linien=explode("-",$haltestelle[$v][hs_linien]);
+														$linien=explode("-",$haltestelle[$v]["hs_linien"]);
 														$bildpfad='pictures/haltestellen_kataster/'.$bild_datei.'_thumb.jpg';
 													    
-														echo '<td align=center><a href=',$_SERVER["PHP_SELF"],'?',$get_themenname,'=',$haltestelle[$v][gid],'&linie=',$linie_id,'>',$haltestelle[$v][hs_name],'</a></td>';
+														echo '<td align=center><a href=',$_SERVER["PHP_SELF"],'?',$get_themenname,'=',$haltestelle[$v]["gid"],'&linie=',$linie_id,'>',$haltestelle[$v]["hs_name"],'</a></td>';
 														echo "<td align=center><img src=\"",$bildpfad,"\" width=50></td>";
 														echo "
 														      <td align=center>";
@@ -555,13 +568,13 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 												                 $query="SELECT fahrplan FROM traffic.buslinien WHERE linie = '$linie'";
 													             $result = $dbqueryp($connectp,$query);
 													             $xr = $fetcharrayp($result);
-													             $fahrplan=$xr[fahrplan];
+													             $fahrplan=$xr["fahrplan"];
 													             if ($fahrplan != '') echo "<a href=\"",$fahrplan,"\" target=_blank title=\"zum Fahtplan\">",$linie,"</a>&nbsp;&nbsp;&nbsp;";
 												                 else echo $linie,"&nbsp;&nbsp;&nbsp;";
 													 
 													            }
 														echo "</td>
-															   <td align=center>",$haltestelle[$v][hs_richtungen],"</td>
+															   <td align=center>",$haltestelle[$v]["hs_richtungen"],"</td>
 															   </td></tr>";
 													}
 												?>																																				
@@ -593,15 +606,15 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 		   $query="SELECT a.gid FROM management.ot_lt_rka as a,traffic.haltestellen_kataster as b WHERE st_intersects(b.geometrie,a.the_geom) AND b.gid='$themen_id' AND a.typ = 'Gemeinde'";
 		   $result = $dbqueryp($connectp,$query);
 	       $r = $fetcharrayp($result);
-		   $ortslage_id=$r[gid];
+		   $ortslage_id=$r["gid"];
 		 }
 		 
        $query="SELECT ortslage,typ,gid FROM  management.suchfeld_schnellsprung_ortslagen WHERE gid = '$ortslage_id' ";
 	   $result = $dbqueryp($connectp,$query);
 	   $r = $fetcharrayp($result);
-	   $ortslage=$r[ortslage];
+	   $ortslage=$r["ortslage"];
 	   
-      $query="SELECT box(geometrie) as etrsbox, st_astext(geometrie) as utm,astext(st_transform(geometrie,4326)) as geo, astext(st_transform(geometrie,2398)) as s4283, astext(st_transform(geometrie,31468)) as rd83,gid,hs_nr, hs_name, hs_foto, hs_linien, hs_richtungen, hs_betreiber, 
+      $query="SELECT box(geometrie) as etrsbox, geometrie as geom_25833,gid,hs_nr, hs_name, hs_foto, hs_linien, hs_richtungen, hs_betreiber, 
        hs_baulast, hs_amt, hs_gemeinde, hs_art, hs_wartehaus, hs_sitzen, 
        hs_abfall, hs_beleuchtung, hs_zuwegung, hs_info_fahrplan, hs_info_liniennetzplan, 
        hs_info_tarif, hs_ausstattung, hs_bordhoehe_cm, hs_taktile_kante, 
@@ -611,17 +624,11 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $linien=explode("-",$r[hs_linien]);
+	  $linien=explode("-",$r["hs_linien"]);
 	  
-	  $bildname=$r[hs_foto];
-	  
-	  $utm=$r[utm];
-	  $s4283=$r[s4283];
-	  $rd83=$r[rd83];
-	  $geo=$r[geo];
-	  $umfang=$r[umfang];
-	  $area=$r[flaeche];
-	  $boxstring = $r[etrsbox];
+	  $bildname=$r["hs_foto"];
+	  $boxstring = $r["etrsbox"];
+	  $geom_25833 = $r["geom_25833"];
 	  
 	  
 	  
@@ -642,7 +649,7 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 		<? include ("includes/meta_popup.php");		?>
 		<?php
             $portalkarte= new karte;
-            echo $portalkarte->zeigeKarteBoxBuslinien($boxstring,$v_breite,$v_hoehe,'dop','0','0','0','0','0',$beschriftung_karte,'');
+            echo $portalkarte->zeigeKarteBoxBuslinien($boxstring,$v_breite,$v_hoehe,'orka','0','0','0','0','0',$beschriftung_karte,'');
         ?>  
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		</head>
@@ -662,7 +669,7 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=270 colspan="2" >
-											<h3>Haltestelle:<br> <? echo $r[hs_name];; ?>
+											<h3>Haltestelle:<br> <? echo $r["hs_name"];; ?>
 										</td>
 										<td width=10 rowspan="5"></td>
 										<td border=0 valign=top align=left rowspan="4" colspan=3>
@@ -716,7 +723,7 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Ort:</td>
-											<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r[hs_name] ;?></b></td>												
+											<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r["hs_name"] ;?></b></td>												
 											<?											
 												$bildname1 = explode("&",$bildname);
 												$bildname2 = $bildname1[0];
@@ -739,7 +746,7 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 												    $query="SELECT fahrplan FROM traffic.buslinien WHERE linie = '$linie'";
 													$result = $dbqueryp($connectp,$query);
 													$xr = $fetcharrayp($result);
-													$fahrplan=$xr[fahrplan];
+													$fahrplan=$xr["fahrplan"];
 													if ($fahrplan != '') echo "<a href=\"",$fahrplan,"\" target=_blank title=\"zum Fahtplan\">",$linie,"</a>&nbsp;&nbsp;&nbsp;";
 												     else echo $linie,"&nbsp;&nbsp;&nbsp;";
 													 
@@ -749,33 +756,33 @@ if ($linie_id > 0 AND isset($themen_id) == FALSE)
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Richtungen:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[hs_richtungen] ;?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["hs_richtungen"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td>Betreiber:</td>
-											<td><b><? echo $r[hs_betreiber] ;?></b></td>																									
+											<td><b><? echo $r["hs_betreiber"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Art:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[hs_art] ;?></b></td>																										
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["hs_art"] ;?></b></td>																										
 										</tr>
 										<tr>
 											<td>Bordhöhe in cm:</td>
-											<td><b><? echo $r[hs_bordhoehe_cm] ;?></b></td>																									
+											<td><b><? echo $r["hs_bordhoehe_cm"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Wartehaus:</td>
-											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r[hs_wartehaus] ;?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>><b><? echo $r["hs_wartehaus"] ;?></b></td>																									
 										</tr>
 										<tr>
 											<td>Sitzgelegenheit vorhanden:</td>
-											<td><b><? echo $r[hs_sitzen] ;?></b></td>																									
+											<td><b><? echo $r["hs_sitzen"] ;?></b></td>																									
 										</tr>
 																				
 									</table>
 							</td>									
 							<td valign=top align=center width="250">
-							<? include("includes/geo_point_25833.php"); ?>	
+							<? echo geo_punkt($geom_25833,$connectp,$dbqueryp,$fetcharrayp) ?>	
 							</td>
 						</tr>
 						</table>

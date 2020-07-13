@@ -1,29 +1,36 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
+require_once ("classes/karte.class.php");
+require_once ("classes/legende_geo.class.php");
+$layer_legende="Strassenbauamtsbereiche";
+$layer_legende_2="Kreisgrenze_msp";
+
+$layer="Strassenbauamtsbereiche";
+$label_auswahl="Strassenbauamtsbereich";
+$beschriftung_karte="Strassenbauamtsbereiche";
 
 //globale Varibalen
 $titel="Strassenbauamtsbereiche";
-$titel2="Stra&szlig;enbauamtsbereich";
-$datei="sbab_msp.php";
-$tabelle="fd_sba_bereich";
 $kuerzel="sbab";
+$datei=$_SERVER["PHP_SELF"];
+$tabelle="construction.sba_bereich";
+
 $layerid="70210";
 
-$sbab_id=$_GET["kuerzel"];
+$sbab_id=$_GET["sbab"];
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 if ($sbab_id < 1)
     { 
 		$query="SELECT COUNT(*) AS anzahl FROM $tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
-		$lon=368607;
-		$lat=5937811;
+
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
@@ -35,19 +42,11 @@ if ($sbab_id < 1)
 		<? include ("ajax.php"); ?>
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
-			<style type="text/css">
-				#map {
-				width: 690px;
-				height: 490px;
-				border: 1px solid black;
-				}
-			</style>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_1.php"); ?>
-		</script>
-		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($box_mse_gesamt,'695','510','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
+            ?>		
+			<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
 			<body onload="init();load();">
@@ -74,13 +73,13 @@ if ($sbab_id < 1)
 								</tr>
 								<tr>
 									<td align="center"  height=50 colspan=2>
-										<? echo $titel2; ?> ausw&auml;hlen:
+										<? echo $label_auswahl; ?> ausw&auml;hlen:
 									</td>
 								</tr>
 								<tr>
 									<td align="center" height=40 colspan=2>
 										<form action="<? echo $datei;?>" method="get" name="<? echo $kuerzel;?>">
-										<select name="kuerzel" onchange="document.<? echo $kuerzel;?>.submit();" style="width: 200px;">
+										<select name="<? echo $kuerzel ?>" onchange="document.<? echo $kuerzel;?>.submit();" style="width: 200px;">
 											<?php
 												$query="SELECT name, gid FROM $tabelle ORDER BY name";
 												$result = $dbqueryp($connectp,$query);
@@ -94,69 +93,38 @@ if ($sbab_id < 1)
 										</form>
 									</td>									
 								</tr>
-                                <tr>
-					             <td valign=bottom align=center colspan=2>
-					    *) <a href="metadaten/metadaten.php?Layer_ID=<? echo $layerid;?>" target="_blank" onclick="return meta_popup(this.href)">Info zum Thema<br>Stra&szlig;enbauamtsbereiche</a>
-						         </td>
-					            </tr>
-					            <tr><td align=center colspan=2>letzte Aktualisierung: <b><i><? echo get_aktualitaet($dbname,$layerid); ?></td>
-								</tr>
-								<tr>
-									<td valign=bottom align=center>
-										<a href="wissenswertes/kartehilfe.php" target="_blank" onclick="return hilfe_popup(this.href)">Wie nutze ich die webbasierte Karte?<br>(OpenLayers)</a>																
-									</td>
-								</tr>
-                                <tr>									
-										<td valign=bottom align=right>
-											<!-- Tabelle für Legende -->
-											<table border="1" rules="none" width="100%" valign=bottom align=right>					
-												<tr>
-													<td colspan=4 align=center height=25><i>Kartenlegende:</i></td>
-												</tr>
-												<tr>
-													<td align=right><small>Bereich G&uuml;strow: </td>
-													<td align=right><img src="images/sba_gue.gif" width=30></td>
-													<td align=right><small>Bereich Neustrelitz: </td>
-													<td align=right><img src="images/sba_nz.gif" width=30></td>
-												</tr>
-												<tr>
-													<td align=right></td>
-													<td align=right></td>
-													<td align=right><small>Kreisgrenze: </td>
-													<td align=right><img src="images/gemeindegrenze_2.png" width=30></td>													
-												</tr>											
-											</table> <!-- Ende der Tabelle für die Legende -->
-										</td>					           
-								</tr>							
-								<tr>
-										<td colspan=2 height=35></td>                                       										
-										<td><small>
-											 <? echo $cr; ?>| &nbsp;<a href="wissenswertes/kartehilfe.php" target="_blank" onclick="return hilfe_popup(this.href)">Hilfe zur Kartennutzung</a>
-										</td>	
-										<td>   
-											<a href="metadaten/metadaten.php?Layer_ID=<? echo $layerid;?>" target="_blank" onclick="return meta_popup(this.href)"><img src="images/info_button.gif" title="Metadaten" border=0></a>
-										</td>
-										<td align=right>
-											<a href="<? echo $datei;?>"><img src="images/reload.png" title="Kartenausschnitt neu laden"></a>
-										</td>
-									</tr>
+								<!-- es folgt die Einbindung eines Snippets mit der Verknüpfung zu den Metadaten -->
+								
+                                <? include ("includes/meta_i_aktualitaet.php"); ?> 
+								
+								<!-- Zeile für die Legende -->
+								
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>	
 							</table>
 						</div>
 					</div>
-					<div id="navigation">
-						<table border="0" align="left">
-							<tr>
-								<td>
-									<script type="text/javascript" language="JavaScript1.2" src="menu_msp_i.js"></script>
-								</td>
-							</tr>
-						</table>
-					</div>
-					<div id="extra">
-                    <? include ("includes/news.php") ?>					
-					</div>
-					<div id="footer">						
-					</div>
+			<div id="navigation">
+				<? include ("includes/navigation.php"); ?>
+			</div>
+			<div id="extra">
+				<? include ("includes/news.php"); ?>
+			</div>
+			<div id="footer">			
+		  </div>
 				</div>
 			</body>
 		</html>
@@ -165,86 +133,18 @@ if ($sbab_id < 1)
 
 if ($sbab_id > 0)
    {   
-	  $query="SELECT a.name, a.amts_sf FROM fd_amtsbereiche as a, $tabelle as b WHERE ST_INTERSECTS(ST_BUFFER(b.the_geom,-10),a.the_geom) AND b.gid='$sbab_id' ORDER by a.name";
-	  $result = $dbqueryp($connectp,$query);
-	  $i=0;
-	  while($r = $fetcharrayp($result))
-	    {
-	       $aemter[$i]=$r;
-		   $i++;
-		   $count=$i;
-		}
-
-	  $query="SELECT a.gem_schl, a.gemeinde FROM gemeinden as a, $tabelle as b WHERE ST_INTERSECTS(ST_BUFFER(b.the_geom,-10),a.the_geom) AND b.gid='$sbab_id' ORDER by a.gemeinde";
-	  $result = $dbqueryp($connectp,$query);
-	  $k=0;
-	  while($r = $fetcharrayp($result))
-	    {
-	       $gemeinden[$k]=$r;
-		   $k++;
-		   $count=$k;
-		}
-		
-	  $query="SELECT a.gid, a.name FROM fd_strassenmeisterei as a, $tabelle as b WHERE ST_INTERSECTS(ST_BUFFER(b.the_geom,-5),a.the_geom) AND b.gid='$sbab_id' ORDER by a.name";
-	  $result = $dbqueryp($connectp,$query);
-	  $s=0;
-	  while($r = $fetcharrayp($result))
-	    {
-	       $sm[$s]=$r;
-		   $s++;
-		   $count=$s;
-		}
-		
-	  $query="SELECT a.gid, a.name, a.plz, a.ort, a.strasse FROM fd_smv as a, $tabelle as b WHERE ST_INTERSECTS(b.the_geom,a.the_geom) AND b.gid='$sbab_id' ORDER by a.name";
-	  $result = $dbqueryp($connectp,$query);
-	  $t=0;
-	  while($r = $fetcharrayp($result))
-	    {
-	       $smv[$t]=$r;
-		   $t++;
-		   $count=$t;
-		}
-		
-	  $query="SELECT a.name, a.gid FROM fd_sba_sitz as a, $tabelle as b WHERE ST_WITHIN(a.the_geom,b.the_geom) AND b.gid='$sbab_id'";
+	 
+	  $query="SELECT a.name, a.gid FROM construction.sba_standorte as a, $tabelle as b WHERE ST_WITHIN(a.the_geom,b.the_geom) AND b.gid='$sbab_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $sbabname=$r[name];
-	  $sbabid=$r[gid];
+	  $sbabname=$r["name"];
+	  $sbabid=$r["gid"];
 	  
-	  $query="SELECT box(the_geom) as box, area(the_geom) as area, st_astext(st_centroid(the_geom)) as center, st_astext(st_centroid(st_transform(the_geom, 25833))) as utm, st_astext(st_centroid(st_transform(the_geom, 31468))) as rd83, st_astext(st_centroid(st_transform(the_geom, 4326))) as geo, st_astext(st_transform(the_geom, 2398)) as koordinaten, st_perimeter(the_geom) as umfang, gid, name, strasse, plz, ort FROM $tabelle WHERE gid='$sbab_id'";	  
+	  $query="SELECT box(st_transform(the_geom,25833)) as etrsbox, st_transform(the_geom,25833) as geom_25833, gid, name, strasse, plz, ort FROM $tabelle WHERE gid='$sbab_id'";	  
 	  $result = $dbqueryp($connectp,$query);
-	  $r = $fetcharrayp($result);	 
-	  $area=$r[area];       
-	  $zentrum = $r[center];
-	  $zentrum2 = trim($zentrum,"POINT(");
-	  $zentrum3 = trim($zentrum2,")");
-	  $zentrum4 = explode(" ",$zentrum3);
-	  $rd83 = $r[rd83];
-	  $utm = $r[utm];
-	  $geo = $r[geo];
-	  $umfang = $r[umfang];
-	  $umfang2 = explode(".",$umfang);
-	  $umfang3 = $umfang2[0];
-	  $rcenter = $zentrum4[0];
-	  $rcenter1 = explode(".",$rcenter);
-	  $rcenter2 = $rcenter1[0];
-	  $hcenter = $zentrum4[1];
-	  $hcenter1 = explode(".",$hcenter);
-	  $hcenter2 = $hcenter1[0];
-	  $boxstring = $r[box];
-	  $klammern=array("(",")");
-	  $boxstring = str_replace($klammern,"",$boxstring);
-	  $koordinaten = explode(",",$boxstring);
-	  $rechts_range = $koordinaten[0]-$koordinaten[2];
-	  $rechts = $koordinaten[2]+($rechts_range/2);
-	  $hoch_range = $koordinaten[1]-$koordinaten[3];
-	  $hoch = $koordinaten[3]+($hoch_range/2);
-	  $range = $hoch_range;
-	  if ($rechts_range > $hoch_range) $range=$rechts_range;
-    
-
-        $lon=$rechts;
-		$lat=$hoch;
+	  $r = $fetcharrayp($result);
+      $geom_25833=$r["geom_25833"];
+      $etrsbox=$r["etrsbox"];	  
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
@@ -256,106 +156,11 @@ if ($sbab_id > 0)
 		<? include ("ajax.php"); ?>
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
-			<style type="text/css">
-			   #map {
-					width: 700px;
-					height: 320px;
-					border: 1px solid black;
-				}
-			</style>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			var lon   = <?php echo $lon; ?>;
-			var lat   = <?php echo $lat; ?>;
-			var lonc  = <?php echo $rcenter; ?>;
-			var latc  = <?php echo $hcenter; ?>;
-             <?php
-              if ($hoch_range > 67000) $zoom=1;
-			  else if ($hoch_range > 61000 AND $hoch_range < 66999) $zoom=2;
-			  else if ($hoch_range > 52000 AND $hoch_range < 60999) $zoom=4;
-			  else if ($hoch_range > 50000 AND $hoch_range < 51999) $zoom=5;
-              else $zoom=6;
-             ?>
-
-			var zoom  = <?php echo $zoom ?>;
-
-			var map, info;
-
-			function load() {
-				map = new OpenLayers.Map({
-					div: "map",
-					projection: "EPSG:2398",
-					scales: [750000,700000,650000,600000,550000,500000,450000,400000,350000,250000,200000,150000,100000,75000,70000,65000,60000,55000,50000,45000,40000,35000,30000,25000,20000,15000,10000,5000,2500,1000,500],
-					maxResolution: "auto",
-					maxExtent:  new OpenLayers.Bounds(4400000,5880000,4660000,6060000),
-					units: 'm'
-				});
-
-				var topomv = new OpenLayers.Layer.WMS.Untiled("Topografie",
-					<? echo $topo_url; ?>,
-					{'layers': 'gdimv_topomv', transparent: true, format: 'image/png'},
-					{isBaseLayer: true}
-				);
-
-				 var dop = new OpenLayers.Layer.WMS.Untiled("Luftbild",
-									<? echo $dop_url; ?>,
-									{'layers': 'adv_dop', transparent: true, format: 'image/png'},
-									{isBaseLayer: true}
-				);				
-				
-				var kreisgrenze = new OpenLayers.Layer.WMS.Untiled("Kreisgrenze",
-								 <? echo $map_msp_url; ?>,
-								 {layers: 'Kreisgrenze_msp', transparent: true, format: 'image/png'},
-								 {isBaseLayer: false}
-				);				
-
-				var <? echo $kuerzel;?> = new OpenLayers.Layer.WMS.Untiled("<? echo $titel;?>",
-								 <? echo $map_msp_url;?>,
-								 {layers: '<? echo $titel;?>', transparent: true, format: 'image/png'},
-								 {isBaseLayer: false}
-				);									
-				
-				var markers = new OpenLayers.Layer.Markers( "Markers" );
-				
-				map.addLayers([topomv,dop,<? echo $kuerzel;?>,kreisgrenze]);
-
-				info = new OpenLayers.Control.WMSGetFeatureInfo({
-					layers: [<? echo $kuerzel;?>],
-					url: '<? echo $featureinfo_msp_url; ?>',
-					title: 'Identify features by clicking',
-					queryVisible: true,
-					eventListeners: {
-						getfeatureinfo: function(event) {
-							map.addPopup(new OpenLayers.Popup.FramedCloud(
-								"chicken",
-								map.getLonLatFromPixel(event.xy),
-								null,
-								event.text,
-								null,
-								true
-							));
-						}
-					}
-				});
-				map.addControl(info);
-				info.activate();
-				
-				map.addControl(new OpenLayers.Control.LayerSwitcher());
-				map.addControl(new OpenLayers.Control.Permalink());
-				map.addControl(new OpenLayers.Control.OverviewMap());
-				map.addControl(new OpenLayers.Control.MousePosition());
-				var lonLat = new OpenLayers.LonLat(lon, lat).transform(new OpenLayers.Projection("EPSG:2398"), map.getProjectionObject());
-				var lonLatc = new OpenLayers.LonLat(lonc, latc).transform(new OpenLayers.Projection("EPSG:2398"), map.getProjectionObject());
-				markers.addMarker(new OpenLayers.Marker(lonLatc));				
-				map.setCenter(lonLatc,zoom);
-			}
-		</script>
-		<style type="text/css">
-			td.rand {border: solid #000000 2px;}
-			td.rahmen {border: solid #000000 1px;}
-		</style> 
-		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($etrsbox,'700','520','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
+        ?>
+ 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		<script type="text/javascript">
 			function popup (url) {
 				fenster = window.open(url, "Popupfenster", "width=700,height=1000,resizable=yes");
@@ -380,7 +185,7 @@ if ($sbab_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=250 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[name]; ?><? echo $font_farbe_End ;?>
+											<? echo $font_farbe ;?><? echo $r['name']; ?><? echo $font_farbe_End ;?>
 										</td>
 										<td width=30 rowspan=7></td>
 										<td border=0 align=center rowspan="6" colspan=3>
@@ -389,11 +194,11 @@ if ($sbab_id > 0)
 									</tr>
 									<tr>
 										<td align="center" height="35" valign=center colspan="2" bgcolor=<? echo $element_farbe; ?>>
-											<b><? echo $r[plz]," ",$r[ort],"<br>",$r[strasse] ;?></b><br>											
+											<b><? echo $r['plz']," ",$r['ort'],"<br>",$r['strasse'] ;?></b><br>											
 										</td>
 									</tr>
 									<tr>
-										<td align="center" height="25" colspan="2"><? echo $titel2;?>:</td>										
+										<td align="center" height="25" colspan="2"><? echo $label_auswahl;?>:</td>										
 									</tr>
 									<tr>
 										<td align="center" height="25" colspan="2">
@@ -404,7 +209,7 @@ if ($sbab_id > 0)
 														$result = $dbqueryp($connectp,$query);														
 														while($e = $fetcharrayp($result))
 														{
-														 echo "<option";if ($sbab_id == $e[gid]) echo " selected"; echo " value=\"$e[gid]\" title=\"$e[name]\">$e[name]</option>\n";
+														 echo "<option";if ($sbab_id == $e['gid']) echo " selected"; echo ' value="',$e["gid"],'" title="',$e["name"],'">',$e["name"],'</option>\n';
 														}
 													?>
 												</select>
@@ -416,41 +221,22 @@ if ($sbab_id > 0)
 											<a href="<? echo $datei;?>"><? echo $font_farbe ;?>alle Stra&szlig;enbauamtsbereiche<? echo $font_farbe_end ;?></a>
 										</td>										
 									</tr>									
-									<tr>										
-										<td valign=bottom align=right>
-											<!-- Tabelle für Legende -->
-											<table border="1" rules="none" width="100%" valign=bottom align=right>					
-												<tr>
-													<td colspan=4 align=center height=25><i>Kartenlegende:</i></td>
-												</tr>
-												<tr>
-													<td align=right><small>Bereich G&uuml;strow: </td>
-													<td align=right><img src="images/sba_gue.gif" width=30></td>
-													<td align=right><small>Bereich Neustrelitz: </td>
-													<td align=right><img src="images/sba_nz.gif" width=30></td>
-												</tr>
-												<tr>
-													<td align=right></td>
-													<td align=right></td>
-													<td align=right><small>Kreisgrenze: </td>
-													<td align=right><img src="images/gemeindegrenze_2.png" width=30></td>													
-												</tr>											
-											</table> <!-- Ende der Tabelle für die Legende -->
-										</td>
-									</tr>	
-									<tr>
-										<td colspan=2></td>                                       										
-										<td><small>
-											 <? echo $cr; ?>| &nbsp;<a href="wissenswertes/kartehilfe.php" target="_blank" onclick="return hilfe_popup(this.href)">Hilfe zur Kartennutzung</a>
-										</td>	
-										<td>
-											<a href="metadaten/metadaten.php?Layer_ID=<? echo $layerid;?>" target="_blank" onclick="return meta_popup(this.href)"><img src="images/info_button.gif" title="Metadaten" border=0></a>
-										</td>
-										<td align=right>
-											<a href="<? echo $datei;?>?<? echo $kuerzel;?>=<? echo $sbab_id; ?>"><img src="images/reload.png" title="Kartenausschnitt neu laden"></a>
-										</td>
-									</tr>
-								</table>
+								<!-- Zeile für die Legende -->
+								
+								   <tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,$layer_legende_3,'','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>		</table>
 							</td>
 						</tr>
 					</table>
@@ -459,7 +245,7 @@ if ($sbab_id > 0)
 							<td valign=top>											
 								<table border=0 valign=top>
 									<tr height="35">
-										<td colspan=2  width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[name] ;?><? echo $font_farbe_end ;?></td>													
+										<td colspan=2  width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r['name'] ;?><? echo $font_farbe_end ;?></td>													
 									</tr>
 									<tr height="30">
 										<td bgcolor=<? echo $element_farbe ?> width="30%">Zum zust&auml;ndigen Stra&szlig;enbauamt:</td>
@@ -467,79 +253,60 @@ if ($sbab_id > 0)
 									</tr>
 									<tr height="30">
 										<td>Adresse vom<br>Stra&szlig;enbauamt:</td>
-										<td><b><? echo $r[plz]," ",$r[ort],"<br>",$r[strasse] ;?></b></td>													
+										<td><b><? echo $r['plz']," ",$r['ort'],"<br>",$r['strasse'] ;?></b></td>													
 									</tr>
 									<tr>
-										<td bgcolor=<? echo $element_farbe ?> valign=top>folgende Strassenmeisterein<br>aus dem Landkreis<br>geh&ouml;ren zu diesem<br><? echo $titel2;?>:</td>
+										<td bgcolor=<? echo $element_farbe ?> valign=top>folgende Strassenmeisterein<br>aus dem Landkreis<br>geh&ouml;ren zu diesem<br><? echo $label_auswahl;?>:</td>
 										<td bgcolor=<? echo $element_farbe ?>>
-											<table rules="none" width="90%">
+											<table rules="none" border=0 width="90%">
 												<tr>
 													<td height=25>
-														<b><i>Sitze</b>
-													</td>
-													<td>
 														<b><i>Bereiche</b>
 													</td>
-												</tr>
-												<tr>
-													<td valign=top><b>
-														<?php 
-															for($x=0;$x<$t;$x++)
-															{ echo "<a href=\"sbm_msp.php?sbm=",$smv[$x][0],"\">",$sm[$x][1],"</a><br>",$smv[$x][2]," ",$smv[$x][3],"<br>",$smv[$x][4],"<br>";}
-														?></b>
-													</td>
-													<td valign=top><b>
-														<?php 
-															for($x=0;$x<$s;$x++)
-															{ echo "<a href=\"sbmb_msp.php?sbmb=",$sm[$x][0],"\">",$sm[$x][1],"</a><br>";}
-														?></b>
+													<td>
+														<b><i>Standorte</b>
 													</td>
 												</tr>
+												<?php 
+												$query="SELECT a.gid, a.name FROM construction.sm_bereiche as a, $tabelle as b WHERE ST_INTERSECTS(ST_BUFFER(b.the_geom,-5),a.the_geom) AND b.gid='$sbab_id' ORDER by a.name";
+												$result = $dbqueryp($connectp,$query);
+												while($r = $fetcharrayp($result))
+												  {
+													$bereich_id=$r["gid"];
+												    echo '<tr><td valign="top"><a href="sbmb_msp.php?sbmb=',$r["gid"],'">',$r["name"],'</a></td><td>';
+													$subquery="SELECT a.* FROM construction.sm_standorte as a,construction.sm_bereiche as b WHERE st_within(a.the_geom,b.the_geom) AND b.gid='$bereich_id'";
+													$subresult = $dbqueryp($connectp,$subquery);
+													while($sub_r = $fetcharrayp($subresult))
+												      {
+														echo '<a href="sbm_msp.php?sbm=',$sub_r["gid"],'">',$sub_r["name"],'</a><br>';
+														echo $sub_r["strasse"],'<br>',$sub_r["plz"],' ',$subr_r["ort"],'<br>Telefon: ',$sub_r["tel"],'<br>';
+													   }
+													echo '</td></tr>';		
+												 }
+												?>
+													
 											</table>
 										</td>													
 									</tr>									
-									<tr>
-										<td valign=top><? echo $titel2;?> schneidet folgende<br>&Auml;mter des Kreises:</td>
-										<td><b>
-											<?php 
-												for($x=0;$x<$i;$x++)
-												{ echo "<a href=\"aemter_msp.php?amt=",$aemter[$x][1],"\">",$aemter[$x][0],"</a><br>";}
-											?></b>
-										</td>													
-									</tr>
-									<tr>
-										<td bgcolor=<? echo $element_farbe ?> valign=top><? echo $titel2;?> schneidet folgende<br>Gemeinden des Kreises:</td>
-										<td bgcolor=<? echo $element_farbe ?>><b>
-											<?php 
-												for($y=0;$y<$k;$y++)
-												{echo "<a href=\"gemeinden_msp.php?gemeinde=",$gemeinden[$y][0],"\">",$gemeinden[$y][1],"(".$gemeinden[$y][0].")</a><br>";}
-											?></b>
-										</td>
-									</tr>																		
+																		
 								</table>
 							</td>
 							<td width=30></td>
 							<td valign=top align=center width="350">
-								<? include ("includes/geo_flaeche.php") ?>
+								<? echo geo_flaeche($geom_25833,$connectp,$dbqueryp,$fetcharrayp) ?>
 							</td>
 						</tr>
 					</table>				
 				</div>
 			</div>
 			<div id="navigation">
-				<table border="0" align="left">
-					<tr>
-						<td>
-							<script type="text/javascript" language="JavaScript1.2" src="menu_msp_i.js"></script>
-						</td>
-					</tr>
-				</table>
+				<? include ("includes/navigation.php"); ?>
 			</div>
 			<div id="extra">
-				<? include ("includes/news.php") ?>		
+				<? include ("includes/news.php"); ?>
 			</div>
 			<div id="footer">			
-			</div>
+		  </div>
 		</div>
 		</body>
 		</html>
