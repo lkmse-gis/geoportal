@@ -1,31 +1,38 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
+require_once ("classes/karte.class.php");
+require_once ("classes/legende_geo.class.php");
+$layer_legende="Containerstellplaetze";
+$layer_legende_2="Kreisgrenze_msp";
+$layer_legende_3="msp_outline_gem";
+$layer="Containerstellplaetze";
+$label_auswahl="Containerstellplatz";
+$beschriftung_karte="Containerstellplatz";
 
 //globale Varibalen
 // neue Variablen der Name ist eindeutig
-$layername_mapfile="Containerstellplaetze";
-$titel="Wertstoffcontainerstellplätze";
-$titel_plural="Wertstoffcontainerstellplätzen";
-$titel_legende="Containerstellplatz";
+$titel="Containerstellplätze";
+$label_auswahl_plural="Wertstoffcontainerstellplätzen";
+
 $scriptname="container.php";
 //$layername="Containerstellplaetze";
 //$ueberschrift="Wertstoffcontainerstellplätze";
-$titel2="Wertstoffcontainerstellplatz";
+$label_auswahl2="Wertstoffcontainerstellplatz";
 //Layer Name für die externen Programm Blöcke
-$titel="Wertstoffcontainerstellplätze";
-$datei="container.php";
+$label_auswahl="Wertstoffcontainerstellplätze";
+$datei=$_SERVER["PHP_SELF"];
 $schema="supply_and_disposal";
 $tabelle="container";
 $kuerzel="container";
 $get_themenname="container";
 $layerid="80620";
-$leg_bild="gruener_punkt.gif";
+
 $gemeinde_id=$_GET["gemeinde"];
 $themen_id=$_GET["$kuerzel"];
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 
 // Ebene 1
@@ -35,13 +42,9 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	?>
-		<?php
-		$lon=368607;
-		$lat=5937811;
-		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
@@ -52,12 +55,10 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 		<? include ("ajax.php"); ?>
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
-		<? include ("includes/block_1_css_map.php"); ?>			
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_1_1.php"); ?>
-		</script>
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($box_mse_gesamt,'685','510','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
+            ?>
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
@@ -95,20 +96,36 @@ if ($themen_id < 1 AND $gemeinde_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
-						<? include ("includes/block_1_legende.php"); ?>
-						<? include ("includes/block_1_uk.php"); ?>						
+								<!-- es folgt die Einbindung eines Snippets mit der Verknüpfung zu den Metadaten -->
+								
+                                <? include ("includes/meta_i_aktualitaet.php"); ?> 
+								
+								<!-- Zeile für die Legende -->
+								
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>	
 					</table>
 				</div>
 			</div>
-			<div id="navigation">
-				<? include ("includes/navigation.php"); ?>
-			</div>
-			<div id="extra">
-				<? include ("includes/news.php"); ?>
-			</div>
-			<div id="footer">			
-		  </div>
+					<?php 
+                echo div_navigation(); 
+                echo div_extra(); 
+                echo div_footer(); 
+				
+					?>
 		</div>
 		</body>
 		</html>
@@ -133,32 +150,13 @@ if ($gemeinde_id > 0)
 	  $amtname=$r[0];
 	  $amt=$r[1];
 	  
-	  $query="SELECT box(st_transform(the_geom,25833)) as etrsbox, st_astext(st_transform(st_centroid(the_geom),25833)) as etrscenter, box(a.the_geom) as box, area(a.the_geom) as area, st_astext(st_centroid(a.the_geom)) as center, a.gemeinde as name FROM gemeinden as a WHERE a.gem_schl='$gemeinde_id'";
+	  $query="SELECT box(st_transform(the_geom,25833)) as etrsbox, st_transform(the_geom,25833) as geom_25833, gemeinde as name FROM gemeinden  WHERE gem_schl='$gemeinde_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 	  
-	  $gemeindename = $r[name];
-	  $zentrum = $r[etrscenter];
-	  $zentrum2 = trim($zentrum,"POINT(");
-	  $zentrum3 = trim($zentrum2,")");
-	  $zentrum4 = explode(" ",$zentrum3);
-	  $rcenter = $zentrum4[0];
-	  $hcenter = $zentrum4[1];
-	  $boxstring = $r[etrsbox];
-	  $klammern=array("(",")");
-	  $boxstring = str_replace($klammern,"",$boxstring);
-	  $koordinaten = explode(",",$boxstring);
-	  $rechts_range = $koordinaten[0]-$koordinaten[2];
-	  $rechts = $koordinaten[2]+($rechts_range/2);
-	  $hoch_range = $koordinaten[1]-$koordinaten[3];
-	  $hoch = $koordinaten[3]+($hoch_range/2);
-	  $range = $hoch_range;
-	  if ($rechts_range > $hoch_range) $range=$rechts_range;
-    
-
-        $lon=$rechts;
-		$lat=$hoch;
-//      echo '| ',$lon,' | ',$lat,'| ';
+	  $gemeindename = $r["name"];
+	  $etrsbox = $r["etrsbox"];
+	  $geom_25833 = $r["geom_25833"];
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
@@ -171,15 +169,10 @@ if ($gemeinde_id > 0)
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
 		<? include ("includes/bilder_popup.php"); ?>
-		<? include ("includes/block_2_css_map.php"); ?>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />		
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_2_1.php"); ?>
-		</script>
-		<style type="text/css">
-			td.rand {border: solid #000000 1px;}
-		</style>
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($etrsbox,'700','520','orka','1','0','1','0','0',$beschriftung_karte,$layer);			 
+        ?>
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
@@ -200,8 +193,8 @@ if ($gemeinde_id > 0)
 										<td height="40" align="center" valign=top width=270 bgcolor=<? echo $header_farbe; ?>>
 											<? echo $font_farbe ;?><? echo $ueberschrift ;?> in <br> <? echo $gemeindename ?><? echo $font_farbe_end ;?><br><a href="#liste"><? echo $font_farbe ;?>(<? echo $count; ?> Treffer)<? echo $font_farbe_end ;?></a>
 										</td>
-										<td width=10 rowspan="7"></td>
-										<td border=0 valign=top align=left rowspan="6" colspan=3>
+										<td width=10 rowspan="6"></td>
+										<td border=0 valign=top align=left rowspan="5" colspan=3>
 											<div style="margin:1px" id="map"></div>
 										</td>
 									</tr>
@@ -221,7 +214,7 @@ if ($gemeinde_id > 0)
 
 														while($r = $fetcharrayp($result))
 															{
-																echo "<option";if ($gemeinde_id == $r[gem_schl]) echo " selected"; echo " value=\"$r[gem_schl]\">$r[gemeinde]</option>\n";
+																echo "<option";if ($gemeinde_id == $r["gem_schl"]) echo " selected"; echo ' value="',$r["gem_schl"],'">',$r["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
@@ -231,14 +224,26 @@ if ($gemeinde_id > 0)
 									<tr bgcolor=<? echo $header_farbe; ?>>
 										
 										<td align=center>
-											<a href="<? echo $datei;?>"><? echo $font_farbe ;?>alle <? echo $ueberschrift ;?><? echo $font_farbe_end ;?></a>
+											<a href="<? echo $datei;?>"><? echo $font_farbe ;?>alle <? echo $titel ;?><? echo $font_farbe_end ;?></a>
 										</td>
 										
 									</tr>
-									<tr><td  height=10></td></tr>
-									<? include ("includes/block_2_legende.php"); ?>								
-									<? include ("includes/block_2_uk_gem.php"); ?>	
-								</table> <!-- Ende innere Tablle oberer Block -->
+								<!-- Zeile für die Legende -->
+								
+								   <tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,$layer_legende_3,'','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>												</table>
 							</td>
 						</tr>
 					</table>	<!-- Ende äußere Tablle oberer Block -->
@@ -259,8 +264,8 @@ if ($gemeinde_id > 0)
 																										
 												</tr>												
 												<?php for($v=0;$v<$z;$v++)
-													{   $container_id=$container[$v][id];
-														$bildname = $container[$v][bild];
+													{   $container_id=$container[$v]["id"];
+														$bildname = $container[$v]["bild"];
 														$bildname1 = explode("&",$bildname);
 														$bildname2 = $bildname1[0];
 														$bildname3 = explode("/",$bildname2);
@@ -272,7 +277,7 @@ if ($gemeinde_id > 0)
 														echo "<tr bgcolor=",get_farbe($v),">";
 															$bild_temp="Kein Bild verfügbar!";
 														
-															if(strlen($bildname) < 1 OR $container[$v][oeffentlich] == 'nein') 
+															if(strlen($bildname) < 1 OR $container[$v]["oeffentlich"] == 'nein') 
 															{
 																echo "<td align=center > $bild_temp </td>";
 															} 
@@ -280,10 +285,10 @@ if ($gemeinde_id > 0)
 															{
 																echo "<td align='center'><a href=$bild target='_blank' onclick='return popup(this.href);'><img src=$bild_thumb height='30'></a></td>";
 															}											
-															echo "<td align='center'>",$container[$v][bild_date],"</a></td>",
-																"<td align='center' height='30'><a href=\"$datei?container=", $container[$v][id],"\"><b><u>",$container[$v][id],"</u></b></a></td>",
-																"<td>","&nbsp &nbsp",$container[$v][ortsteil],"</td>",
-																"<td>","&nbsp &nbsp",$container[$v][strasse],"</td></tr>";
+															echo "<td align='center'>",$container[$v]["bild_date"],"</a></td>",
+																"<td align='center' height='30'><a href=\"$datei?container=", $container[$v]['id'],"\"><b><u>",$container[$v]['id'],"</u></b></a></td>",
+																"<td>","&nbsp &nbsp",$container[$v]['ortsteil'],"</td>",
+																"<td>","&nbsp &nbsp",$container[$v]['strasse'],"</td></tr>";
 													}
 												?>																																				
 											</table>
@@ -298,14 +303,11 @@ if ($gemeinde_id > 0)
 					</table>
 				</div>
 			</div>
-			<div id="navigation">
-				<? include ("includes/navigation.php"); ?>
-			</div>
-			<div id="extra">
-				<? include ("includes/news.php") ?>			
-			</div>
-			<div id="footer">				
-			</div>
+			<?php 
+                echo div_navigation(); 
+                echo div_extra(); 
+                echo div_footer(); 
+            ?>
 		</div>
 		</body>
 		</html>
@@ -318,29 +320,17 @@ if ($themen_id > 0)
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
 
-	  $amtname=$r[amt];
-	  $amt=$r[amt_id];
-	  $gem_id=$r[gem_schl];
-	  $gemeindename=$r[gemeinde];
+	  $amtname=$r["amt"];
+	  $amt=$r["amt_id"];
+	  $gem_id=$r["gem_schl"];
+	  $gemeindename=$r["gemeinde"];
 	  
-
-	  $query="SELECT astext(the_geom) as utm, astext(st_transform(the_geom,2398)) as gk4283,astext(st_transform(the_geom, 4326)) as geo,astext(st_transform(the_geom, 31468)) as rd83 FROM $schema.$tabelle as a  WHERE id='$themen_id'";
-	  $result = $dbqueryp($connectp,$query);
-	  $r = $fetcharrayp($result);
-	
-	  
-	  $utm = $r[utm];
-	  $geo=$r[geo];
-	  $rd83=$r[rd83];
-	  $s4283=$r[gk4283];
-	  $lon=get_utmcoordinates_lon($utm);
-	  $lat=get_utmcoordinates_lat($utm);
-	  
-	  
-	  $query="SELECT a.oid,a.id,a.lfd_nr,a.ort,a.strasse,b.gemeinde,c.geographicidentifier,d.ortsteil,a.anzahl,a.papier_1_1,a.papier_3_2,a.weissglas_3_2,a.buntglas_3_2,a.gruen,a.braun,a.bef_kosten,a.einz_kost,a.kost_begruen,a.kost_rep,a.gesamt_kosten,a.befestigung,a.einzaeunung,a.begruenung,a.reparatur,a.comment,a.bild,a.bild_date,a.oeffentlich,a.the_geom FROM gemeinden b,gemarkung c,$schema.$tabelle a Left Join Management.ot_lt_rka d ON st_intersects (a.the_geom,d.the_geom) WHERE st_intersects (st_transform(a.the_geom,2398),b.the_geom) and st_intersects(st_transform(a.the_geom,2398),c.the_geom) AND a.id=$themen_id";
+	  $query="SELECT a.oid,st_transform(a.the_geom,25833) as geom_25833,box(st_transform(a.the_geom,25833)) as etrsbox,a.id,a.lfd_nr,a.ort,a.strasse,b.gemeinde,c.geographicidentifier,d.ortsteil,a.anzahl,a.papier_1_1,a.papier_3_2,a.weissglas_3_2,a.buntglas_3_2,a.gruen,a.braun,a.bef_kosten,a.einz_kost,a.kost_begruen,a.kost_rep,a.gesamt_kosten,a.befestigung,a.einzaeunung,a.begruenung,a.reparatur,a.comment,a.bild,a.bild_date,a.oeffentlich,a.the_geom FROM gemeinden b,gemarkung c,$schema.$tabelle a Left Join Management.ot_lt_rka d ON st_intersects (a.the_geom,d.the_geom) WHERE st_intersects (st_transform(a.the_geom,2398),b.the_geom) and st_intersects(st_transform(a.the_geom,2398),c.the_geom) AND a.id=$themen_id AND (d.typ != 'Gemeinde' AND d.typ != 'Ortslage')";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
+	  $geom_25833=$r["geom_25833"];
+	  $etrsbox=$r["etrsbox"];
 			
 	  
 		?>
@@ -355,15 +345,10 @@ if ($themen_id > 0)
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
 		<? include ("includes/bilder_popup.php"); ?>
-		<? include ("includes/block_3_css_map.php"); ?>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_3_1_point.php"); ?>
-		</script>
-		<style type="text/css">
-			td.rand {border: solid #000000 2px;}
-		</style> 
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($etrsbox,'700','520','orka','1','0','1','0','0',$beschriftung_karte,$layer);			 
+        ?>
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>		
 		</head>
 		<body onload="init();load();">
@@ -381,7 +366,7 @@ if ($themen_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=270 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?>Containerstellplatz <? echo $r[gemarkung] ;?><? echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?>Containerstellplatz <? echo $r["id"],' (', $r["ortsteil"],')' ;?><? echo $font_farbe_end ;?>
 										</td>
 										<td width=10 rowspan="7"></td>
 										<td border=0 valign=top align=left rowspan="6" colspan=3>
@@ -396,17 +381,16 @@ if ($themen_id > 0)
 									<tr>
 										<td align="center" height="35" colspan="2">
 											<form action="<? echo $datei;?>" method="get" name="<? echo $kuerzel;?>">
-												Stadt:&nbsp;
+												Gemeinde:&nbsp;
 												<select name="gemeinde" onchange="document.<? echo $kuerzel;?>.submit();">
 													<?php
 // erweitert
 														$query="SELECT DISTINCT b.gemeinde,b.gem_schl FROM gemeinden b,$schema.$tabelle as a  WHERE st_intersects (st_transform(a.the_geom,2398),b.the_geom) ORDER BY gemeinde";
 														$result = $dbqueryp($connectp,$query);
-														$bildname=$r[bild];
-														$oeffentlich=$r[oeffentlich];
+														
 														while($e = $fetcharrayp($result))
 															{
-																echo "<option";if ($gem_id == $e[gem_schl]) echo " selected"; echo " value=\"$e[gem_schl]\">$e[gemeinde]</option>\n";
+																echo "<option";if ($gem_id == $e["gem_schl"]) echo ' selected'; echo ' value="',$e["gem_schl"],'">',$e["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
@@ -427,23 +411,39 @@ if ($themen_id > 0)
 										</td>
 										
 									</tr>
-									<? include ("includes/block_3_legende.php"); ?>
-									<? include ("includes/block_3_uk.php"); ?>	
-                                 </table>
+								<!-- Zeile für die Legende -->
+								
+								   <tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,$layer_legende_3,'','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>												</table>
+							</td>
+						</tr>
+                        </table>
 								 
 								<table width="100%" border="0" cellpadding="0" align="center" cellspacing="0">
 								<tr>
 								<td valign=top>											
 									<table border=0 valign=top>
 										<tr height="35">
-											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1">Containerstellplatz <? echo $r[gemarkung] ;?><? echo $font_farbe_end ;?></td>													
+											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1">Containerstellplatz <? echo $r["gemarkung"] ;?><? echo $font_farbe_end ;?></td>													
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Stellplatz:</td>
-											<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r[id] ;?></b></td>
+											<td width="100%" bgcolor=<? echo $element_farbe ?>><b><? echo $r["id"] ;?></b></td>
 											<?			
 														
-														$bildname = $r[bild];
+														$bildname = $r["bild"];
 														$bildname1 = explode("&",$bildname);
 														$bildname2 = $bildname1[0];
 														$bildname3 = explode("/",$bildname2);
@@ -451,7 +451,7 @@ if ($themen_id > 0)
 											?>			
 						<?					
 														
-												if(strlen($bildname) < 1 OR $r[oeffentlich] == 'nein')										
+												if(strlen($bildname) < 1 OR $r["oeffentlich"] == 'nein')										
 													{
 														echo "<td valign=center align=right rowspan=10 width=420 height=235><table border=0 cellpadding=50><tr><td class='rand'><font color=red><b> kein Bild verfügbar<br>oder nicht freigegeben</b></font></td></tr></table></td>";
 													} 
@@ -466,30 +466,30 @@ if ($themen_id > 0)
 											<td><b><? echo $id ?></b></td>																									
 										</tr>
 										<tr>
-											<td bgcolor=<? echo $element_farbe ?>>Anzahl der Container: </td><td bgcolor=<? echo $element_farbe ?>><b><? echo $r[anzahl] ?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>>Anzahl der Container: </td><td bgcolor=<? echo $element_farbe ?>><b><? echo $r["anzahl"] ?></b></td>																									
 										</tr>										
 										<tr>
-											<td>Papier 1100 L:</td><td><b><? echo $r[papier_1_1] ?></b></td>																									
+											<td>Papier 1100 L:</td><td><b><? echo $r["papier_1_1"] ?></b></td>																									
 										</tr>
 										<tr>
-											<td bgcolor=<? echo $element_farbe ?>>Papier 3200 L:</td><td bgcolor=<? echo $element_farbe ?>><b><? echo $r[papier_3_2] ?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>>Papier 3200 L:</td><td bgcolor=<? echo $element_farbe ?>><b><? echo $r["papier_3_2"] ?></b></td>																									
 										</tr>										
 										<tr>
-											<td>weiß Glas 3200L:</td><td><b><? echo $r[weissglas_3_2] ?></b></td>																									
+											<td>weiß Glas 3200L:</td><td><b><? echo $r["weissglas_3_2"] ?></b></td>																									
 										</tr>
 										<tr>
-											<td bgcolor=<? echo $element_farbe ?>>Kombicontainer Glas:</td><td bgcolor=<? echo $element_farbe ?>><b><? echo $r[buntglas_3_2] ?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>>Kombicontainer Glas:</td><td bgcolor=<? echo $element_farbe ?>><b><? echo $r["buntglas_3_2"] ?></b></td>																									
 										</tr>										
 										<tr>
-											<td>grün Glas:</td><td><b><? echo $r[gruen] ?></b></td>																									
+											<td>grün Glas:</td><td><b><? echo $r["gruen"] ?></b></td>																									
 										</tr>
 										<tr>
-											<td bgcolor=<? echo $element_farbe ?>>braun Glas:</td><td bgcolor=<?echo $element_farbe ?>><b><? echo $r[braun] ?></b></td>																									
+											<td bgcolor=<? echo $element_farbe ?>>braun Glas:</td><td bgcolor=<?echo $element_farbe ?>><b><? echo $r["braun"] ?></b></td>																									
 										</tr>
 									</table>
 							</td>									
 							<td valign=top align=center width="250">
-							<? include("includes/geo_point_25833.php"); ?>	
+							<? echo geo_punkt($geom_25833,$connectp,$dbqueryp,$fetcharrayp) ?>	
 							</td>
 						</tr>
 						</table>
@@ -508,5 +508,5 @@ if ($themen_id > 0)
 		</div>
 		</body>
 		</html>
-<?  }
+<?  } ?>
 

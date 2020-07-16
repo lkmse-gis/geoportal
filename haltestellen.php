@@ -12,7 +12,7 @@ $beschriftung_karte="Haltestelle";
 
 
 //globale Varibalen
-$beschriftung_karte="Haltestelle";
+
 $layername_mapfile="Hs-Kataster";
 $titel="Haltestellen";
 $titel_plural="Haltestellen";
