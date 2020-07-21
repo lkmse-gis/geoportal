@@ -476,7 +476,7 @@ if ($gemeinde_id > 0)
 
 														while($e = $fetcharrayp($result))
 															{
-																echo "<option";if ($gemeinde_id == $e["gem_schl"]) echo " selected"; echo ' value="',$e["gem_schl"],'">',$e["gemeinde"],'</option>\n';
+																echo "<option";if ($gem_id == $e["gem_schl"]) echo " selected"; echo ' value="',$e["gem_schl"],'">',$e["gemeinde"],'</option>\n';
 															}
 													?>
 												</select>
