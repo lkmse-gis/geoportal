@@ -74,7 +74,7 @@
 				);
 				
 				var msp_gemarkung = new OpenLayers.Layer.WMS.Untiled(\"$gemarkungsname\",
-								 $gemarkungmap_url,
+								 $map_msp_url,
 								 {layers: '$gemarkung_id', transparent: true, format: 'image/png'},
 								 {isBaseLayer: false}
 				);

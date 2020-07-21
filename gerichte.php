@@ -1,22 +1,30 @@
 <?php
 include ("includes/connect_geobasis.php");
-include ("includes/connect.php");
+include ("includes/connect_i_procedure_mse.php");
 include ("includes/portal_functions.php");
+require_once ("classes/karte.class.php");
+require_once ("classes/legende_geo.class.php");
+$layer_legende="Gerichte";
+$layer_legende_2="Kreisgrenze_msp";
+$layer_legende_3="msp_outline_gem";
+$layer="Gerichte";
+$label_auswahl="Gericht";
+$beschriftung_karte="Gerichte";
 
 //globale Varibalen
-$layername_mapfile="Gerichte";
+
 $titel="Gerichte";
-$titel_legende="Gericht";
-$scriptname="gerichte.php";
+
+$scriptname=$_SERVER["PHP_SELF"];
 $tabelle="geoportal_gerichte";
 $schema="geoportal";
 $get_themenname="gericht";
 $layerid="150500";
-$leg_bild="gericht.gif";
+
 $gemeinde_id=$_GET["gemeinde"];
 $themen_id=$_GET["$get_themenname"];
 
-$log=write_log($db_link,$layerid);
+$log=write_i_log($db_link,$layerid);
 
 if ($themen_id < 1)
     { 
@@ -24,14 +32,10 @@ if ($themen_id < 1)
 		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
-		$count = $r[anzahl];
+		$count = $r["anzahl"];
 	
 	
 	?>
-		<?php
-		$lon=368607;
-		$lat=5937811;
-		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
@@ -42,12 +46,10 @@ if ($themen_id < 1)
 		<? include ("ajax.php"); ?>
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
-		<? include ("includes/block_1_css_map.php"); ?>			
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_1_1.php"); ?>
-		</script>
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($box_mse_gesamt,'620','510','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
+            ?>
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>
 		
 		</head>
@@ -84,51 +86,36 @@ if ($themen_id < 1)
 								</form>
 							</td>
 						</tr>							
-						<? include ("includes/meta_aktualitaet.php"); ?>
-						<tr>										
-										<td valign=bottom align=right>
-											<table border="1" rules="none" width=140 valign=bottom align=right>					
-												<tr>
-													<td colspan=4 align=center height=25><i>Kartenlegende:</i></td>
-												</tr>
-												<tr>
-													<td width=100 align=right><small>Amtsgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>amtsgericht.gif" width=30></td>
-													<td align=right><small>Arbeitsgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>arbeitsgericht.gif" width=30></td>
-												</tr>
-												<tr>
-													<td width=100 align=right><small>Landgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>landgericht.gif" width=30></td>
-													<td align=right><small>Landessozialgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>landessozialgericht.gif" width=30></td>
-												</tr>
-												<tr>
-													<td width=100 align=right><small>Sozialgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>sozialgericht.gif" width=30></td>
-													<td align=right><small>Staatsanwaltschaft: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>staatsanwaltschaft.gif" width=30></td>
-												</tr>
-												<tr>
-													<td colspan=2></td>
-													<td align=right><small>Kreisgrenze: </td>
-													<td align=right><img src="images/gemeindegrenze_2.png" width=30></td>
-												</tr>																						
-											</table>
-										</td>
-									</tr>
-						<? include ("includes/block_1_1_uk.php"); ?>							
+								<!-- es folgt die Einbindung eines Snippets mit der Verknüpfung zu den Metadaten -->
+								
+                                <? include ("includes/meta_i_aktualitaet.php"); ?> 
+								
+								<!-- Zeile für die Legende -->
+								
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>	
 					</table>
 				</div>
 			</div>
-			<div id="navigation">
-				<? include ("includes/navigation.php"); ?>
-			</div>
-			<div id="extra">
-				<? include ("includes/news.php"); ?>
-			</div>
-			<div id="footer">			
-		  </div>
+					<?php 
+                echo div_navigation(); 
+                echo div_extra(); 
+                echo div_footer(); 
+				
+					?>
 		</div>
 		</body>
 		</html>
@@ -139,27 +126,22 @@ if ($themen_id > 0)
 	  $query="SELECT a.amt, a.amt_id, a.gemeinde, a.gem_schl as gemeindeid, b.gid FROM gemeinden as a, $schema.$tabelle as b WHERE ST_WITHIN(st_transform(b.wkb_geometry,2398), a.the_geom) AND b.gid='$themen_id'";
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $amtname=$r[amt];
-	  $amt=$r[amt_id];
-	  $gem_id=$r[gemeindeid];
-	  $gemeindename=$r[gemeinde];
+	  $amtname=$r["amt"];
+	  $amt=$r["amt_id"];
+	  $gem_id=$r["gemeindeid"];
+	  $gemeindename=$r["gemeinde"];
 	  
-	  $query="SELECT astext(wkb_geometry) as utm, astext(st_transform(wkb_geometry,2398)) as gk4283,astext(st_transform(wkb_geometry, 4326)) as geo,astext(st_transform(wkb_geometry, 31468)) as rd83, gid, geoportal_anschrift, bezeichnung, urheber, tel, fax, mail, homepage, art, richter, ebene, plz2, ort2, strasse2, tel2, fax2, mail2, ebene2, plz3, ort3, strasse3, tel3, fax3, mail3, ebene2, bild, oeffentlich FROM $schema.$tabelle WHERE gid='$themen_id'";
+	  $query="SELECT box(wkb_geometry) as etrsbox,wkb_geometry as geom_25833, gid, geoportal_anschrift, bezeichnung, urheber, tel, fax, mail, homepage, art, richter, ebene, plz2, ort2, strasse2, tel2, fax2, mail2, ebene2, plz3, ort3, strasse3, tel3, fax3, mail3, ebene2, bild, oeffentlich FROM $schema.$tabelle WHERE gid='$themen_id'";
 	  
 	  $result = $dbqueryp($connectp,$query);
 	  $r = $fetcharrayp($result);
-	  $bildname=$r[bild];
-	  $oeffentlich=$r[oeffentlich];
-	  $adresse=$r[geoportal_anschrift];
+	  $bildname=$r["bild"];
+	  $oeffentlich=$r["oeffentlich"];
+	  $adresse=$r["geoportal_anschrift"];
 	  $adresse1 = explode(";",$adresse);
 	  $anschrift = $adresse1[0]."<br>".$adresse1[1]."<br>".$adresse1[2];
-	 
-	  $s4283 = $r[gk4283];
-	  $geo=$r[geo];
-	  $rd83=$r[rd83];
-	  $utm=$r[utm];
-	  $lon = get_utmcoordinates_lon($utm);
-	  $lat=get_utmcoordinates_lat($utm);
+	  $etrsbox=$r["etrsbox"];
+	  $geom_25833=$r["geom_25833"];
 	  
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -173,15 +155,10 @@ if ($themen_id > 0)
 		<? include ("includes/zeit.php"); ?>
 		<? include ("includes/meta_popup.php"); ?>
 		<? include ("includes/bilder_popup.php"); ?>
-		<? include ("includes/block_3_css_map.php"); ?>
-		<script src=<? echo $openlayers_url; ?> type="text/javascript" language="Javascript"></script>
-			<link rel="stylesheet" href=<? echo $olstyles_url; ?> type="text/css" />
-		<script type="text/javascript" language="Javascript">
-			<? include ("includes/block_3_1_point.php"); ?>
-		</script>
-		<style type="text/css">
-			td.rand {border: solid #000000 2px;}
-		</style> 
+		<?
+             $geoportal_karte= new karte;
+             echo $geoportal_karte->zeigeKarteBox($etrsbox,'620','520','orka','1','0','0','0','0',$beschriftung_karte,$layer);			 
+        ?>
 		<script type="text/javascript" language="JavaScript1.2" src="um_menu.js"></script>		
 		</head>
 		<body onload="init();load();">
@@ -199,7 +176,7 @@ if ($themen_id > 0)
 								<table border=0>
 									<tr>
 										<td height="40" align="center" valign=center width=270 colspan="2" bgcolor=<? echo $header_farbe; ?>>
-											<? echo $font_farbe ;?><? echo $r[bezeichnung]; ?><? echo $font_farbe_end ;?>
+											<? echo $font_farbe ;?><? echo $r["bezeichnung"]; ?><? echo $font_farbe_end ;?>
 										</td>
 										<td width=10 rowspan="6"></td>
 										<td border=0 valign=top align=left rowspan="5" colspan=3>
@@ -214,7 +191,7 @@ if ($themen_id > 0)
 									<tr>
 										<td align="center" height="35" colspan="2">
 											<form action="<? echo $scriptname;?>" method="get" name="<? echo $get_themenname;?>">
-												Stadt:&nbsp;
+												<? echo $label_auswahl ?>:&nbsp;
 												<select name="<? echo $get_themenname;?>" onchange="document.<? echo $get_themenname;?>.submit();">
 													<?php
 														$query="SELECT a.bezeichnung, a.gid FROM $schema.$tabelle as a ORDER BY a.bezeichnung";
@@ -222,7 +199,7 @@ if ($themen_id > 0)
 													
 														while($e = $fetcharrayp($result))
 															{
-																echo "<option";if ($themen_id == $e[gid]) echo " selected"; echo " value=\"$e[gid]\"  title=\"$e[bezeichnung]\">$e[bezeichnung]</option>\n";															}
+																echo "<option";if ($themen_id == $e["gid"]) echo " selected"; echo ' value="',$e["gid"],'"  title="',$e["bezeichnung"],'">',$e["bezeichnung"],'</option>\n';															}
 													?>
 												</select>
 											</form>
@@ -233,39 +210,23 @@ if ($themen_id > 0)
 											<a href="<? echo $scriptname;?>"><? echo $font_farbe ;?>alle <? echo $titel; ?><? echo $font_farbe_end ;?></a>
 										</td>										
 									</tr>
-									<tr>										
-										<td valign=bottom align=right>
-											<table border="1" rules="none" width=140 valign=bottom align=right>					
-												<tr>
-													<td colspan=4 align=center height=25><i>Kartenlegende:</i></td>
-												</tr>
-												<tr>
-													<td width=100 align=right><small>Amtsgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>amtsgericht.gif" width=30></td>
-													<td align=right><small>Arbeitsgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>arbeitsgericht.gif" width=30></td>
-												</tr>
-												<tr>
-													<td width=100 align=right><small>Landgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>landgericht.gif" width=30></td>
-													<td align=right><small>Landessozialgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>landessozialgericht.gif" width=30></td>
-												</tr>
-												<tr>
-													<td width=100 align=right><small>Sozialgericht: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>sozialgericht.gif" width=30></td>
-													<td align=right><small>Staatsanwaltschaft: </td>
-													<td align=right><img src="<? echo $bildpfad ; ?>staatsanwaltschaft.gif" width=30></td>
-												</tr>
-												<tr>
-													<td colspan=2></td>
-													<td align=right><small>Kreisgrenze: </td>
-													<td align=right><img src="images/gemeindegrenze_2.png" width=30></td>
-												</tr>																						
-											</table>
-										</td>
-									</tr>
-									<? include ("includes/block_3_1_uk.php"); ?>	
+								<!-- Zeile für die Legende -->
+								
+								<tr>									
+ 			                       <td valign=bottom align=left >
+							       <table class="table_legende" >
+								    <B>Kartenlegende :</B>
+								    <?php
+								     $legende_geo= new legende_geo;
+								     echo $legende_geo->zeigeLegende($layer_legende,$layer_legende_2,'','','');
+								     ?>
+							       </table> 
+						          </td>
+    		                   	</tr>
+
+							   <!-- Einbindung des Snippets für die Zeile unter der Karte -->
+							   
+					           <? include ("includes/block_1_1_uk.php"); ?>	
                                  </table>
 								 
 								<table width="100%" border="0" cellpadding="0" align="center" cellspacing="0">
@@ -273,7 +234,7 @@ if ($themen_id > 0)
 								<td valign=top>											
 									<table border=0 valign=top>
 										<tr height="35">
-											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r[bezeichnung] ;?><? echo $font_farbe_end ;?></td>													
+											<td colspan=3 width="620" bgcolor=<? echo $header_farbe ;?>>&nbsp;&nbsp;<? echo $font_farbe ;?><font size="+1"><? echo $r["bezeichnung"] ;?><? echo $font_farbe_end ;?></td>													
 										</tr>
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>Anschrift:</td>
@@ -297,16 +258,16 @@ if ($themen_id > 0)
 											<td>Telefon:</td>
 											<td><b>
 											<? 
-												if ($r[tel] == "") echo "<font color=red>keine Telefonnummer vorhanden</font>";
-												else echo $r[tel];
+												if ($r["tel"] == "") echo "<font color=red>keine Telefonnummer verfügbar</font>";
+												else echo $r["tel"];
 											?></b></td>
 										</tr>	
 										<tr>
 											<td bgcolor=<? echo $element_farbe ?>>FAX:</td>
 											<td bgcolor=<? echo $element_farbe ?>><b>
 											<? 
-												if ($r[fax] == "") echo "<font color=red>keine Faxnummer vorhanden</font>";
-												else echo $r[fax];
+												if ($r["fax"] == "") echo "<font color=red>keine Faxnummer verfügbar</font>";
+												else echo $r["fax"];
 											?></b>
 											</td>												
 										</tr>									
@@ -314,8 +275,8 @@ if ($themen_id > 0)
 											<td>E-Mail:</td>
 											<td><b>
 												<? 
-													if ($r[mail] == "") echo "<font color=red>keine E-Mail Adresse vorhanden</font>";
-													else echo "<a href='mailto:$r[mail]'>$r[mail]</a>";
+													if ($r["mail"] == "") echo "<font color=red>keine E-Mail Adresse verfügbar</font>";
+													else echo '<a href="mailto:',$r["mail"],'">',$r["mail"],'</a>';
 												?></b>
 											</td>												
 										</tr>
@@ -323,41 +284,40 @@ if ($themen_id > 0)
 											<td bgcolor=<? echo $element_farbe ?>>Homepage:</td>
 											<td bgcolor=<? echo $element_farbe ?>><b>
 												<? 
-													if ($r[homepage] == "") echo "<font color=red>keine Homepage vorhanden</font>";
-													else echo "<a href='$r[homepage]' target=_blank>$r[homepage]</a>";
+													if ($r["homepage"] == "") echo "<font color=red>keine Homepage verfügbar</font>";
+													else echo '<a href="',$r["homepage"],'" target=_blank>',$r["homepage"],'</a>';
 												?></b>
 											</td>												
-										</tr>
+										</tr>																												
 										<tr>
 											<td>Leitung:</td>
 											<td><b>
 												<? 
-													if ($r[richter] == "") echo "<font color=red>kein Name vorhanden</font>";
-													else echo $r[richter];
+													 echo $r["richter"];
 												?></b>
 											</td>												
 										</tr>
 										<?
-											if (empty($r[ebene]) and empty($r[ebene2]))
+											if (empty($r["ebene"]) and empty($r["ebene2"]))
 											{
 												echo "<tr><td colspan=2><font color=red>das Gericht ist die h&ouml;hste Instanz im Land</font></td></tr>";											
 											}
-											elseif (empty($r[ebene2]))
+											elseif (empty($r["ebene2"]))
 											{
-												echo "<tr bgcolor=$element_farbe><td>nächste Instanz<br>(Land):</td><td><b>".$r[ebene]."<br>".$r[plz2]." ".$r[ort2]."<br>".$r[strasse2]."<br>Tel: ".$r[tel2]."<br>Fax: ".$r[fax2]."<br>E-Mail: <a href='mailto:$r[mail2]'>$r[mail2]</a></td></tr>
-													<tr><td colspan=2><font color=red>das Gericht unter dem Punkt nächste Instanz ist die h&ouml;hste Instanz im Land</font></td></tr>";
+												echo '<tr bgcolor=',$element_farbe,'><td>nächste Instanz<br>(Land):</td><td><b>',$r["ebene"],'"<br>',$r["plz2"],' ',$r["ort2"],'<br>',$r["strasse2"],'<br>Tel: ',$r["tel2"],'<br>Fax: ',$r["fax2"],'<br>E-Mail: <a href="mailto:',$r["mail2"],'">',$r["mail2"],'</a></td></tr>
+													<tr><td colspan=2><font color=red>das Gericht unter dem Punkt nächste Instanz ist die h&ouml;hste Instanz im Land</font></td></tr>';
 											}
 											else
 												{
-													echo "<tr bgcolor=$element_farbe><td>nächste Instanz:</td><td><b>".$r[ebene]."<br>".$r[plz2]." ".$r[ort2]."<br>".$r[strasse2]."<br>Tel: ".$r[tel2]."<br>Fax: ".$r[fax2]."<br>E-Mail: <a href='mailto:$r[mail2]'>$r[mail2]</a></td></tr>
-														<tr><td>höhste Instanz<br>(Land):</td><td><b>".$r[ebene2]."<br>".$r[plz3]." ".$r[ort3]."<br>".$r[strasse3]."<br>Tel: ".$r[tel3]."<br>Fax: ".$r[fax3]."<br>E-Mail: <a href='mailto:$r[mail3]'>$r[mail3]</a>"  ;
+													echo '<tr bgcolor=$element_farbe><td>nächste Instanz:</td><td><b>',$r["ebene"],'<br>',$r["plz2"],' ',$r["ort2"],'<br>',$r["strasse2"],'<br>Tel: ',$r["tel2"],'<br>Fax: ',$r["fax2"],'<br>E-Mail: <a href="mailto:',$r["mail2"],'">',$r["mail2"],'</a></td></tr>
+														<tr><td>höhste Instanz<br>(Land):</td><td><b>',$r["ebene2"],'<br>',$r["plz3"],' ',$r["ort3"],'<br>',$r["strasse3"],'<br>Tel: ',$r["tel3"],'<br>Fax: ',$r["fax3"],'<br>E-Mail: <a href="mailto:',$r["mail3"],'">',$r["mail3"],'</a>'  ;
 														;
 												}	
 										?>																		
 									</table>
 								</td>									
 								<td valign=top align=center width="250">
-								<? include("includes/geo_point_25833.php"); ?>	
+								<? echo geo_punkt($geom_25833,$connectp,$dbqueryp,$fetcharrayp) ?>
 								</td>
 							</tr>
 						</table>

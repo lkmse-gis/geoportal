@@ -21,7 +21,7 @@ $log=write_i_log($db_link,$layerid);
 if ($themen_id < 1 AND $gemeinde_id < 1)
     { 
 	
-		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle, fd_kreis WHERE st_intersects(st_transform($tabelle.the_geom,2398),fd_kreis.the_geom) AND $tabelle.auskunft='ja'";	  
+		$query="SELECT COUNT(*) AS anzahl FROM $schema.$tabelle,kataster.landkreis_mse as b WHERE st_intersects($tabelle.the_geom,b.geom_25833) AND $tabelle.auskunft='ja'";	  
 		$result = $dbqueryp($connectp,$query);
 		$r = $fetcharrayp($result);
 		$count = $r["anzahl"];

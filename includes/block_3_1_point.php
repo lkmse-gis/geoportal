@@ -56,7 +56,7 @@
 				);
 				
 				var msp_gemeinde = new OpenLayers.Layer.WMS.Untiled(\"$gemeindename\",
-								 $gemeindemap_url,
+								 $map_msp_url,
 								 {layers: '$gemeinde_id', transparent: true, format: 'image/png'},
 								 {isBaseLayer: false}
 				);
