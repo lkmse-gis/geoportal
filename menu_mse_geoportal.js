@@ -231,6 +231,6 @@ InitDiv();
 SwapDiv('wme359','wme15','Geoshop',_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,'https://www.geocms.com/geoshop-lk-mecklenburgische-seenplatte/de/produktkatalog.html','Flurkartenauszüge, Bodenrichtkarte und Grundstücksmarktbericht online bestellen',_,'_blank',_,_,'0',_,_,_,_,_,_,_)
 //SwapDiv('wme256','wme49','GeoWiki',_,_,_,_,_,_,_,_,'20',_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,'http://geoport-lk-mse.de/geowiki/',_,_,_,_,_,'0',_,_,_,_,_,_,_)
 //SwapDiv('wme358','wme49','Ausbildung<br/>Geomatiker/in',_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,'http://www.lk-mecklenburgische-seenplatte.de/index.php?&object=tx,2761.5&ModID=255&FID=2761.811.1&kat=&kuo=1&call=0&k_sub=0&La=1',_,_,_,_,_,'0',_,_,_,_,_,_,_)
-SwapDiv('wme51','wme5','Geoportale der<br/>anderen Kreise',_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,'javascript:ajaxpage(\'includes/portale.php\', \'content\')',_,_,_,_,_,'0',_,_,_,_,_,_,_)
+//SwapDiv('wme51','wme5','Geoportale der<br/>anderen Kreise',_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,'javascript:ajaxpage(\'includes/portale.php\', \'content\')',_,_,_,_,_,'0',_,_,_,_,_,_,_)
 Filter('True','','')
 HideDiv();
