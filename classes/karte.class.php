@@ -18,6 +18,8 @@
 	private $featureinfo_mse_url = '../cgi-bin/mapserv?map=/var/www/dienste/wms/int_geoportal_mse_wms.map';
 	private $openlayers_url='"../openlayers/OpenLayers.js"';
     private $olstyle_url='"../openlayers/theme/default/style.css"';
+	private $demografie_url='"/cgi-bin/mapserv?map=/var/www/dienste/wms/int_geoportal_bevoelkerung_wms.map"';
+	private $featureinfo_demografie_url = '../cgi-bin/mapserv?map=/var/www/dienste/wms/int_geoportal_bevoelkerung_wms.map';
 
 	
    function zeigeKarteLonLat($lon,$lat,$zoom,$width,$height,$beschriftung,$layer)
@@ -287,6 +289,167 @@
 			</script>";	
 			return $html;
     }
+
+    function zeigeKarteBoxDemografie($box,$width,$height,$basiskarte,$landkreis,$aemter,$gemeinden,$gemarkungen,$adressen,$beschriftung,$layer,$beschriftung_demografie,$layer_demografie)
+    {
+	 $klammern=array("(",")");
+	 $box = str_replace($klammern,"",$box);
+	 
+	 $boxkoordinaten=explode(',',$box);
+	 $left=$boxkoordinaten[2];
+	 $bottom=$boxkoordinaten[3];
+	 $right=$boxkoordinaten[0];
+	 $top=$boxkoordinaten[1];
+	 $boxextent=$left.",".$bottom.",".$right.",".$top;
+	 
+     $html="
+	        <style type=\"text/css\">
+			   #map {
+					width: ".$width."px;
+					height: ".$height."px;
+					border: 1px solid black;
+				}
+			</style>
+			<script src=$this->openlayers_url type=\"text/javascript\" language=\"Javascript\"></script>
+			<link rel=\"stylesheet\" href=$this->olstyles_url type=\"text/css\" />
+		    <script type=\"text/javascript\" language=\"Javascript\">
+			var map, info;
+
+			function load() {
+				map = new OpenLayers.Map({
+					div: 'map',
+					projection: 'EPSG:25833',
+					scales: [750000,700000,600000,500000,400000,300000,200000,100000,75000,60000,55000,40000,30000,20000,10000,5000,2500,1000,500],
+					maxExtent:  new OpenLayers.Bounds(198843,5885901,466202,6054736),
+					units: 'm'
+				});
+				
+				var orka = new OpenLayers.Layer.WMS.Untiled(\"ORKA M-V\",
+					 $this->orka_url,
+					{'layers': 'orkamv', transparent: true, format: 'image/png'},
+					{isBaseLayer: true}
+				);
+				
+				var orka_grau = new OpenLayers.Layer.WMS.Untiled(\"ORKA M-V (Graustufen)\",
+					 $this->orka_url,
+					{'layers': 'orkamv-graustufen', transparent: true, format: 'image/png'},
+					{isBaseLayer: true}
+				);
+				
+				var dtkmv = new OpenLayers.Layer.WMS.Untiled(\"topografische Karte\",
+					$this->dtk_url,
+					{'layers': 'mv_dtk', transparent: true, format: 'image/png'},
+					{isBaseLayer: true}
+				);
+				
+				var webatlasde = new OpenLayers.Layer.WMS.Untiled(\"WebatlasDE\",
+					$this->webatlas_url,
+					{'layers': 'WebAtlasDE_MV_farbe', transparent: true, format: 'image/gif'},
+					{isBaseLayer: true}
+				);
+
+				 var dop = new OpenLayers.Layer.WMS.Untiled(\"Luftbild\",
+									 $this->dop_url,
+									{'layers': 'mv_dop', transparent: true, format: 'image/png'},
+									{isBaseLayer: true}
+				);
+				
+				var kreisgrenze = new OpenLayers.Layer.WMS.Untiled(\"Kreisgrenze\",
+								  $this->map_mse_url,
+								 {layers: 'Kreisgrenze_msp', transparent: true, format: 'image/png'},
+								 {isBaseLayer: false}
+				);
+				
+				var amtsbereiche = new OpenLayers.Layer.WMS.Untiled(\"Amtsbereiche\",
+								  $this->map_mse_url,
+								 {layers: 'aemter_msp_outline', transparent: true, format: 'image/png'},
+								 {isBaseLayer: false}
+				);
+				
+				var gemeinden = new OpenLayers.Layer.WMS.Untiled(\"Gemeinden\",
+								  $this->map_mse_url,
+								 {layers: 'msp_outline_gem', transparent: true, format: 'image/png'},
+								 {isBaseLayer: false}
+				);
+				
+				var gemarkungen = new OpenLayers.Layer.WMS.Untiled(\"Gemarkungen\",
+								  $this->map_mse_url,
+								 {layers: 'msp_outline_gemkg', transparent: true, format: 'image/png'},
+								 {isBaseLayer: false}
+				);
+				
+				var adressen = new OpenLayers.Layer.WMS.Untiled(\"Adressen\",
+								  $this->map_mse_url,
+								 {layers: 'Adress_Geometrie', transparent: true, format: 'image/png'},
+								 {isBaseLayer: false}
+				);
+
+				var demografie = new OpenLayers.Layer.WMS.Untiled(\"$beschriftung_demografie\",
+								  $this->demografie_url,
+								 {layers: '$layer_demografie', transparent: true, format: 'image/png'},
+								 {isBaseLayer: false}
+				);";
+
+				if ($layer != '') $html=$html."
+				var  thema = new OpenLayers.Layer.WMS.Untiled(\"$beschriftung\",
+								  $this->map_mse_url,
+								 {layers: '$layer', transparent: true, format: 'image/png'},
+								 {isBaseLayer: false}
+				);";
+				
+				if ($basiskarte == 'orka') $html=$html."map.addLayers([orka,orka_grau,webatlasde,dtkmv,dop";
+				if ($basiskarte == 'orka_grau') $html=$html."map.addLayers([orka_grau,orka,webatlasde,dtkmv,dop";
+				if ($basiskarte == 'webatlas') $html=$html."map.addLayers([webatlasde,orka,orka_grau,dtkmv,dop";
+				if ($basiskarte == 'dtk') $html=$html."map.addLayers([dtkmv,webatlasde,orka,orka_grau,dop";
+				if ($basiskarte == 'dop') $html=$html."map.addLayers([dop,webatlasde,orka,orka_grau,dtkmv";
+				
+				if ($adressen == '1') $html=$html.",adressen";
+				if ($gemarkungen == '1') $html=$html.",gemarkungen";
+				if ($gemeinden == '1') $html=$html.",gemeinden";
+				if ($aemter == '1') $html=$html.",amtsbereiche";
+				if ($landkreis == '1') $html=$html.",kreisgrenze";
+				
+				$html=$html.",demografie";
+				if ($layer != '') $html=$html.",thema";
+				$html=$html."]);";
+				
+				$html=$html."
+				info = new OpenLayers.Control.WMSGetFeatureInfo({
+					layers: [demografie";
+					
+					$html=$html."],
+					url: '$this->featureinfo_demografie_url',
+					title: 'Identify features by clicking',
+					queryVisible: true,
+					eventListeners: {
+						getfeatureinfo: function(event) {
+							map.addPopup(new OpenLayers.Popup.FramedCloud(
+								'chicken',
+								map.getLonLatFromPixel(event.xy),
+								null,
+								event.text,
+								null,
+								true
+							));
+						}
+					}
+				});
+				map.addControl(info);
+				info.activate();
+
+				map.addControl(new OpenLayers.Control.LayerSwitcher({'ascending':false}));
+				map.addControl(new OpenLayers.Control.Permalink());
+				map.addControl(new OpenLayers.Control.OverviewMap({'ascending':false}));
+				map.addControl(new OpenLayers.Control.MousePosition());
+				var extent = new OpenLayers.Bounds($boxextent);
+				map.zoomToExtent(extent,true);
+				
+			}
+			</script>";	
+			return $html;
+    }
+
+
 	
 	function zeigeKarteBox2($box,$width,$height,$basiskarte,$landkreis,$aemter,$gemeinden,$gemarkungen,$adressen,$plz,$orts_teile,$beschriftung,$layer)
     {

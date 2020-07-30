@@ -77,10 +77,16 @@
 				<p style="background-color:#75b726;width:360px;margin-left:30px;font-size:22w;">Aktuelle Richtwerte und Marktberichte</p>
 			</div>   
 			</div>
-			<div class="carousel-item" style="background-image: url(bilder/hochsitz.jpg);">
+			<div class="carousel-item" style="background-image: url(bilder/strasse1.jpg);">
 			<div class="carousel-caption">
-				<h2 class="display-4" style="background-color:#006085;width:310px;margin-left:-50px;">Jagdkataster</h2>
-				<p style="background-color:#75b726;width:360px;margin-left:30px;font-size:22w;">Verwaltung der Jagdbezirke</p>
+				<h2 class="display-4" style="background-color:#006085;width:310px;margin-left:-50px;">Wildunfälle</h2>
+				<p style="background-color:#75b726;width:360px;margin-left:30px;font-size:22w;">Statistik und Verortung</p>
+			</div>   
+			</div>
+			<div class="carousel-item" style="background-image: url(bilder/bevoelkerung.jpg);">
+			<div class="carousel-caption">
+				<h2 class="display-4" style="background-color:#006085;width:310px;margin-left:-50px;">Bevölkerung</h2>
+				<p style="background-color:#75b726;width:360px;margin-left:30px;font-size:22w;">Zahlen</p>
 			</div>   
 			</div>
 		</div>

@@ -48,6 +48,38 @@
 		</tr><?
 		return $html;
     }
+	
+    function zeigeLegendeDemografie($layer_demografie,$layer2,$layer3,$layer4,$layer5)
+    {
+		?>
+		<tr align=left >
+			<td>
+			<? if ($layer_demografie <> '')
+				{ ?> 
+				<img src="http://geoport-lk-mse.de/cgi-bin/mapserv?map=/var/www/dienste/wms/int_geoportal_bevoelkerung_wms.map&SERVICE=WMS&REQUEST=GetLegendGraphic&LAYER=<?echo $layer_demografie?>&VERSION=1.1.1&FORMAT=image/png"><br>
+				<?} ?>
+			<? if ($layer2 <> '')
+				{ ?> 
+				<img src="http://geoport-lk-mse.de/cgi-bin/mapserv?map=/var/www/dienste/wms/int_geoportal_mse_wms.map&SERVICE=WMS&REQUEST=GetLegendGraphic&LAYER=<?echo $layer2?>&VERSION=1.1.1&FORMAT=image/png"><br>
+				<?} ?>
+			<? if ($layer3 <> '')
+				{ ?> 
+				<img src="http://geoport-lk-mse.de/cgi-bin/mapserv?map=/var/www/dienste/wms/int_geoportal_mse_wms.map&SERVICE=WMS&REQUEST=GetLegendGraphic&LAYER=<?echo $layer3?>&VERSION=1.1.1&FORMAT=image/png"><br>
+				<?} ?>	
+			<? if ($layer4 <> '')
+				{ ?> 
+				<img src="http://geoport-lk-mse.de/cgi-bin/mapserv?map=/var/www/dienste/wms/int_geoportal_mse_wms.map&SERVICE=WMS&REQUEST=GetLegendGraphic&LAYER=<?echo $layer4?>&VERSION=1.1.1&FORMAT=image/png"><br>
+				<?} ?>
+			<? if ($layer5 <> '')
+				{ ?> 
+				<img src="http://geoport-lk-mse.de/cgi-bin/mapserv?map=/var/www/dienste/wms/int_geoportal_mse_wms.map&SERVICE=WMS&REQUEST=GetLegendGraphic&LAYER=<?echo $layer5?>&VERSION=1.1.1&FORMAT=image/png">
+				<?} ?>
+			</td>
+		</tr><?
+		return $html;
+    }
+
+	
 // ## 2 ##  2 Spaltig (Standard | Themen)
 	 function zeigeLegende2($kreis,$aemter,$gemeinden,$gemeinde_gr,$gemarkung_gr,$Ortsteile_lt_rka,$layer,$layer2)
     {
