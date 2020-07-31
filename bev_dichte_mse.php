@@ -29,7 +29,7 @@ $titel='Einwohnerdichte ('.$stichtag.')';
 $datei=$_SERVER["PHP_SELF"];
 $tabelle="population.g_bevoelkerung";
 $kuerzel="ez";
-$layerid="88730";
+$layerid="84910";
 
 $log=write_i_log($db_link,$layerid);
 

@@ -29,7 +29,7 @@ $titel='Einwohnerzahlen ('.$stichtag.')';
 $datei=$_SERVER["PHP_SELF"];
 $tabelle="population.g_bevoelkerung";
 $kuerzel="ez";
-$layerid="88730";
+$layerid="88880";
 
 $log=write_i_log($db_link,$layerid);
 
