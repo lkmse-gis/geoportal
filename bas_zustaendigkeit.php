@@ -411,20 +411,13 @@ if ($gemeinde_id > 0)
 					</table>
 				</div>
 			</div>
-			<div id="navigation">
-				<table border="0" align="left">
-					<tr>
-						<td>
-							<script type="text/javascript" language="JavaScript1.2" src="menu_msp_i.js"></script>
-						</td>
-					</tr>
-				</table>
-			</div>
-			<div id="extra">
-				<? include ("includes/news.php"); ?>
-			</div>
-			<div id="footer">				
-			</div>
+			<?php
+			
+				echo div_navigation(); 
+				echo div_extra(); 
+				echo div_footer();
+				
+			?>
 		</div>
 		</body>
 		</html>
@@ -629,20 +622,13 @@ if ($gemeinde_id < '0'		)
 							</table>
 						</div>
 					</div>
-					<div id="navigation">
-						<table border="0" align="left">
-							<tr>
-								<td>
-									<script type="text/javascript" language="JavaScript1.2" src="menu_msp_i.js"></script>
-								</td>
-							</tr>
-						</table>
-					</div>
-					<div id="extra">
-						<? include ("includes/news.php"); ?>
-					</div>
-					<div id="footer">						
-					</div>
+			<?php
+			
+				echo div_navigation(); 
+				echo div_extra(); 
+				echo div_footer();
+				
+			?>
 				</div>
 			</body>
 		</html>
